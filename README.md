@@ -15,3 +15,7 @@ To install:
 
 4. Move the 'ModuloHardware' directory to [Sketchbook]/hardware/ModuloHardware
 
+5. Restart the Arduino app
+
+6. Verify that 'Modulo Controller' appears in the list of boards, and that 'Modulo'
+   appears in the list of examples.
