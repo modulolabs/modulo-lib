@@ -4,7 +4,7 @@
 #include "MiniDisplay.h"
 #include "MotorDriver.h"
 #include "Adafruit_GFX.h"
-#include "TimeAndTemp.h"
+#include "Modulo.h"
 
 void setup() {
   // put your setup code here, to run once:
@@ -15,15 +15,15 @@ void setup() {
 
 
 
-void DisplayTime(MiniDisplay &display, TimeAndTemp::Time time) {
+void DisplayTime(MiniDisplay &display, ModTime::Time time) {
     display.setCursor(15, 22);
     display.setTextSize(3);
     
-    digitalWrite(13, time.second == 0);
+    digitalWrite(13, time.seconds % 2);
     
-    uint8_t hours = time.hour;
-    uint8_t minutes = time.minute;
-    uint8_t seconds = time.second;
+    uint8_t hours = time.hours;
+    uint8_t minutes = time.minutes;
+    uint8_t seconds = time.seconds;
     bool pm = hours >= 12;
     
     hours = hours % 12;
@@ -123,7 +123,7 @@ void DisplayFont(MiniDisplay &display) {
 
 MiniDisplay display;
 MotorDriver motor(14);    
-TimeAndTemp timeAndTemp(9);
+ModTime timeAndTemp(6);
 
 bool GetTimeAndDate() {
     if (!Serial.available()) {
@@ -132,19 +132,19 @@ bool GetTimeAndDate() {
     
     Serial.setTimeout(0);
     
-    TimeAndTemp::Time t;
-    t.month = Serial.parseInt();
-    t.date = Serial.parseInt();
-    t.year = Serial.parseInt();
-    t.hour = Serial.parseInt();
-    t.minute = Serial.parseInt();
-    t.second = Serial.parseInt();
+    ModTime::Time t;
+    t.months = Serial.parseInt();
+    t.days = Serial.parseInt();
+    t.years = Serial.parseInt();
+    t.hours = Serial.parseInt();
+    t.minutes = Serial.parseInt();
+    t.seconds = Serial.parseInt();
 
       
     while (Serial.read() != -1)
       ;
     
-    if (t.year == 0) {
+    if (t.years == 0) {
       Serial.println();
       Serial.println("enter time in the following format: 12/14/2014 h:m:s");  
     } else {
@@ -152,21 +152,21 @@ bool GetTimeAndDate() {
       
       Serial.print("Setting date and time to: ");
 
-      Serial.print(t.month);
+      Serial.print(t.months);
       Serial.print("/");
-      Serial.print(t.date);
+      Serial.print(t.days);
       Serial.print("/");
-      Serial.print(t.year);
+      Serial.print(t.years);
       Serial.print(" ");
-      Serial.print(t.hour);
+      Serial.print(t.hours);
       Serial.print(":");
-      Serial.print(t.minute);
+      Serial.print(t.minutes);
       Serial.print(":");
-      Serial.println(t.second);
+      Serial.println(t.seconds);
     
 
       
-      timeAndTemp.SaveTime(t);
+      timeAndTemp.setTime(t);
     }
     
 }
@@ -184,15 +184,16 @@ void loop() {
     
     //display.fillRect(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, 1);
 
-    TimeAndTemp::Time t = timeAndTemp.LoadTime();
+    ModTime::Time t = timeAndTemp.getTime();
+    Serial.println(t.seconds);
     
     display.SetStatus((time/1000) % 5 == 0);
     DisplayTime(display, t);
-    DisplayDate(display, t.year, t.month, t.date);
-    DisplaySeconds(display, t.second*1000.0);
-    DisplayTemperature(display, timeAndTemp.GetTemperature());
+    DisplayDate(display, t.years, t.months, t.days);
+    DisplaySeconds(display, t.seconds*1000.0);
+    //DisplayTemperature(display, timeAndTemp.getTemperature());
     //DisplayFont(display);
-    
+    /*
     float speed = sin(time*2*M_PI/2000.0);
     if (speed >= 0) {
       motor.SetOutputB2(65535*speed);
@@ -203,13 +204,10 @@ void loop() {
       motor.SetOutputB2(0);
       motor.SetStatus(false);
     }
+    */
     
     display.update();
     //digitalWrite(13, false);
     
     GetTimeAndDate();
-
-    
-
-
 }
