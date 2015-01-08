@@ -10,19 +10,30 @@ bool moduloTransfer(
     
     
 class ModDPad {
-  bool getState(int button);
-  uint8_t getStates();
+ public:
+    ModDPad(uint8_t address);
 
-  bool getPressed(int pin);
-  uint8_t getPresses();
+    bool sync();
 
-  bool getReleased(int pin);
-  uint8_t getReleases();
+    bool getState(int button);
+    uint8_t getStates();
 
+    bool getPressed(int button);
+    uint8_t getPresses();
 
+    bool getReleased(int button);
+    uint8_t getReleases();
+
+ private:
+    uint8_t _address, _state, _pressed, _released;
 };
 
-class ModTime {
+class ModBase {
+ public:
+    uint16_t GetDeviceID(uint8_t address);
+};
+
+class ModTime : public ModBase {
 public:
   struct Time {
         Time() : seconds(0), minutes(0), hours(0), days(0), weekdays(0), months(0), years(0), clockSet(false), battLow(false) {}
@@ -51,24 +62,32 @@ private:
 
 class ModKnob {
 
-  void setColor(float r, float g, float b);
+public:
+    ModKnob(uint8_t address);
+
+    bool setColor(float r, float g, float b);
+    
+    bool sync();
+    bool getButtonState();
+    bool getButtonPressed();
+    bool getButtonReleased();
   
-  bool getButtonState();
-  bool getButtonPressed();
-  bool getButtonReleased();
+    int16_t getPosition();
   
-  uint8_t getPosition();
-  int16_t getRotations();
-  
+ private:
+    uint8_t _address;
+    int16_t _position;
+    bool _buttonState, _buttonPressed, _buttonReleased;
 };
 
 class ModThermocouple {
 public:
   ModThermocouple(uint8_t address);
-    
   
-  float getTemperatureA();
-  float getTemperatureB();
+  float getTemperature();
+
+  static const float InvalidTemperature;
+
 private:
   uint8_t _address;
 };
