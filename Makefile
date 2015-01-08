@@ -51,6 +51,8 @@
 # official Arduino LLC VID
 # VID = 0x2341
 
+# MCS Electronics VID used by Integer Labs
+VID = 0x16D0
 
 # USB product ID (PID)
 # official Leonardo PID
@@ -59,6 +61,9 @@
 # PID = 0x0037
 # official Esplora PID
 # PID = 0x003C
+
+# Modulo Controller PID
+PID = 0x0A67
 
 # MCU name
 MCU = atmega32u4
@@ -127,8 +132,7 @@ OBJDIR = .
 
 
 # Path to the LUFA library
-LUFA_PATH = ../../../../../../LUFA/LUFA-111009
-
+LUFA_PATH = lufa-LUFA-111009
 
 # LUFA library compile-time options and predefined tokens
 LUFA_OPTS  = -D USB_DEVICE_ONLY
@@ -369,7 +373,7 @@ LDFLAGS += $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
 # Type: avrdude -c ?
 # to get a full listing.
 #
-AVRDUDE_PROGRAMMER = avrispmkII
+AVRDUDE_PROGRAMMER = usbtiny
 
 # com1 = serial port. Use lpt1 to connect to parallel port.
 AVRDUDE_PORT = usb
@@ -430,16 +434,18 @@ DEBUG_HOST = localhost
 
 #============================================================================
 
+AVRDIR = /Applications/Arduino1.5.app//Contents/Resources/Java/hardware/tools/avr
 
 # Define programs and commands.
 SHELL = sh
-CC = avr-gcc
-OBJCOPY = avr-objcopy
-OBJDUMP = avr-objdump
-SIZE = avr-size
-AR = avr-ar rcs
-NM = avr-nm
-AVRDUDE = /Applications/avrdude -C /Applications/avrdude.conf -B 1
+CC = $(AVRDIR)/bin/avr-gcc
+OBJCOPY = $(AVRDIR)/bin/avr-objcopy
+OBJDUMP = $(AVRDIR)/bin/avr-objdump
+SIZE = $(AVRDIR)/bin/avr-size
+AR = $(AVRDIR)/bin/avr-ar rcs
+NM = $(AVRDIR)/bin/avr-nm
+#AVRDUDE = /Applications/avrdude -C /Applications/avrdude.conf -B 1
+AVRDUDE = $(AVRDIR)/bin/avrdude -C $(AVRDIR)/etc/avrdude.conf -B 1
 REMOVE = rm -f
 REMOVEDIR = rm -rf
 COPY = cp
