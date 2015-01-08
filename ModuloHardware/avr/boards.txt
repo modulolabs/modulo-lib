@@ -1,0 +1,33 @@
+# This is for Arduino 1.5. The boards.txt file for Arduino 1.0 is in the parent directory.
+
+modulo.name=Modulo Controller
+modulo.vid=0x16D0
+modulo.pid=0x0A67
+
+modulo.upload.tool=avrdude
+modulo.upload.protocol=avr109
+modulo.upload.maximum_size=28672
+modulo.upload.maximum_data_size=2560
+modulo.upload.speed=57600
+modulo.upload.disable_flushing=true
+modulo.upload.use_1200bps_touch=true
+modulo.upload.wait_for_upload_port=true
+
+modulo.bootloader.tool=avrdude
+modulo.bootloader.low_fuses=0xff
+modulo.bootloader.high_fuses=0xd8
+modulo.bootloader.extended_fuses=0xcb
+modulo.bootloader.file=Caterina-Modulo.hex
+modulo.bootloader.unlock_bits=0x3F
+modulo.bootloader.lock_bits=0x2F
+
+modulo.build.mcu=atmega32u4
+modulo.build.f_cpu=16000000L
+modulo.build.vid=0x16D0
+modulo.build.pid=0x0A67
+modulo.build.usb_product="Modulo Controller"
+modulo.build.usb_manufacturer="Integer Labs"
+modulo.build.core=arduino:arduino
+modulo.build.variant=modulo
+modulo.build.extra_flags={build.usb_flags}
+
