@@ -11,7 +11,7 @@ To install:
 2. Create the directories [Sketchbook]/libraries and [Sketchbook]/harware if they
    do not already exist.
 
-3. Move the 'Modulo' directory to [Your Sketchbook]/libraries/Modulo
+3. Move the 'Modulo' directory to [Sketchbook]/libraries/Modulo
 
-4. Move the 'ModuloHardware' directory to [Your Sketchbook]/hardware/ModuloHardware
+4. Move the 'ModuloHardware' directory to [Sketchbook]/hardware/ModuloHardware
 
