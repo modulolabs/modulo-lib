@@ -4,7 +4,7 @@ modulo.name=Modulo Controller
 modulo.vid=0x16D0
 modulo.pid=0x0A67
 
-modulo.upload.tool=avrdude
+modulo.upload.tool=arduino:avrdude
 modulo.upload.protocol=avr109
 modulo.upload.maximum_size=28672
 modulo.upload.maximum_data_size=2560

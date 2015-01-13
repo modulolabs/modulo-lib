@@ -2,116 +2,14 @@
 #include "Modulo.h"
 #include "Arduino.h"
 
-uint8_t
-_crc8_ccitt_update (uint8_t inCrc, uint8_t inData)
+ModThermocouple::ModThermocouple() :
+    ModBase("co.modulo.thermocouple")
 {
-  uint8_t i;
-  uint8_t data;
-  data = inCrc ^ inData;
-  for ( i = 0; i < 8; i++ ) {
-    if (( data & 0x80 ) != 0 ) {
-      data <<= 1;
-      data ^= 0x07;
-    } else {
-      data <<= 1;
-    }
-  }
-  return data;
 }
 
-
-bool _moduloTransfer(
-    uint8_t address, uint8_t command, uint8_t *sendData, uint8_t sendLen,
-    uint8_t *receiveData, uint8_t receiveLen)
+ModThermocouple::ModThermocouple(uint16_t deviceID) :
+    ModBase("co.modulo.thermocouple", deviceID)
 {
-  // Star the transmit CRC with the address in the upper 7 bits
-  uint8_t crc =  _crc8_ccitt_update(0, address << 1);
-  
-  Wire.beginTransmission(address);
-
-  // Send the command and length
-  Wire.write(command);
-  Wire.write(sendLen);
-  crc = _crc8_ccitt_update(crc, command);
-  crc = _crc8_ccitt_update(crc, sendLen);
-  
-  // Send the data
-  for (int i=0; i < sendLen; i++) {
-    Wire.write(sendData[i]);
-    crc = _crc8_ccitt_update(crc, sendData[i]);
-  }
-
-  // Send the CRC and end the transmission
-  Wire.write(crc);
-  if (Wire.endTransmission() != 0) {
-      Serial.println("Write failed");
-      return false;
-  }
-
-  //Wire.endTransmission(false /*stop*/);
-
-  // Attiny48/88 seems to require a longer delay between a stop and start
-  // The extra delay isn't needed when using repeated starts, however.
-    delayMicroseconds(1000);
-
-  if (receiveLen == 0) {
-    return true;
-  }
-  
-  // Request receiveLen data bytes plus 1 CRC byte.
-  if (Wire.requestFrom((int)address, (int)receiveLen+1) != receiveLen+1) {
-      return false;
-  }
-  
-  // Start the CRC with the I2C address byte (address in upper 7, 1 in lsb)
-  crc = _crc8_ccitt_update(0, address << 1 | 1);
-  
-  // Receive the data
-  for (int i=0; i < 32 and i < receiveLen; i++) {
-    receiveData[i] = Wire.read();
-    
-    // XXX: Hack to detect the end of variable length strings.
-    if (i > 0 and receiveLen == 31 and
-        receiveData[i-1] == 0 and receiveData[i] == crc) {
-        return true;
-    }
-    crc = _crc8_ccitt_update(crc, receiveData[i]);
-  }
-  
-  // Receive the CRC.
-  uint8_t receivedCRC = Wire.read();
-
-  if(crc != receivedCRC) {
-      Serial.println("crc failed");
-  }
-  
-  // Check the CRC.
-  return (crc == receivedCRC);
-}
-
-bool moduloTransfer(
-    uint8_t address, uint8_t command, uint8_t *sendData, uint8_t sendLen,
-    uint8_t *receiveData, uint8_t receiveLen, uint8_t retries)
-{
-    for (int i=0; i < retries; i++) {
-        if (_moduloTransfer(address,command,sendData,sendLen,receiveData,receiveLen)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-
-uint16_t ModBase::GetDeviceID(uint8_t address) {
-    uint8_t receivedData[2] = {0,0};
-    if (!moduloTransfer(address, 254, 0, 0, receivedData, 2)) {
-        return -1;
-    }
-    return receivedData[1] << 8 | receivedData[0];
-}
-
-ModThermocouple::ModThermocouple(uint8_t address) : _address(address) {
-
 }
 
 #define FUNCTION_GET_TEMPERATURE_A 0
@@ -119,29 +17,34 @@ ModThermocouple::ModThermocouple(uint8_t address) : _address(address) {
 
 const float ModThermocouple::InvalidTemperature = 6553.5;
   
-float ModThermocouple::getTemperature() {
+int16_t ModThermocouple::getTemperature() {
+    
     uint8_t receiveData[2] = {0,0};
-
-    if (!moduloTransfer(_address, FUNCTION_GET_TEMPERATURE_A, 0, 0,
+    
+    if (!moduloTransfer(getAddress(), FUNCTION_GET_TEMPERATURE_A, 0, 0,
                         receiveData, 2)) {
+        return 0;
         // Handle error?
     }
-    uint16_t value = receiveData[0] | (receiveData[1] << 8);
-    return value/10.0;
+    int16_t value = receiveData[0] | (receiveData[1] << 8);
+    return value;
 }
 
 #define FUNCTION_GET_TIME 0
 #define FUNCTION_SET_TIME 1
 #define FUNCTION_GET_TEMPERATURE 2
 
-ModTime::ModTime(uint8_t address) : _address(address) {
+ModClock::ModClock(uint16_t deviceID) : ModBase("co.modulo.clock", deviceID) {
 }
 
-ModTime::Time ModTime::getTime() {
+ModClock::ModClock() : ModBase("co.modulo.clock") {
+}
+
+ModClock::Time ModClock::getTime() {
     uint8_t receivedData[9];
     Time t;
     
-    if (moduloTransfer(_address, FUNCTION_GET_TIME, 0, 0,
+    if (moduloTransfer(getAddress(), FUNCTION_GET_TIME, 0, 0,
                         receivedData, 9)) {
         t.seconds = receivedData[0];
         t.minutes = receivedData[1];
@@ -149,7 +52,7 @@ ModTime::Time ModTime::getTime() {
         t.days = receivedData[3];
         t.weekdays = receivedData[4];
         t.months = receivedData[5];
-        t.years = receivedData[6];
+        t.years = receivedData[6] + 2000;
         t.clockSet = receivedData[7];
         t.battLow = receivedData[8];
     }
@@ -158,12 +61,26 @@ ModTime::Time ModTime::getTime() {
     return t;
 }
 
-void ModTime::setTime(const Time &t) {
+void ModClock::setTime(const Time &t) {
+    uint8_t sendData[7];
+    sendData[0] = t.seconds;
+    sendData[1] = t.minutes;
+    sendData[2] = t.hours;
+    sendData[3] = t.days;
+    sendData[4] = t.weekdays;
+    sendData[5] = t.months;
+    sendData[6] = t.years - 2000;
 
+    moduloTransfer(getAddress(), FUNCTION_SET_TIME, sendData, 7, 0, 0);
 }
   
-float ModTime::getTemperature() {
-
+float ModClock::getTemperature() {
+    uint8_t receiveData[2] = {0,0};
+    if (!moduloTransfer(getAddress(), FUNCTION_GET_TEMPERATURE, 0, 0, receiveData, 2)) {
+        return 0;
+    }
+    int16_t tenths = (receiveData[0] | receiveData[1] << 8);
+    return tenths/10.0;
 }
 
 

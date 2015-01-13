@@ -2,13 +2,10 @@
 #define MODULO_H
 
 #include "ModIO.h"
+#include "Broadcast.h"
+#include "ModuloMiniDisplay.h"
+#include "ModuloBase.h"
 
-bool moduloTransfer(
-    uint8_t address, uint8_t command, uint8_t *sendData, uint8_t sendLen,
-    uint8_t *receiveData, uint8_t receiveLen, uint8_t retries=3);
-    
-    
-    
 class ModDPad {
  public:
     ModDPad(uint8_t address);
@@ -28,15 +25,10 @@ class ModDPad {
     uint8_t _address, _state, _pressed, _released;
 };
 
-class ModBase {
+class ModClock : public ModBase {
  public:
-    uint16_t GetDeviceID(uint8_t address);
-};
-
-class ModTime : public ModBase {
-public:
-  struct Time {
-        Time() : seconds(0), minutes(0), hours(0), days(0), weekdays(0), months(0), years(0), clockSet(false), battLow(false) {}
+    struct Time {
+    Time() : seconds(0), minutes(0), hours(0), days(0), weekdays(0), months(0), years(0), clockSet(false), battLow(false) {}
         
         uint8_t seconds;
         uint8_t minutes;
@@ -44,20 +36,21 @@ public:
         uint8_t days;
         uint8_t weekdays;
         uint8_t months;
-        uint8_t years;
+        uint16_t years;
         bool clockSet;
         bool battLow;
-  };
+    };
 
-  ModTime(uint8_t address);
+    ModClock();
+    explicit ModClock(uint16_t deviceID);
 
-  Time getTime();
-  void setTime(const Time &t);
+    Time getTime();
+    void setTime(const Time &t);
   
-  float getTemperature();
+    float getTemperature();
   
-private:
-  uint8_t _address;
+ private:
+
 };
 
 class ModKnob {
@@ -80,16 +73,14 @@ public:
     bool _buttonState, _buttonPressed, _buttonReleased;
 };
 
-class ModThermocouple {
-public:
-  ModThermocouple(uint8_t address);
+class ModThermocouple : public ModBase {
+ public:
+    explicit ModThermocouple(uint16_t deviceID);
+    ModThermocouple();
   
-  float getTemperature();
-
-  static const float InvalidTemperature;
-
-private:
-  uint8_t _address;
+    int16_t getTemperature();
+    
+    static const float InvalidTemperature;
 };
 
 class ModAC {
@@ -137,9 +128,6 @@ class ModMotor {
   
   // Return the number of steps completed since the last call to step()
   int16_t getStepsCompleted();
-  
-  
-  
 };
 
 #endif
