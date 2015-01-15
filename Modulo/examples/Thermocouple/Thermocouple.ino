@@ -1,8 +1,8 @@
 #include "Modulo.h"
 #include "Wire.h"
 
-ModuloMiniDisplay display(101);
-ModThermocouple thermocouple;
+MiniDisplayModule display;
+ThermocoupleModule thermocouple;
   
 void setup() {
   // put your setup code here, to run once:
@@ -19,7 +19,6 @@ void loop() {
   display.setCursor(10,10);
   display.fillScreen(0);
   display.println("Thermocouple");
- 
 
   display.print("   Device ID: 0x");
   display.println(thermocouple.getDeviceID(), HEX);
