@@ -2,7 +2,7 @@
 #include "Modulo.h"
 
 
-void DisplayTime(ModuloMiniDisplay &display, ModClock::Time time) {
+void DisplayTime(MiniDisplayModule &display, ClockModule::Time time) {
     display.setCursor(15, 22);
     display.setTextSize(3);
     
@@ -29,7 +29,7 @@ void DisplayTime(ModuloMiniDisplay &display, ModClock::Time time) {
     display.print(pm ? "pm" : "am");
 }
 
-void DisplayDate(ModuloMiniDisplay &display, uint16_t year, uint8_t month, uint8_t day) {
+void DisplayDate(MiniDisplayModule &display, uint16_t year, uint8_t month, uint8_t day) {
     display.setTextSize(1);
 
     month = min(max(month,1), 12);
@@ -41,7 +41,7 @@ void DisplayDate(ModuloMiniDisplay &display, uint16_t year, uint8_t month, uint8
 
     int len = strlen(monthName) + (day >= 10) + 8;
     int charWidth = 6;
-    int xPos = (ModuloMiniDisplay::WIDTH-len*charWidth)/2;
+    int xPos = (MiniDisplayModule::WIDTH-len*charWidth)/2;
 
     display.setCursor(xPos, 7);
     display.print(monthName);
@@ -51,36 +51,36 @@ void DisplayDate(ModuloMiniDisplay &display, uint16_t year, uint8_t month, uint8
     display.print(year);
 }
 
-void DisplaySeconds(ModuloMiniDisplay &display, double time) {
+void DisplaySeconds(MiniDisplayModule &display, double time) {
     int32_t ms = time;
-    int i = (ModuloMiniDisplay::WIDTH*2 + ModuloMiniDisplay::HEIGHT*2)*(ms % 60000)/60000;
+    int i = (MiniDisplayModule::WIDTH*2 + MiniDisplayModule::HEIGHT*2)*(ms % 60000)/60000;
     
-    for (int x = ModuloMiniDisplay::WIDTH/2; x < ModuloMiniDisplay::WIDTH; x++) {
+    for (int x = MiniDisplayModule::WIDTH/2; x < MiniDisplayModule::WIDTH; x++) {
         if (--i < 0) {
             return;
         }
         display.drawPixel(x, 0, WHITE);
     }
-    for (int y = 0; y < ModuloMiniDisplay::HEIGHT; y++) {
+    for (int y = 0; y < MiniDisplayModule::HEIGHT; y++) {
         if (--i < 0) {
             return;
         }
-        display.drawPixel(ModuloMiniDisplay::WIDTH-1, y, WHITE);
+        display.drawPixel(MiniDisplayModule::WIDTH-1, y, WHITE);
     }
-    for (int x = ModuloMiniDisplay::WIDTH-1; x >= 0; x--) {
+    for (int x = MiniDisplayModule::WIDTH-1; x >= 0; x--) {
         if (--i < 0) {
             return;
         }
-        display.drawPixel(x, ModuloMiniDisplay::HEIGHT-1, WHITE);
+        display.drawPixel(x, MiniDisplayModule::HEIGHT-1, WHITE);
     }
-    for (int y = ModuloMiniDisplay::HEIGHT-1; y >= 0; y--) {
+    for (int y = MiniDisplayModule::HEIGHT-1; y >= 0; y--) {
         if (--i < 0) {
             return;
         }
         display.drawPixel(0, y, WHITE);
     }
     
-    for (int x = 0; x < ModuloMiniDisplay::WIDTH/2; x++) {
+    for (int x = 0; x < MiniDisplayModule::WIDTH/2; x++) {
         if (--i < 0) {
             return;
         }
@@ -89,8 +89,8 @@ void DisplaySeconds(ModuloMiniDisplay &display, double time) {
 
 }
 
-void DisplayTemperature(ModuloMiniDisplay &display, float temp) {
-    int xPos = (ModuloMiniDisplay::WIDTH - 19*6)/2;
+void DisplayTemperature(MiniDisplayModule &display, float temp) {
+    int xPos = (MiniDisplayModule::WIDTH - 19*6)/2;
     int tempF = temp*9/5.0 + 32;
     display.setCursor(xPos,50);
     display.print("Temperature: ");
@@ -98,7 +98,7 @@ void DisplayTemperature(ModuloMiniDisplay &display, float temp) {
     display.print("\xF7" "F");
 }
 
-void DisplayFont(ModuloMiniDisplay &display) {
+void DisplayFont(MiniDisplayModule &display) {
     display.setCursor(0,0);
     for(int i=150; i < 256; i++) {
         display.print((char)i);
@@ -106,10 +106,10 @@ void DisplayFont(ModuloMiniDisplay &display) {
     display.print((char)(256-15+6));
 }
 
-ModuloMiniDisplay display;
-ModClock clockModule;
+MiniDisplayModule display;
+ClockModule clockModule;
 
-void PrintDateAndTime(const ModClock::Time &t)
+void PrintDateAndTime(const ClockModule::Time &t)
 {
     Serial.print(t.months);
     Serial.print("/");
@@ -131,7 +131,7 @@ bool GetTimeAndDate() {
     
     Serial.setTimeout(0);
     
-    ModClock::Time t;
+    ClockModule::Time t;
     t.months = Serial.parseInt();
     t.days = Serial.parseInt();
     t.years = Serial.parseInt();
@@ -168,6 +168,7 @@ void setup() {
     // put your setup code here, to run once:
     Wire.begin();
     Serial.begin(9600);
+    ModuloSetHighBitRate();
 }
 
 
@@ -175,7 +176,9 @@ void setup() {
 void loop() {
     uint32_t time = millis();
 
-    ModClock::Time t = clockModule.getTime();
+    ModuloSetHighBitRate();
+
+    ClockModule::Time t = clockModule.getTime();
     
     display.fillScreen(0);
     DisplayTime(display, t);

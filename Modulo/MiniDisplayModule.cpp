@@ -23,7 +23,7 @@ All text above, and the splash screen must be included in any redistribution
 
 #include <Wire.h>
 
-#include "ModuloMiniDisplay.h"
+#include "MiniDisplayModule.h"
 #include "Modulo.h"
 
 #define SET_PIXELS_COMMAND 0
@@ -33,7 +33,7 @@ All text above, and the splash screen must be included in any redistribution
 // cause it to not be used, and the compiler will optimize it away.
 #define USE_SPLASH_SCREEN 0
 
-const uint8_t spashScreen[ModuloMiniDisplay::WIDTH*ModuloMiniDisplay::HEIGHT/8] PROGMEM = {
+const uint8_t spashScreen[MiniDisplayModule::WIDTH*MiniDisplayModule::HEIGHT/8] PROGMEM = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, \
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, \
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, \
@@ -91,36 +91,34 @@ const uint8_t spashScreen[ModuloMiniDisplay::WIDTH*ModuloMiniDisplay::HEIGHT/8] 
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 
-ModuloMiniDisplay::ModuloMiniDisplay() :
-    ModuloGFX(ModuloMiniDisplay::WIDTH, ModuloMiniDisplay::HEIGHT),
-    ModBase("co.modulo.MiniDisplay")
+MiniDisplayModule::MiniDisplayModule() :
+    ModuloGFX(MiniDisplayModule::WIDTH, MiniDisplayModule::HEIGHT),
+    Module("co.modulo.MiniDisplay"),
+    _currentBuffer(_bufferA)
 {
-    setTextColor(WHITE, BLACK);
-#if USE_SPLASH_SCREEN
-    for (int i=0; i < WIDTH*HEIGHT/8 ; i++) {
-        _buffer[i] = pgm_read_byte(&(spashScreen[i]));
-    }
-#else
-    clearDisplay();
-#endif
+    _init();
 }
 
-ModuloMiniDisplay::ModuloMiniDisplay(uint16_t deviceID) :
-    ModuloGFX(ModuloMiniDisplay::WIDTH, ModuloMiniDisplay::HEIGHT),
-    ModBase("co.modulo.MiniDisplay", deviceID)
+MiniDisplayModule::MiniDisplayModule(uint16_t deviceID) :
+    ModuloGFX(MiniDisplayModule::WIDTH, MiniDisplayModule::HEIGHT),
+    Module("co.modulo.MiniDisplay", deviceID),
+    _currentBuffer(_bufferA)
 {
-    setTextColor(WHITE, BLACK);
-#if USE_SPLASH_SCREEN
-    for (int i=0; i < WIDTH*HEIGHT/8 ; i++) {
-        _buffer[i] = pgm_read_byte(&(spashScreen[i]));
-    }
-#else
-    clearDisplay();
-#endif
-
+    _init();
 }
 
-void ModuloMiniDisplay::drawPixel(int16_t x, int16_t y, uint16_t color) {
+void MiniDisplayModule::_init() {
+    setTextColor(WHITE, BLACK);
+    
+    for (int i=0; i < WIDTH*HEIGHT/8 ; i++) {
+#if USE_SPLASH_SCREEN
+        _bufferA[i] = pgm_read_byte(&(spashScreen[i]));
+#endif
+    }
+}
+
+
+void MiniDisplayModule::drawPixel(int16_t x, int16_t y, uint16_t color) {
   if ((x < 0) || (x >= width()) || (y < 0) || (y >= height()))
     return;
 
@@ -143,19 +141,19 @@ void ModuloMiniDisplay::drawPixel(int16_t x, int16_t y, uint16_t color) {
   // x is which column
   switch (color)  {
   case WHITE:
-      _buffer[x+ (y/8)*ModuloMiniDisplay::WIDTH] |=  (1 << (y&7));
+      _currentBuffer[x+ (y/8)*MiniDisplayModule::WIDTH] |=  (1 << (y&7));
       break;
   case BLACK:
-      _buffer[x+ (y/8)*ModuloMiniDisplay::WIDTH] &= ~(1 << (y&7));
+      _currentBuffer[x+ (y/8)*MiniDisplayModule::WIDTH] &= ~(1 << (y&7));
       break; 
   case INVERSE:
-      _buffer[x+ (y/8)*ModuloMiniDisplay::WIDTH] ^=  (1 << (y&7));
+      _currentBuffer[x+ (y/8)*MiniDisplayModule::WIDTH] ^=  (1 << (y&7));
       break; 
   }
     
 }
 
-void ModuloMiniDisplay::invertDisplay(uint8_t i) {
+void MiniDisplayModule::invertDisplay(uint8_t i) {
     // XXX: unimplemented
 }
 
@@ -163,7 +161,7 @@ void ModuloMiniDisplay::invertDisplay(uint8_t i) {
 // Activate a right handed scroll for rows start through stop
 // Hint, the display is 16 rows tall. To scroll the whole display, run:
 // display.scrollright(0x00, 0x0F) 
-void ModuloMiniDisplay::startscrollright(uint8_t start, uint8_t stop){
+void MiniDisplayModule::startscrollright(uint8_t start, uint8_t stop){
     // XXX: unimplemented
 }
 
@@ -171,7 +169,7 @@ void ModuloMiniDisplay::startscrollright(uint8_t start, uint8_t stop){
 // Activate a right handed scroll for rows start through stop
 // Hint, the display is 16 rows tall. To scroll the whole display, run:
 // display.scrollright(0x00, 0x0F) 
-void ModuloMiniDisplay::startscrollleft(uint8_t start, uint8_t stop){
+void MiniDisplayModule::startscrollleft(uint8_t start, uint8_t stop){
     // XXX: unimplemented
 }
 
@@ -179,7 +177,7 @@ void ModuloMiniDisplay::startscrollleft(uint8_t start, uint8_t stop){
 // Activate a diagonal scroll for rows start through stop
 // Hint, the display is 16 rows tall. To scroll the whole display, run:
 // display.scrollright(0x00, 0x0F) 
-void ModuloMiniDisplay::startscrolldiagright(uint8_t start, uint8_t stop){
+void MiniDisplayModule::startscrolldiagright(uint8_t start, uint8_t stop){
     // XXX: unimplemented
 }
 
@@ -187,29 +185,29 @@ void ModuloMiniDisplay::startscrolldiagright(uint8_t start, uint8_t stop){
 // Activate a diagonal scroll for rows start through stop
 // Hint, the display is 16 rows tall. To scroll the whole display, run:
 // display.scrollright(0x00, 0x0F) 
-void ModuloMiniDisplay::startscrolldiagleft(uint8_t start, uint8_t stop){
+void MiniDisplayModule::startscrolldiagleft(uint8_t start, uint8_t stop){
     // XXX: unimplemented
 }
 
-void ModuloMiniDisplay::stopscroll(void){
+void MiniDisplayModule::stopscroll(void){
     // XXX: unimplemented
 }
 
 // Dim the display
 // dim = true: display is dimmed
 // dim = false: display is normal
-void ModuloMiniDisplay::dim(boolean dim) {
+void MiniDisplayModule::dim(boolean dim) {
     // XXX: unimplemented
 }
 
 
-void ModuloMiniDisplay::display(void) {
+void MiniDisplayModule::display(void) {
     uint8_t buffer[18];
     for (int page=0; page < 8; page++) {
         for (int x=0; x < WIDTH; x += 16) {
             buffer[0] = page;
             buffer[1] = x;
-            memcpy(buffer+2, &_buffer[page*WIDTH + x], 16);
+            memcpy(buffer+2, &_currentBuffer[page*WIDTH + x], 16);
             moduloTransfer(getAddress(), SET_PIXELS_COMMAND, buffer, 18, 0, 0);
         }
     }
@@ -217,12 +215,12 @@ void ModuloMiniDisplay::display(void) {
 }
 
 // clear everything
-void ModuloMiniDisplay::clearDisplay(void) {
-    memset(_buffer, 0, (ModuloMiniDisplay::WIDTH*ModuloMiniDisplay::HEIGHT/8));
+void MiniDisplayModule::clearDisplay(void) {
+    memset(_currentBuffer, 0, (MiniDisplayModule::WIDTH*MiniDisplayModule::HEIGHT/8));
 }
 
 
-void ModuloMiniDisplay::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) {
+void MiniDisplayModule::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) {
   boolean bSwap = false;
   switch(rotation) { 
     case 0:
@@ -256,7 +254,7 @@ void ModuloMiniDisplay::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t 
   }
 }
 
-void ModuloMiniDisplay::drawFastHLineInternal(int16_t x, int16_t y, int16_t w, uint16_t color) {
+void MiniDisplayModule::drawFastHLineInternal(int16_t x, int16_t y, int16_t w, uint16_t color) {
     // Do bounds/limit checks
     if(y < 0 || y >= HEIGHT) { return; }
 
@@ -275,9 +273,9 @@ void ModuloMiniDisplay::drawFastHLineInternal(int16_t x, int16_t y, int16_t w, u
     if(w <= 0) { return; }
 
     // set up the pointer for  movement through the buffer
-    register uint8_t *pBuf = _buffer;
+    register uint8_t *pBuf = _currentBuffer;
     // adjust the buffer pointer for the current row
-    pBuf += ((y/8) * ModuloMiniDisplay::WIDTH);
+    pBuf += ((y/8) * MiniDisplayModule::WIDTH);
     // and offset x columns in
     pBuf += x;
 
@@ -303,7 +301,7 @@ void ModuloMiniDisplay::drawFastHLineInternal(int16_t x, int16_t y, int16_t w, u
     }
 }
 
-void ModuloMiniDisplay::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color) {
+void MiniDisplayModule::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color) {
     bool bSwap = false;
     switch(rotation) { 
     case 0:
@@ -337,7 +335,7 @@ void ModuloMiniDisplay::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t 
 }
 
 
-void ModuloMiniDisplay::drawFastVLineInternal(int16_t x, int16_t __y, int16_t __h, uint16_t color) {
+void MiniDisplayModule::drawFastVLineInternal(int16_t x, int16_t __y, int16_t __h, uint16_t color) {
     // do nothing if we're off the left or right side of the screen
     if(x < 0 || x >= WIDTH) {
         return;
@@ -366,9 +364,9 @@ void ModuloMiniDisplay::drawFastVLineInternal(int16_t x, int16_t __y, int16_t __
 
 
     // set up the pointer for fast movement through the buffer
-    register uint8_t *pBuf = _buffer;
+    register uint8_t *pBuf = _currentBuffer;
     // adjust the buffer pointer for the current row
-    pBuf += ((y/8) * ModuloMiniDisplay::WIDTH);
+    pBuf += ((y/8) * MiniDisplayModule::WIDTH);
     // and offset x columns in
     pBuf += x;
 
@@ -407,7 +405,7 @@ void ModuloMiniDisplay::drawFastVLineInternal(int16_t x, int16_t __y, int16_t __
 
         h -= mod;
 
-        pBuf += ModuloMiniDisplay::WIDTH;
+        pBuf += MiniDisplayModule::WIDTH;
     }
 
 
@@ -419,7 +417,7 @@ void ModuloMiniDisplay::drawFastVLineInternal(int16_t x, int16_t __y, int16_t __
                 *pBuf =~ (*pBuf);
 
                 // adjust the buffer forward 8 rows worth of data
-                pBuf += ModuloMiniDisplay::WIDTH;
+                pBuf += MiniDisplayModule::WIDTH;
 
                 // adjust h & y (there's got to be a faster way for me to do this, but this should still help a fair bit for now)
                 h -= 8;
@@ -434,7 +432,7 @@ void ModuloMiniDisplay::drawFastVLineInternal(int16_t x, int16_t __y, int16_t __
                 *pBuf = val;
 
                 // adjust the buffer forward 8 rows worth of data
-                pBuf += ModuloMiniDisplay::WIDTH;
+                pBuf += MiniDisplayModule::WIDTH;
 
                 // adjust h & y (there's got to be a faster way for me to do this, but this should still help a fair bit for now)
                 h -= 8;

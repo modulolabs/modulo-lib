@@ -9,21 +9,22 @@
   #define WIRE_WRITE Wire.send
 #endif
 
+#include "Module.h"
 #include "ModuloGFX.h"
-#include "ModuloBase.h"
+
 
 #define BLACK 0
 #define WHITE 1
 #define INVERSE 2
 
-
-class ModuloMiniDisplay : public ModuloGFX, public ModBase {
+/// A tiny OLED screen
+class MiniDisplayModule : public Module, public ModuloGFX {
 public:
     static const int WIDTH = 128;
     static const int HEIGHT = 64;
 
-    ModuloMiniDisplay();
-    ModuloMiniDisplay(uint16_t address);
+    MiniDisplayModule();
+    MiniDisplayModule(uint16_t address);
 
     void clearDisplay(void);
     void invertDisplay(uint8_t i);
@@ -44,7 +45,10 @@ public:
     virtual void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
 
  private:
-    uint8_t _buffer[WIDTH*HEIGHT/8];
+    uint8_t *_currentBuffer;
+    uint8_t _bufferA[WIDTH*HEIGHT/8];
+
+    void _init();
     
     inline void drawFastVLineInternal(int16_t x, int16_t y, int16_t h, uint16_t color) __attribute__((always_inline));
     inline void drawFastHLineInternal(int16_t x, int16_t y, int16_t w, uint16_t color) __attribute__((always_inline));

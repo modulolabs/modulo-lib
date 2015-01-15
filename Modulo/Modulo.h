@@ -1,134 +1,34 @@
 #ifndef MODULO_H
 #define MODULO_H
 
-#include "ModIO.h"
-#include "Broadcast.h"
-#include "ModuloMiniDisplay.h"
-#include "ModuloBase.h"
+#include "IOModule.h"
+#include "MiniDisplayModule.h"
+#include "KnobModule.h"
+#include "ClockModule.h"
+#include "DPadModule.h"
+#include "ThermocoupleModule.h"
 
-class ModDPad {
- public:
-    ModDPad(uint8_t address);
+void ModuloSetHighBitRate();
 
-    bool sync();
+void ModuloGlobalReset();
 
-    bool getState(int button);
-    uint8_t getStates();
+uint16_t ModuloGetNextDeviceID(uint16_t lastDeviceID);
 
-    bool getPressed(int button);
-    uint8_t getPresses();
+bool ModuloSetAddress(uint16_t deviceID, uint8_t address);
 
-    bool getReleased(int button);
-    uint8_t getReleases();
+uint8_t ModuloGetAddress(uint16_t deviceID);
 
- private:
-    uint8_t _address, _state, _pressed, _released;
-};
+bool ModuloGetDeviceType(uint16_t deviceID, char *deviceType, uint8_t maxLen);
 
-class ModClock : public ModBase {
- public:
-    struct Time {
-    Time() : seconds(0), minutes(0), hours(0), days(0), weekdays(0), months(0), years(0), clockSet(false), battLow(false) {}
-        
-        uint8_t seconds;
-        uint8_t minutes;
-        uint8_t hours;
-        uint8_t days;
-        uint8_t weekdays;
-        uint8_t months;
-        uint16_t years;
-        bool clockSet;
-        bool battLow;
-    };
+bool ModuloGetCompanyName(uint16_t deviceID, char *deviceType, uint8_t maxLen);
 
-    ModClock();
-    explicit ModClock(uint16_t deviceID);
+bool ModuloGetProductName(uint16_t deviceID, char *deviceType, uint8_t maxLen);
 
-    Time getTime();
-    void setTime(const Time &t);
-  
-    float getTemperature();
-  
- private:
+bool ModuloGetDocURL(uint16_t deviceID, char *deviceType, uint8_t maxLen);
 
-};
-
-class ModKnob {
-
-public:
-    ModKnob(uint8_t address);
-
-    bool setColor(float r, float g, float b);
-    
-    bool sync();
-    bool getButtonState();
-    bool getButtonPressed();
-    bool getButtonReleased();
-  
-    int16_t getPosition();
-  
- private:
-    uint8_t _address;
-    int16_t _position;
-    bool _buttonState, _buttonPressed, _buttonReleased;
-};
-
-class ModThermocouple : public ModBase {
- public:
-    explicit ModThermocouple(uint16_t deviceID);
-    ModThermocouple();
-  
-    int16_t getTemperature();
-    
-    static const float InvalidTemperature;
-};
-
-class ModAC {
-  float getCurrent();
-  void setOutput(float level);
-  
-};
-
-class ModMotor {
-
-  // Set a single channel (0-3) to the specified amount, between 0 and 1.
-  void setChannelOutput(uint8_t channel, float amount);
-  
-  // Set the motor output A to the specified amount, between -1 and 1.
-  // Enables A0 and A1 if necessary.
-  void setMotorA(float amount);
-  
-  // Set the motor output B to the specified amount, between -1 and 1.
-  // Enables B0 and B1 if necessary.
-  void setMotorB(float amount);
-  
-  // Set whether output drivers are enabled on outputs A0 and A1
-  void setEnableA(bool enable);
-  
-  // Set whether output drivers are enabled on outputs B0 and B1
-  void setEnableB(bool enable);
-  
-  // Set the PWM frequency for A0 and A1
-  void setFrequencyA(uint16_t frequency);
-  
-  // Set the PWM frequency for B0 and B1
-  void setFrequencyB(uint16_t frequency);
-  
-  // Set the stepper motor rotation speed
-  void setStepperSpeed(float degPerSecond);
-
-  // Step by the specified number of steps, either forward or back
-  void beginStepper(int16_t steps);
-  
-  // Stop the stepper motor. This will leave the motor engaged
-  void stopStepper();
-  
-  // Disable the stepper motor, allowing it to turn freely.
-  void disableStepper();
-  
-  // Return the number of steps completed since the last call to step()
-  int16_t getStepsCompleted();
-};
+bool moduloTransfer(
+    uint8_t address, uint8_t command, uint8_t *sendData, uint8_t sendLen,
+    uint8_t *receiveData, uint8_t receiveLen, uint8_t retries=3);
 
 #endif
 
