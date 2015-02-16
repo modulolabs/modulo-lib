@@ -185,6 +185,8 @@ void loop() {
     DisplayDate(display, t.years, t.months, t.days);
     DisplaySeconds(display, t.seconds*1000.0);
     DisplayTemperature(display, clockModule.getTemperature());
+
+    GetTimeAndDate();
     
     display.display();
 }
