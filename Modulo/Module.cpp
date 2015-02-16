@@ -55,6 +55,9 @@ void Module::_initAddress() {
         return;
     }
     
-    _address = ++_lastAssignedAddress;
-    ModuloSetAddress(_deviceID, _address);
+    _address = ModuloGetAddress(_deviceID);
+    if (_address == 0) {
+        _address = ++_lastAssignedAddress;
+        ModuloSetAddress(_deviceID, _address);
+    }
 }
