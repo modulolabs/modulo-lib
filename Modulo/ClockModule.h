@@ -3,19 +3,25 @@
 
 #include "Module.h"
 
+class Print;
+
 /// Keeps track of the current time and date, even without power. Also senses the ambient air temperature.
 class ClockModule : public Module {
  public:
     struct Time {
-    Time() : seconds(0), minutes(0), hours(0), days(0), weekdays(0), months(0), years(0), clockSet(false), battLow(false) {}
+    Time() : second(0), minute(0), hour(0), day(0), weekday(0), month(0), year(0), clockSet(false), battLow(false) {}
         
-        uint8_t seconds;
-        uint8_t minutes;
-        uint8_t hours;
-        uint8_t days;
-        uint8_t weekdays;
-        uint8_t months;
-        uint16_t years;
+        void printDay(Print &p);
+        void printDate(Print &p);
+        void printTime(Print &p);
+        
+        uint8_t second;
+        uint8_t minute;
+        uint8_t hour;
+        uint8_t day;
+        uint8_t weekday;
+        uint8_t month;
+        uint16_t year;
         bool clockSet;
         bool battLow;
     };
@@ -33,8 +39,10 @@ class ClockModule : public Module {
     void setTime(const Time &t);
   
     /// Get the current ambient air temperature
-    float getTemperature();
+    float getTemperatureC();
   
+    float getTemperatureF();
+
  private:
 
 };
