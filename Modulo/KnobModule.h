@@ -10,9 +10,11 @@ public:
     KnobModule();
     KnobModule(uint16_t deviceID);
 
-    bool setColor(uint8_t r, uint8_t g, uint8_t b);
+    bool setColor(float r, float g, float b);
+    bool setHSV(float h, float s, float v);
     
     bool getButton();
+    int16_t getAngle();
     int16_t getPosition();
   
  private:
