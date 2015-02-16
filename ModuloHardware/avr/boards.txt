@@ -13,7 +13,7 @@ modulo.upload.disable_flushing=true
 modulo.upload.use_1200bps_touch=true
 modulo.upload.wait_for_upload_port=true
 
-modulo.bootloader.tool=avrdude
+modulo.bootloader.tool=arduino:avrdude
 modulo.bootloader.low_fuses=0xff
 modulo.bootloader.high_fuses=0xd8
 modulo.bootloader.extended_fuses=0xcb
