@@ -1,0 +1,11 @@
+bootloader/lufa-*
+bootloader/Caterina*
+bootloader/*.o
+bootloader/.dep
+bootloader/*.lst
+!bootloader/Caterina.h
+!bootloader/Caterina.c
+
+
+
+
