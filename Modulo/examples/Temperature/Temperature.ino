@@ -1,12 +1,12 @@
-#include "DallasTemperature.h"
+#include "Wire.h"
+#include "Modulo.h"
+
+ControllerModule controller;
 
 void setup() {
-  // put your setup code here, to run once:
-
+    Serial.begin(9600);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-
+    Serial.println(controller.readTemperatureProbe(0));
 }
-
