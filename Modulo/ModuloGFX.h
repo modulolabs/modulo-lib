@@ -30,6 +30,8 @@ class ModuloGFX : public Print {
     fillScreen(uint16_t color),
     invertDisplay(boolean i);
 
+  void printlnCentered(const char *text);
+
   // These exist only with ModuloGFX (no subclass overrides)
   void
     drawCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color),

@@ -426,6 +426,11 @@ void ModuloGFX::write(uint8_t c) {
 #endif
 }
 
+void ModuloGFX::printlnCentered(const char *text) {
+  cursor_x = (_width-strlen(text)*6*textsize)/2;
+  println(text);
+}
+
 // Draw a character
 void ModuloGFX::drawChar(int16_t x, int16_t y, unsigned char c,
 			    uint16_t color, uint16_t bg, uint8_t size) {
