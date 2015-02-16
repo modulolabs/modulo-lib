@@ -27,6 +27,7 @@ All text above, and the splash screen must be included in any redistribution
 #include "Modulo.h"
 
 #define SET_PIXELS_COMMAND 0
+#define GET_BUTTONS_COMMAND 1
 
 // The Adafruit Spash Screen is required for redistribution of the Adafruit
 // drawing code, but it takes up 1k of program space. Setting this to 0 will
@@ -94,7 +95,8 @@ const uint8_t spashScreen[MiniDisplayModule::WIDTH*MiniDisplayModule::HEIGHT/8] 
 MiniDisplayModule::MiniDisplayModule() :
     ModuloGFX(MiniDisplayModule::WIDTH, MiniDisplayModule::HEIGHT),
     Module("co.modulo.MiniDisplay"),
-    _currentBuffer(_bufferA)
+    _forceRedisplay(true),
+    _lastForcedBlock(0)
 {
     _init();
 }
@@ -102,7 +104,8 @@ MiniDisplayModule::MiniDisplayModule() :
 MiniDisplayModule::MiniDisplayModule(uint16_t deviceID) :
     ModuloGFX(MiniDisplayModule::WIDTH, MiniDisplayModule::HEIGHT),
     Module("co.modulo.MiniDisplay", deviceID),
-    _currentBuffer(_bufferA)
+    _forceRedisplay(true),
+    _lastForcedBlock(0)
 {
     _init();
 }
@@ -112,7 +115,7 @@ void MiniDisplayModule::_init() {
     
     for (int i=0; i < WIDTH*HEIGHT/8 ; i++) {
 #if USE_SPLASH_SCREEN
-        _bufferA[i] = pgm_read_byte(&(spashScreen[i]));
+        _buffer[i] = pgm_read_byte(&(spashScreen[i]));
 #endif
     }
 }
@@ -141,17 +144,31 @@ void MiniDisplayModule::drawPixel(int16_t x, int16_t y, uint16_t color) {
   // x is which column
   switch (color)  {
   case WHITE:
-      _currentBuffer[x+ (y/8)*MiniDisplayModule::WIDTH] |=  (1 << (y&7));
+      _buffer[x+ (y/8)*MiniDisplayModule::WIDTH] |=  (1 << (y&7));
       break;
   case BLACK:
-      _currentBuffer[x+ (y/8)*MiniDisplayModule::WIDTH] &= ~(1 << (y&7));
+      _buffer[x+ (y/8)*MiniDisplayModule::WIDTH] &= ~(1 << (y&7));
       break; 
   case INVERSE:
-      _currentBuffer[x+ (y/8)*MiniDisplayModule::WIDTH] ^=  (1 << (y&7));
+      _buffer[x+ (y/8)*MiniDisplayModule::WIDTH] ^=  (1 << (y&7));
       break; 
   }
     
 }
+
+
+bool MiniDisplayModule::getButton(int button) {
+    return getButtons() & _BV(button);
+}
+
+uint8_t MiniDisplayModule::getButtons() {
+    uint8_t receivedData[1] = {0};
+    if (!moduloTransfer(getAddress(), GET_BUTTONS_COMMAND, 0, 0, receivedData, 1)) {
+        return false;
+    }
+    return receivedData[0];
+}
+
 
 void MiniDisplayModule::invertDisplay(uint8_t i) {
     // XXX: unimplemented
@@ -200,23 +217,47 @@ void MiniDisplayModule::dim(boolean dim) {
     // XXX: unimplemented
 }
 
+uint8_t _crc8_ccitt_update (uint8_t inCrc, uint8_t inData);
 
-void MiniDisplayModule::display(void) {
+void MiniDisplayModule::display() {
+    // Data is sent to the display module in blocks that are 8 pixels high (1 page) and
+    // 16 pixels wide. To reduce bandwidth, we only send the blocks that have changed.
+    // We detect changes using a CRC of each block's pixels, which lets us avoid the RAM
+    // cost of an entire second framebuffer.
+    //
+    // Since the pixels can sometimes be different even when the CRCs match, we also
+    // force transmission of one block at each refresh, so that after 64 refreshes we
+    // are guaranteed to have pushed all blocks.
+
     uint8_t buffer[18];
+    uint8_t hashIndex = 0;
+    _lastForcedBlock = (_lastForcedBlock+1)%64;
     for (int page=0; page < 8; page++) {
         for (int x=0; x < WIDTH; x += 16) {
             buffer[0] = page;
             buffer[1] = x;
-            memcpy(buffer+2, &_currentBuffer[page*WIDTH + x], 16);
-            moduloTransfer(getAddress(), SET_PIXELS_COMMAND, buffer, 18, 0, 0);
+            
+            uint8_t newHash = 0;
+            for (int i=0; i < 16; i++) {
+                newHash = _crc8_ccitt_update(newHash, _buffer[page*WIDTH + x + i]);
+            }
+            
+            if (_forceRedisplay or hashIndex == _lastForcedBlock or
+                newHash != _hashes[hashIndex]) {
+                memcpy(buffer+2, &_buffer[page*WIDTH + x], 16);
+                moduloTransfer(getAddress(), SET_PIXELS_COMMAND, buffer, 18, 0, 0);
+            }
+            _hashes[hashIndex] = newHash;
+            hashIndex++;
         }
     }
-    // XXX: unimplemented
+
+    _forceRedisplay = false;
 }
 
 // clear everything
 void MiniDisplayModule::clearDisplay(void) {
-    memset(_currentBuffer, 0, (MiniDisplayModule::WIDTH*MiniDisplayModule::HEIGHT/8));
+    memset(_buffer, 0, (MiniDisplayModule::WIDTH*MiniDisplayModule::HEIGHT/8));
 }
 
 
@@ -273,7 +314,7 @@ void MiniDisplayModule::drawFastHLineInternal(int16_t x, int16_t y, int16_t w, u
     if(w <= 0) { return; }
 
     // set up the pointer for  movement through the buffer
-    register uint8_t *pBuf = _currentBuffer;
+    register uint8_t *pBuf = _buffer;
     // adjust the buffer pointer for the current row
     pBuf += ((y/8) * MiniDisplayModule::WIDTH);
     // and offset x columns in
@@ -364,7 +405,7 @@ void MiniDisplayModule::drawFastVLineInternal(int16_t x, int16_t __y, int16_t __
 
 
     // set up the pointer for fast movement through the buffer
-    register uint8_t *pBuf = _currentBuffer;
+    register uint8_t *pBuf = _buffer;
     // adjust the buffer pointer for the current row
     pBuf += ((y/8) * MiniDisplayModule::WIDTH);
     // and offset x columns in
