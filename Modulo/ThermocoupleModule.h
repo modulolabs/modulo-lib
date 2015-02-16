@@ -9,8 +9,9 @@ class ThermocoupleModule : public Module {
     explicit ThermocoupleModule(uint16_t deviceID);
     ThermocoupleModule();
   
-    int16_t getTemperature();
-    
+    float getTemperatureC();
+    float getTemperatureF();
+
     static const float InvalidTemperature;
 };
 

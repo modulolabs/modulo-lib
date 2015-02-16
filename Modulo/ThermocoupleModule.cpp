@@ -11,21 +11,23 @@ ThermocoupleModule::ThermocoupleModule(uint16_t deviceID) :
 {
 }
 
-#define FUNCTION_GET_TEMPERATURE_A 0
-#define FUNCTION_GET_TEMPERATURE_B 1
+#define FUNCTION_GET_TEMPERATURE 0
 
-const float ThermocoupleModule::InvalidTemperature = 6553.5;
+const float ThermocoupleModule::InvalidTemperature = -1000;
   
-int16_t ThermocoupleModule::getTemperature() {
+float ThermocoupleModule::getTemperatureC() {
     
     uint8_t receiveData[2] = {0,0};
     
-    if (!moduloTransfer(getAddress(), FUNCTION_GET_TEMPERATURE_A, 0, 0,
+    if (!moduloTransfer(getAddress(), FUNCTION_GET_TEMPERATURE, 0, 0,
                         receiveData, 2)) {
         return 0;
         // Handle error?
     }
     int16_t value = receiveData[0] | (receiveData[1] << 8);
-    return value;
+    return value/10.0;
 }
 
+float ThermocoupleModule::getTemperatureF() {
+    return getTemperatureC()*1.8 + 32;
+}
