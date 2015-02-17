@@ -30,8 +30,15 @@ void Module::_initAddress() {
     // Ensure that a global reset has been performed
     static bool _moduloInitialized = false;
     if (!_moduloInitialized) {
-        ModuloGlobalReset();
+
+        // Wait until at least 100ms after startup
+        // so that connected devices can initialize
+        unsigned long t = millis();
+        if (t < 100) {
+            delay(100-t);
+        }
         Wire.begin();
+        ModuloGlobalReset();
         _moduloInitialized = true;
     }
     
