@@ -18,13 +18,12 @@ void loop() {
     display.setCursor(0,0);
     display.fillScreen(0);
 
-    uint8_t buttons = dpad.getButtons();
     // Top
     display.drawTriangle(w/2, h/2,
                          w/2 + size, h/2 - size,
                          w/2 - size, h/2 - size,
                          WHITE);
-    if (buttons & _BV(1)) {
+    if (dpad.getButton(DPadModule::UP)) {
         display.fillTriangle(w/2, h/2,
                              w/2 + size, h/2 - size,
                              w/2 - size, h/2 - size,
@@ -32,7 +31,7 @@ void loop() {
     }
 
     // Bottom
-    if (buttons & _BV(3)) {
+    if (dpad.getButton(DPadModule::DOWN)) {
         display.fillTriangle(w/2, h/2,
                              w/2 + size, h/2 + size,
                              w/2 - size, h/2 + size,
@@ -44,7 +43,7 @@ void loop() {
                          WHITE);
 
     // Right
-    if (buttons & _BV(0)) {
+    if (dpad.getButton(DPadModule::RIGHT)) {
         display.fillTriangle(w/2, h/2,
                              w/2 + size, h/2 - size,
                              w/2 + size, h/2 + size,
@@ -56,7 +55,7 @@ void loop() {
                          WHITE);
 
     // Left
-    if (buttons & _BV(2)) {
+    if (dpad.getButton(DPadModule::LEFT)) {
         display.fillTriangle(w/2, h/2,
                              w/2 - size, h/2 - size,
                              w/2 - size, h/2 + size,
@@ -68,9 +67,7 @@ void loop() {
                          WHITE);
  
 
-    display.fillCircle(w/2, h/2, size/2, (buttons & _BV(4)) ? WHITE : BLACK);
+    display.fillCircle(w/2, h/2, size/2, dpad.getButton(DPadModule::CENTER) ? WHITE : BLACK);
     display.drawCircle(w/2, h/2, size/2, WHITE);    
-
-    display.println(dpad.getButtons(), BIN);
     display.display();
 }
