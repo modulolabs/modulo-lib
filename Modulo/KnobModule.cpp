@@ -89,7 +89,8 @@ int16_t KnobModule::getPosition() {
 }
 
 int16_t KnobModule::getAngle() {
-    int16_t position = getPosition();
-    return (position % 24)*360/24;
+    int16_t position = -getPosition();
+    position = ((position % 24) + 24) % 24;
+    return position*360/24;
 
 }
