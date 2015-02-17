@@ -3,41 +3,55 @@
 
 MiniDisplayModule display;
 KnobModule knob;
-  
+
+int32_t oldKnobPosition = 0;
+float sliderValue = 0;
+
 void setup() {
     // put your setup code here, to run once:
     Serial.begin(9600);
 }
 
-uint16_t frameDuration;
-
 void loop() {
-    // put your main code here, to run repeatedly:
-    Serial.println("loop");
+    int32_t newKnobPosition = knob.getPosition();
+
+    sliderValue = sliderValue + 5*(newKnobPosition-oldKnobPosition);
+    sliderValue = max(0, sliderValue);
+    sliderValue = min(100, sliderValue);
+    oldKnobPosition = newKnobPosition;
+
+
+    float angle = knob.getAngle();
 
     display.setCursor(0,0);
     display.fillScreen(0);
-    display.println(knob.getButton());
-    display.println(knob.getPosition());
-    display.println(frameDuration);
 
-    int32_t pos = knob.getPosition();
     if (knob.getButton()) {
-       knob.setColor(255,0,0);
+        knob.setColor(1,1,1);
     } else {
-        knob.setHSV((pos % 24)/24.0, 1, 1);
-//       knob.setColor(255,(pos % 24)*10,255-((pos % 24)*10));
+        knob.setHSV(knob.getAngle()/360.0, 1, 1);
     }
 
-    float angle = (pos % 24)*2*M_PI/24.0;
-    int len = 30;
-    display.drawLine(display.width()/2,
-                     display.height()/2,
-                     display.width()/2 + round(len*cos(angle)),
-                     display.height()/2 + round(len*sin(angle)), WHITE);
 
-    frameDuration = -millis();
+    // Draw the angle indicator
+    int lineLength = 30;
+    float x = display.width()/3;
+    float y = display.height()/2;
+    display.drawLine(x, y,
+        x+lineLength*cos(angle*M_PI/180),
+        y-lineLength*sin(angle*M_PI/180), WHITE);
+    display.fillCircle(x, y, 3, knob.getButton());
+    display.drawCircle(x, y, 3, WHITE);
+    display.setCursor(0, 0);
+    display.print(knob.getAngle());
+    display.print(char(247));
+
+
+    display.setCursor(display.width()-20, 0);
+    display.print(int(sliderValue));
+    display.drawRect(display.width()-20, 10, 20, display.height()-10, WHITE);
+    display.fillRect(display.width()-20, 10+(display.height()-10)*(1-sliderValue/100.0), 20, display.height()-10, WHITE);
     display.display();
-    frameDuration += millis();
+
 }
 
