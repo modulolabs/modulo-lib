@@ -213,7 +213,7 @@ void MiniDisplayModule::stopscroll(void){
 // Dim the display
 // dim = true: display is dimmed
 // dim = false: display is normal
-void MiniDisplayModule::dim(boolean dim) {
+void MiniDisplayModule::dim(uint8_t dim) {
     // XXX: unimplemented
 }
 
