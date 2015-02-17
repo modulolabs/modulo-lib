@@ -7,12 +7,9 @@ DPadModule dpad;
 void setup() {
     // put your setup code here, to run once:
     Serial.begin(9600);
-    ModuloSetHighBitRate();
 }
 
 void loop() {
-    delay(100);
-
     uint8_t w = MiniDisplayModule::WIDTH;
     uint8_t h = MiniDisplayModule::HEIGHT;
     uint8_t size = 30;

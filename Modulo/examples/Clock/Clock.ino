@@ -6,9 +6,9 @@ void DisplayTime(MiniDisplayModule &display, ClockModule::Time time) {
     display.setCursor(15, 22);
     display.setTextSize(3);
     
-    uint8_t hours = time.hours;
-    uint8_t minutes = time.minutes;
-    uint8_t seconds = time.seconds;
+    uint8_t hours = time.hour;
+    uint8_t minutes = time.minute;
+    uint8_t seconds = time.second;
     bool pm = hours >= 12;
     
     hours = hours % 12;
@@ -111,17 +111,17 @@ ClockModule clockModule;
 
 void PrintDateAndTime(const ClockModule::Time &t)
 {
-    Serial.print(t.months);
+    Serial.print(t.month);
     Serial.print("/");
-    Serial.print(t.days);
+    Serial.print(t.day);
     Serial.print("/");
-    Serial.print(t.years);
+    Serial.print(t.year);
     Serial.print(" ");
-    Serial.print(t.hours);
+    Serial.print(t.hour);
     Serial.print(":");
-    Serial.print(t.minutes);
+    Serial.print(t.minute);
     Serial.print(":");
-    Serial.print(t.seconds);
+    Serial.print(t.second);
 }
 
 bool GetTimeAndDate() {
@@ -132,21 +132,21 @@ bool GetTimeAndDate() {
     Serial.setTimeout(0);
     
     ClockModule::Time t;
-    t.months = Serial.parseInt();
-    t.days = Serial.parseInt();
-    t.years = Serial.parseInt();
-    t.hours = Serial.parseInt();
-    t.minutes = Serial.parseInt();
-    t.seconds = Serial.parseInt();
+    t.month = Serial.parseInt();
+    t.day = Serial.parseInt();
+    t.year = Serial.parseInt();
+    t.hour = Serial.parseInt();
+    t.minute = Serial.parseInt();
+    t.second = Serial.parseInt();
 
       
     while (Serial.read() != -1)
         ;
     
-    if (t.years == 0) {
+    if (t.year == 0) {
         Serial.println();
         Serial.print("The temperature is: ");
-        Serial.print(clockModule.getTemperature());
+        Serial.print(clockModule.getTemperatureC());
         Serial.println("C");
         Serial.print("The current time is: ");
         t = clockModule.getTime();
@@ -182,9 +182,9 @@ void loop() {
     
     display.fillScreen(0);
     DisplayTime(display, t);
-    DisplayDate(display, t.years, t.months, t.days);
-    DisplaySeconds(display, t.seconds*1000.0);
-    DisplayTemperature(display, clockModule.getTemperature());
+    DisplayDate(display, t.year, t.month, t.day);
+    DisplaySeconds(display, t.second*1000.0);
+    DisplayTemperature(display, clockModule.getTemperatureF());
 
     GetTimeAndDate();
     
