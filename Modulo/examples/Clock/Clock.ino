@@ -91,10 +91,9 @@ void DisplaySeconds(MiniDisplayModule &display, double time) {
 
 void DisplayTemperature(MiniDisplayModule &display, float temp) {
     int xPos = (MiniDisplayModule::WIDTH - 19*6)/2;
-    int tempF = temp*9/5.0 + 32;
     display.setCursor(xPos,50);
     display.print("Temperature: ");
-    display.print(tempF);
+    display.print(int(temp));
     display.print("\xF7" "F");
 }
 
