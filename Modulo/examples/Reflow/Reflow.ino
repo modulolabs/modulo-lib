@@ -26,10 +26,10 @@ enum Phase {
 Phase phase = IdlePhase;
 
 float preheatTemp = 130;
-float soakDuration = 30;
+float soakDuration = 45;
 float liquidusTemp = 180;
-float peakTemp = 210;
-float peakDuration = 10;
+float peakTemp = 215;
+float peakDuration = 30;
 float cooldownTemp = 50;
 
 float preheatHue = .2;
