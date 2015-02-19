@@ -40,8 +40,10 @@ void loop() {
     display.drawLine(x, y,
         x+lineLength*cos(angle*M_PI/180),
         y-lineLength*sin(angle*M_PI/180), WHITE);
-    display.fillCircle(x, y, 3, knob.getButton());
-    display.drawCircle(x, y, 3, WHITE);
+    
+    display.fillCircle(x, y, 10, knob.getButton());
+    display.drawCircle(x, y, 10, WHITE);
+
     display.setCursor(0, 0);
     display.print(knob.getAngle());
     display.print(char(247));
