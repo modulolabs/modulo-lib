@@ -5,11 +5,11 @@
 #define BUFFER_SIZE 32
 
 
-void setup() {
-    Serial.begin(9600);
-    Wire.begin();
-    pinMode(LED_BUILTIN, OUTPUT);
-}
+MiniDisplayModule display;
+
+int page = 255;
+bool serialConnected = false;
+bool buttonWasPressed = false;
 
 void processModuloTransfer() {
     uint8_t buffer[BUFFER_SIZE];
@@ -38,76 +38,77 @@ void processModuloTransfer() {
     }
 }
 
-MiniDisplayModule display;
+void showWelcomeScreen() {
+    uint16_t deviceID = ModuloGetNextDeviceID(0);
+    for (int i=0; i < page && deviceID != 0xFFFF; i++) {
+        deviceID = ModuloGetNextDeviceID(deviceID+1);
+    }
 
-int page = 255;
-bool serialConnected = false;
-bool buttonWasPressed = false;
+    if (deviceID == 0xFFFF) {            
+        display.clearDisplay();
+        display.setCursor(0,0);
+        display.setTextSize(2);
+        display.println(" Welcome");
+        display.println("  to");
+        display.println("   Modulo!");
+        display.setTextSize(1);
+        display.setCursor(0, display.height()-8);
+        display.println("               Next >");
+        display.display();           
+    } else {
+        ModuloSetStatus(deviceID, ModuloStatusBlinking);
+
+        display.clearDisplay();
+        display.setCursor(0,0);
+        display.setTextSize(1);
+
+        char product[32];
+        ModuloGetProduct(deviceID, product, 31);
+
+        display.print("Device ID: ");
+        display.println(deviceID);
+        display.println();
+        display.print("Type: ");    
+        display.println(product);
+
+        display.display();
+    }
+
+    bool buttonIsPressed = display.getButton(2);
+    if (buttonIsPressed and !buttonWasPressed) {
+        if (deviceID != 0xFFFF) {
+            ModuloSetStatus(deviceID, ModuloStatusOff);
+            page++;
+        } else {
+            page = 0;
+        }
+    }
+    buttonWasPressed = buttonIsPressed;
+}
+
+void setup() {
+    ModuloSetup(true /* highBitRate*/);
+    Serial.begin(9600);
+    pinMode(LED_BUILTIN, OUTPUT);
+}
 
 void loop() {
-    if (Serial and !serialConnected) {
-        display.clearDisplay();
-        display.setCursor(0, display.height()/2);
-        display.println("Serial Port Connected");
-        display.display();
-        serialConnected = false;
-    }
+    ModuloLoop();
 
-    if (Serial) {
-        serialConnected = true;
-        page = 255;
+    if (serialConnected) {
+        uint8_t command = Serial.read();
+        if (command == 'T') {
+            digitalWrite(LED_BUILTIN, true);
+            processModuloTransfer();
+            digitalWrite(LED_BUILTIN, false);
+        }
     } else {
-        uint16_t deviceID = ModuloGetNextDeviceID(0);
-        for (int i=0; i < page && deviceID != 0xFFFF; i++) {
-            deviceID = ModuloGetNextDeviceID(deviceID+1);
+        showWelcomeScreen();
+
+        // Be careful with if (Serial)... it introduces a 10ms delay.
+        if (Serial) {
+            serialConnected = true;
         }
-
-        if (deviceID == 0xFFFF) {            
-            display.clearDisplay();
-            display.setCursor(0,0);
-            display.setTextSize(2);
-            display.println(" Welcome");
-            display.println("  to");
-            display.println("   Modulo!");
-            display.setTextSize(1);
-            display.setCursor(0, display.height()-8);
-            display.println("               Next >");
-            display.display();           
-        } else {
-            ModuloSetStatus(deviceID, ModuloStatusBlinking);
-
-            display.clearDisplay();
-            display.setCursor(0,0);
-            display.setTextSize(1);
-
-            char product[32];
-            ModuloGetProduct(deviceID, product, 31);
-
-            display.print("Device ID: ");
-            display.println(deviceID);
-            display.println();
-            display.print("Type: ");    
-            display.println(product);
-
-            
-
-            display.display();
-        }
-
-        bool buttonIsPressed = display.getButton(2);
-        if (buttonIsPressed and !buttonWasPressed) {
-            if (deviceID != 0xFFFF) {
-                ModuloSetStatus(deviceID, ModuloStatusOff);
-                page++;
-            } else {
-                page = 0;
-            }
-        }
-        buttonWasPressed = buttonIsPressed;
-    }
-
-    if (Serial.available() && Serial.read() == 'T') {
-        processModuloTransfer();
     }
 }
 
