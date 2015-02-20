@@ -37,7 +37,8 @@ void Module::_initAddress() {
         if (t < 100) {
             delay(100-t);
         }
-        Wire.begin();
+
+        ModuloSetup();
         ModuloGlobalReset();
         _moduloInitialized = true;
     }

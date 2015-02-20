@@ -3,6 +3,10 @@
 #include "Arduino.h"
 #include "DallasTemperature.h"
 
+extern "C" {
+    #include <utility/twi.h>
+}
+
 #define BroadcastAddress 9
 
 #define BroadcastCommandGlobalReset 0
@@ -20,9 +24,20 @@
 
 #define ControllerFunctionReadTemperatureProbe 0
 
-void ModuloSetHighBitRate() {
-    TWBR = 6;
-    TWSR &= ~(3);
+static bool _initialized = false;
+
+void ModuloSetup(bool highBitRate) {
+    if (_initialized) {
+        return;
+    }
+
+    _initialized = true;
+
+    twi_init();
+    if (highBitRate) {
+        TWBR = 6;
+        TWSR &= ~(3);
+    }
 }
 
 uint8_t
@@ -102,6 +117,7 @@ bool _moduloTransfer(
 }
 
 static uint8_t _controllerAddress = 0;
+static ModuloStatus _controllerStatusLED = ModuloStatusOff;;
 
 static bool _handleControllerBroadcastTransfer(
     uint8_t command, uint8_t *sendData, uint8_t sendLen,
@@ -156,8 +172,8 @@ static bool _handleControllerBroadcastTransfer(
         if (sendLen != 3 or receiveLen != 0) {
             return false;
         }
+        _controllerStatusLED = (ModuloStatus)sendData[2];
         pinMode(LED_BUILTIN, OUTPUT);
-        digitalWrite(LED_BUILTIN, sendData[2]);
         return true;
     }
     return false;
@@ -200,6 +216,13 @@ bool moduloTransfer(
     return false;
 }
 
+void ModuloLoop() {
+    if (_controllerStatusLED == ModuloStatusBlinking) {
+        digitalWrite(LED_BUILTIN, millis() % 500 > 250);
+    } else {
+        digitalWrite(LED_BUILTIN, _controllerStatusLED == ModuloStatusOn);
+    }
+}
 
 void ModuloGlobalReset() {
     moduloTransfer(BroadcastAddress, BroadcastCommandGlobalReset,

@@ -15,7 +15,9 @@ enum ModuloStatus {
     ModuloStatusBlinking
 };
 
-void ModuloSetHighBitRate();
+void ModuloSetup(bool highBitRate = true);
+
+void ModuloLoop();
 
 void ModuloGlobalReset();
 
