@@ -16,62 +16,108 @@ class ModuloGFX : public Print {
 
   ModuloGFX(int16_t w, int16_t h); // Constructor
 
-  // This MUST be defined by the subclass:
+  /// Draw a pixel
   virtual void drawPixel(int16_t x, int16_t y, uint16_t color) = 0;
 
-  // These MAY be overridden by the subclass to provide device-specific
-  // optimized code.  Otherwise 'generic' versions are used.
+  /// Draw a line
   virtual void
-    drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color),
-    drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color),
-    drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color),
-    drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color),
-    fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color),
-    fillScreen(uint16_t color),
-    invertDisplay(boolean i);
+    drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
 
+  virtual void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
+
+  virtual void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
+
+  /// Draw a rectangle
+  virtual void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
+
+  /// Fill a rectangle
+  virtual void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
+  
+  /// Fill the screen
+  virtual void fillScreen(uint16_t color);
+
+  /// Set invert display
+  virtual void invertDisplay(boolean i);
+
+  /// Print a line of text, centered on the screen
   void printlnCentered(const char *text);
 
-  // These exist only with ModuloGFX (no subclass overrides)
-  void
-    drawCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color),
-    drawCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername,
-      uint16_t color),
-    fillCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color),
-    fillCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername,
-      int16_t delta, uint16_t color),
-    drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
-      int16_t x2, int16_t y2, uint16_t color),
-    fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
-      int16_t x2, int16_t y2, uint16_t color),
-    drawRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h,
-      int16_t radius, uint16_t color),
-    fillRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h,
-      int16_t radius, uint16_t color),
-    drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap,
-      int16_t w, int16_t h, uint16_t color),
-    drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap,
-      int16_t w, int16_t h, uint16_t color, uint16_t bg),
-    drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, 
-      int16_t w, int16_t h, uint16_t color),
-    drawChar(int16_t x, int16_t y, unsigned char c, uint16_t color,
-      uint16_t bg, uint8_t size),
-    setCursor(int16_t x, int16_t y),
-    setTextColor(uint16_t c),
-    setTextColor(uint16_t c, uint16_t bg),
-    setTextSize(uint8_t s),
-    setTextWrap(boolean w),
-    setRotation(uint8_t r);
+  /// Draw a circle
+  void drawCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color);
 
+  void drawCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername,
+      uint16_t color);
+
+  /// Fill a circle
+  void fillCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color);
+
+  void fillCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername,
+      int16_t delta, uint16_t color);
+  
+  /// Draw a triangle
+  void drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
+      int16_t x2, int16_t y2, uint16_t color);
+
+  /// Fill a triangle
+  void fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
+      int16_t x2, int16_t y2, uint16_t color);
+  
+  /// Draw a rect with rounded corners
+  void drawRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h,
+      int16_t radius, uint16_t color);
+  
+  /// Fill a rect with rounded corners
+  void fillRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h,
+      int16_t radius, uint16_t color);
+
+  /// Draw a bitmap
+  void drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap,
+      int16_t w, int16_t h, uint16_t color);
+
+  /// Draw a bitmap
+  void drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap,
+      int16_t w, int16_t h, uint16_t color, uint16_t bg);
+
+  /// Draw a bitmap
+  void drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, 
+      int16_t w, int16_t h, uint16_t color);
+
+  /// Draw a charachter
+  void drawChar(int16_t x, int16_t y, unsigned char c, uint16_t color,
+      uint16_t bg, uint8_t size);
+
+  /// Set the cursor position
+  void setCursor(int16_t x, int16_t y);
+
+  /// Set the text color
+  void setTextColor(uint16_t c);
+  
+  /// Set the text color
+  void setTextColor(uint16_t c, uint16_t bg);
+
+  /// Set the text size
+  void setTextSize(uint8_t s);
+  
+  /// Set text wrap
+  void setTextWrap(boolean w);
+
+  /// Set rotation
+  void setRotation(uint8_t r);
+
+  /// Write a charachter
 #if ARDUINO >= 100
   virtual size_t write(uint8_t);
 #else
   virtual void   write(uint8_t);
 #endif
 
+  /// Get the display height
   int16_t height(void) const;
+
+  /// Get the display width
   int16_t width(void) const;
 
+  /// Get the rotation
   uint8_t getRotation(void) const;
 
  protected:

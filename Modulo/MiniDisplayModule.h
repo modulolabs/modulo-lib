@@ -20,31 +20,32 @@
 /// A tiny OLED screen
 class MiniDisplayModule : public Module, public ModuloGFX {
 public:
+    /// The width of the display
     static const int WIDTH = 128;
+
+    /// The height of the display
     static const int HEIGHT = 64;
 
+    /// Use the first MiniDisplay that's not already in use.
     MiniDisplayModule();
-    MiniDisplayModule(uint16_t address);
 
+    /// Use the MiniDisplay with the specified deviceID
+    MiniDisplayModule(uint16_t deviceID);
+
+    /// Clear the display, setting all pixels to black.
     void clearDisplay(void);
-    void invertDisplay(uint8_t i);
+
+    /// Update the MiniDisplay with the current frame buffer.
     void display();
 
-    void startscrollright(uint8_t start, uint8_t stop);
-    void startscrollleft(uint8_t start, uint8_t stop);
-
-    void startscrolldiagright(uint8_t start, uint8_t stop);
-    void startscrolldiagleft(uint8_t start, uint8_t stop);
-    void stopscroll(void);
-
-    void dim(uint8_t contrast);
-
-    void drawPixel(int16_t x, int16_t y, uint16_t color);
-
+    virtual void drawPixel(int16_t x, int16_t y, uint16_t color);
     virtual void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
     virtual void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
 
+    /// Return whether the specified button is currently pressed
     bool getButton(int button);
+
+    /// Return the state of all three buttons, one in each bit.
     uint8_t getButtons();
 
  private:

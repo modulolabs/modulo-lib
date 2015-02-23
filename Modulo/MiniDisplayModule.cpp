@@ -169,54 +169,6 @@ uint8_t MiniDisplayModule::getButtons() {
     return receivedData[0];
 }
 
-
-void MiniDisplayModule::invertDisplay(uint8_t i) {
-    // XXX: unimplemented
-}
-
-// startscrollright
-// Activate a right handed scroll for rows start through stop
-// Hint, the display is 16 rows tall. To scroll the whole display, run:
-// display.scrollright(0x00, 0x0F) 
-void MiniDisplayModule::startscrollright(uint8_t start, uint8_t stop){
-    // XXX: unimplemented
-}
-
-// startscrollleft
-// Activate a right handed scroll for rows start through stop
-// Hint, the display is 16 rows tall. To scroll the whole display, run:
-// display.scrollright(0x00, 0x0F) 
-void MiniDisplayModule::startscrollleft(uint8_t start, uint8_t stop){
-    // XXX: unimplemented
-}
-
-// startscrolldiagright
-// Activate a diagonal scroll for rows start through stop
-// Hint, the display is 16 rows tall. To scroll the whole display, run:
-// display.scrollright(0x00, 0x0F) 
-void MiniDisplayModule::startscrolldiagright(uint8_t start, uint8_t stop){
-    // XXX: unimplemented
-}
-
-// startscrolldiagleft
-// Activate a diagonal scroll for rows start through stop
-// Hint, the display is 16 rows tall. To scroll the whole display, run:
-// display.scrollright(0x00, 0x0F) 
-void MiniDisplayModule::startscrolldiagleft(uint8_t start, uint8_t stop){
-    // XXX: unimplemented
-}
-
-void MiniDisplayModule::stopscroll(void){
-    // XXX: unimplemented
-}
-
-// Dim the display
-// dim = true: display is dimmed
-// dim = false: display is normal
-void MiniDisplayModule::dim(uint8_t dim) {
-    // XXX: unimplemented
-}
-
 uint8_t _crc8_ccitt_update (uint8_t inCrc, uint8_t inData);
 
 void MiniDisplayModule::display() {
