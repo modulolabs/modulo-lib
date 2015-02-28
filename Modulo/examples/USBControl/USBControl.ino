@@ -38,6 +38,46 @@ void processModuloTransfer() {
     }
 }
 
+void drawFatLine(int x0, int y0, int x1, int y1, int thickness, int color=1) {
+
+    int width = x1-x0+thickness;
+    int height = y1-y0+thickness;
+
+    x0 -= thickness/2;
+    y0 -= thickness/2;
+
+    if (height < 0) {
+        y0 += height;
+        height = -height;
+    }
+
+    display.fillRect(x0, y0, width, height, color);
+}
+
+void drawLogo(int center_x=64, int center_y=36, int stepWidth=12) {
+    int left = center_x - stepWidth*1.5;
+    int bottom = center_y + stepWidth;
+    int circleOffset = stepWidth/2;
+    int radius = stepWidth/2;
+    int lineWidth = stepWidth/4;
+
+    for (int i=0; i < 3; i++) {
+        drawFatLine(left+i*stepWidth, bottom-i*stepWidth,
+                    left+(i+1)*stepWidth, bottom-i*stepWidth, lineWidth);
+        if (i < 2) {
+            drawFatLine(left+(i+1)*stepWidth, bottom-i*stepWidth,
+                        left+(i+1)*stepWidth, bottom-(i+1)*stepWidth,
+                        lineWidth);
+        }
+    }
+    display.fillCircle(left-circleOffset, bottom, radius, 1);
+    display.fillCircle(left-circleOffset, bottom, radius/2, 0);
+
+    display.fillCircle(left+3*stepWidth+circleOffset, bottom-2*stepWidth, radius, 1);
+    display.fillCircle(left+3*stepWidth+circleOffset, bottom-2*stepWidth, radius/2, 0);
+
+}
+
 void showWelcomeScreen() {
     uint16_t deviceID = ModuloGetNextDeviceID(0);
     for (int i=0; i < page && deviceID != 0xFFFF; i++) {
@@ -48,12 +88,14 @@ void showWelcomeScreen() {
         display.clearDisplay();
         display.setCursor(0,0);
         display.setTextSize(2);
-        display.println(" Welcome");
-        display.println("  to");
-        display.println("   Modulo!");
+        display.printlnCentered("Modulo");
+
+        drawLogo();
+
+
         display.setTextSize(1);
         display.setCursor(0, display.height()-8);
-        display.println("               Next >");
+        display.println("            Devices >");
         display.display();           
     } else {
         ModuloSetStatus(deviceID, ModuloStatusBlinking);
@@ -70,6 +112,9 @@ void showWelcomeScreen() {
         display.println();
         display.print("Type: ");    
         display.println(product);
+        
+        display.setCursor(0, display.height()-8);
+        display.println("               Next >");
 
         display.display();
     }
@@ -101,12 +146,16 @@ void loop() {
             digitalWrite(LED_BUILTIN, true);
             processModuloTransfer();
             digitalWrite(LED_BUILTIN, false);
+        } else if (command == 'E') {
+            serialConnected = false;
+            ModuloGlobalReset();
         }
     } else {
         showWelcomeScreen();
 
-        // Be careful with if (Serial)... it introduces a 10ms delay.
-        if (Serial) {
+        // Be careful with if (Serial)... it introduces a 10ms delay,
+        // we can't check it while connected before every packet.
+        if (Serial and Serial.available()) {
             serialConnected = true;
         }
     }
