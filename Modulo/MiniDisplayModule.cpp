@@ -98,7 +98,7 @@ MiniDisplayModule::MiniDisplayModule() :
     _forceRedisplay(true),
     _lastForcedBlock(0)
 {
-    _init();
+    _reset();
 }
 
 MiniDisplayModule::MiniDisplayModule(uint16_t deviceID) :
@@ -107,17 +107,21 @@ MiniDisplayModule::MiniDisplayModule(uint16_t deviceID) :
     _forceRedisplay(true),
     _lastForcedBlock(0)
 {
-    _init();
+    _reset();
 }
 
-void MiniDisplayModule::_init() {
+void MiniDisplayModule::_reset() {
+    Module::_reset();
+
+    _forceRedisplay = true;
+    _lastForcedBlock = 0;
     setTextColor(WHITE, BLACK);
     
     for (int i=0; i < WIDTH*HEIGHT/8 ; i++) {
 #if USE_SPLASH_SCREEN
         _buffer[i] = pgm_read_byte(&(spashScreen[i]));
 #endif
-    }
+    }    
 }
 
 

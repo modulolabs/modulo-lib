@@ -19,8 +19,9 @@ extern "C" {
 #define BroadcastCommandGetProductName 7
 #define BroadcastCommandGetDocURL 8
 #define BroadcastCommandGetDocURLContinued 9
-#define BroadcastCommandGetInterrupt 10
+#define BroadcastCommandGetEvent 10
 #define BroadcastCommandSetStatusLED 11
+#define BroadcastCommandClearEvent 12
 
 #define ControllerFunctionReadTemperatureProbe 0
 
@@ -139,12 +140,30 @@ bool moduloTransfer(
 }
 
 void ModuloLoop() {
+    _mainController.loop();
+
+    uint8_t event[5];
+    if (moduloTransfer(BroadcastAddress, BroadcastCommandGetEvent, 0, 0, event, 5)) {
+
+        moduloTransfer(BroadcastAddress, BroadcastCommandClearEvent, event, 5, 0, 0);
+        uint8_t eventCode = event[0];
+        uint16_t deviceID = event[1] | (event[2] << 8);
+        uint16_t eventData = event[3] | (event[4] << 8);
+
+        Module *m = Module::findByDeviceID(deviceID);
+        if (m) {
+            m->_processEvent(eventCode, eventData);
+        }
+  
+
+   
     }
 }
 
 void ModuloGlobalReset() {
     moduloTransfer(BroadcastAddress, BroadcastCommandGlobalReset,
                    0, 0, 0, 0, 1);
+    Module::_globalReset();
     _mainController.globalReset();
 }
 

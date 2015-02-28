@@ -48,13 +48,16 @@ public:
     /// Return the state of all three buttons, one in each bit.
     uint8_t getButtons();
 
+protected:
+    virtual void _reset();
+    
  private:
     uint8_t _buffer[WIDTH*HEIGHT/8]; // The actual pixel data
     uint8_t _hashes[64];             // The CRCs of the pixels from the last refresh
     bool _forceRedisplay;
     uint8_t _lastForcedBlock;
 
-    void _init();
+    void _initDisplay();
     
     inline void drawFastVLineInternal(int16_t x, int16_t y, int16_t h, uint16_t color) __attribute__((always_inline));
     inline void drawFastHLineInternal(int16_t x, int16_t y, int16_t w, uint16_t color) __attribute__((always_inline));

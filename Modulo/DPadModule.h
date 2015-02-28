@@ -29,7 +29,22 @@ class DPadModule : public Module {
     /// Return the state of all buttons, one in each bit.
     uint8_t getButtons();
 
- private:
+    typedef void (ButtonEventCallback)(DPadModule &module, uint8_t button);
+
+    void setButtonPressCallback(ButtonEventCallback *handler);
+    void setButtonReleaseCallback(ButtonEventCallback *handler);
+
+protected:
+    virtual bool _init();
+    virtual void _processEvent(uint8_t eventCode, uint16_t eventData);
+
+    void _refreshState();
+
+private:
+    uint8_t _buttonState;
+    ButtonEventCallback *_buttonPressCallback;
+    ButtonEventCallback *_buttonReleaseCallback;
+
 };
 
 #endif

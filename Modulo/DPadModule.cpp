@@ -4,15 +4,17 @@
 
 #define DPAD_FUNCTION_GET_BUTTONS 0
 
-DPadModule::DPadModule() : Module("co.modulo.dpad") {}
+DPadModule::DPadModule() : Module("co.modulo.dpad"), _buttonState(0), _buttonPressCallback(NULL), _buttonReleaseCallback(NULL) {}
 
 DPadModule::DPadModule(uint16_t deviceID) :
-    Module("co.modulo.dpad", deviceID) {
+    Module("co.modulo.dpad", deviceID), _buttonState(0), _buttonPressCallback(NULL), _buttonReleaseCallback(NULL) {
 }
 
 
 bool DPadModule::getButton(uint8_t button) {
-    return getButtons() & _BV(button);
+    _init();
+    
+    return _buttonState & _BV(button);
 }
 
 bool DPadModule::getButton(Button button) {
@@ -20,9 +22,55 @@ bool DPadModule::getButton(Button button) {
 }
 
 uint8_t DPadModule::getButtons() {
-    uint8_t receivedData[1] = {0};
-    if (!moduloTransfer(getAddress(), DPAD_FUNCTION_GET_BUTTONS, 0, 0, receivedData, 1)) {
-        return false;
-    }
-    return receivedData[0];
+    _init();
+
+    return _buttonState;
 }
+
+bool DPadModule::_init()
+{
+    if (Module::_init()) {
+        _refreshState();
+        return true;
+    }
+    return false;
+}
+
+void DPadModule::_refreshState() {
+    moduloTransfer(getAddress(), DPAD_FUNCTION_GET_BUTTONS, 0, 0, &_buttonState, 1);
+}
+
+void DPadModule::_processEvent(uint8_t eventCode, uint16_t eventData) {
+    uint8_t buttonPresses = eventData >> 8;
+    uint8_t buttonReleases = eventData & 0xFF;
+
+    _buttonState |= buttonPresses;
+    _buttonState &= ~buttonReleases;
+
+    if (_buttonPressCallback) {
+        for (int i=0; i < 5; i++) {
+            if (buttonPresses & _BV(i)) {
+                _buttonPressCallback(*this, i);
+            }
+        }
+    }
+
+    if (_buttonReleaseCallback) {
+        for (int i=0; i < 5; i++) {
+            if (buttonReleases & _BV(i)) {
+                _buttonReleaseCallback(*this, i);
+            }
+        }
+    }
+
+}
+
+
+void DPadModule::setButtonPressCallback(ButtonEventCallback *callback) {
+    _buttonPressCallback = callback;
+}
+
+void DPadModule::setButtonReleaseCallback(ButtonEventCallback *callback) {
+    _buttonReleaseCallback = callback;
+}
+

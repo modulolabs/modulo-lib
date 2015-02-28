@@ -28,7 +28,7 @@ public:
     /// Return the position of the knob in clicks (24 per revolution).
     int16_t getPosition();
   
- private:
+private:
 };
 
 #endif
