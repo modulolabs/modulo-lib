@@ -1,7 +1,7 @@
 #include <Wire.h>
 #include "Modulo.h"
 #include "Arduino.h"
-#include "DallasTemperature.h"
+#include "MainController.h"
 
 extern "C" {
     #include <utility/twi.h>
@@ -25,6 +25,7 @@ extern "C" {
 #define ControllerFunctionReadTemperatureProbe 0
 
 static bool _initialized = false;
+_MainController _mainController;
 
 void ModuloSetup(bool highBitRate) {
     if (_initialized) {
@@ -116,85 +117,6 @@ bool _moduloTransfer(
     return (crc == receivedCRC);
 }
 
-static uint8_t _controllerAddress = 0;
-static ModuloStatus _controllerStatusLED = ModuloStatusOff;;
-
-static bool _handleControllerBroadcastTransfer(
-    uint8_t command, uint8_t *sendData, uint8_t sendLen,
-    uint8_t *receiveData, uint8_t receiveLen)
-{
-    switch (command) {
-    case BroadcastCommandGetNextDeviceID :
-        if (receiveLen != 2) {
-            return false;
-        }
-        receiveData[0] = 0;
-        receiveData[1] = 0;
-        return true;
-    case BroadcastCommandSetAddress:
-        if (sendLen != 3 || receiveLen != 0) {
-            return false;
-        }
-        _controllerAddress = sendData[2];
-        return true;
-    case BroadcastCommandGetAddress:
-        if (sendLen != 2 || receiveLen != 1) {
-            return false;
-        }
-        receiveData[0] = _controllerAddress;
-        return true;
-    case BroadcastCommandGetDeviceType:
-        if (sendLen != 2 or receiveLen != 31) {
-            return false;
-        }
-        strcpy((char*)receiveData, "co.modulo.controller");
-        return true;
-    case BroadcastCommandGetDeviceVersion:
-        if (sendLen != 2 or receiveLen != 2) {
-            return false;
-        }
-        receiveData[0] = 0;
-        receiveData[1] = 0;
-        return true;
-    case BroadcastCommandGetCompanyName:
-        if (sendLen != 2 or receiveLen != 31) {
-            return false;
-        }
-        strcpy((char*)receiveData, "Integer Labs");
-        return true;
-    case BroadcastCommandGetProductName:
-        if (sendLen != 2 or receiveLen != 31) {
-            return false;
-        }
-        strcpy((char*)receiveData, "Controller");
-        return true;
-    case BroadcastCommandSetStatusLED:
-        if (sendLen != 3 or receiveLen != 0) {
-            return false;
-        }
-        _controllerStatusLED = (ModuloStatus)sendData[2];
-        pinMode(LED_BUILTIN, OUTPUT);
-        return true;
-    }
-    return false;
-}
-
-static bool _handleControllerTransfer(
-    uint8_t command, uint8_t *sendData, uint8_t sendLen,
-    uint8_t *receiveData, uint8_t receiveLen)
-{
-    switch (command) {
-        case ControllerFunctionReadTemperatureProbe:
-        if (sendLen == 1 and receiveLen == 2) {
-            uint16_t temp = ModuloOneWire::ReadOneWireTemp(sendData[0])*10;
-            receiveData[0] = temp & 0xFF;
-            receiveData[1] = temp >> 8;
-            return true;
-        }
-        return false;
-    }
-    return false;
-}
 
 bool moduloTransfer(
     uint8_t address, uint8_t command, uint8_t *sendData, uint8_t sendLen,
@@ -202,10 +124,10 @@ bool moduloTransfer(
 {            
     // Intercept broadcast transfers to deviceID 0, which is the controller
     if (address == BroadcastAddress and sendLen >= 2 and sendData[0] == 0 and sendData[1] == 0) {
-        return _handleControllerBroadcastTransfer(command, sendData, sendLen, receiveData, receiveLen);
-    } else if (address == _controllerAddress) {
+        return _mainController.processBroadcastTransfer(command, sendData, sendLen, receiveData, receiveLen);
+    } else if (address == _mainController.getAddress()) {
         // Handle controller transfer
-        return _handleControllerTransfer(command, sendData, sendLen, receiveData, receiveLen);
+        return _mainController.processTransfer(command, sendData, sendLen, receiveData, receiveLen);
     }
 
     for (int i=0; i < retries; i++) {
@@ -217,17 +139,13 @@ bool moduloTransfer(
 }
 
 void ModuloLoop() {
-    if (_controllerStatusLED == ModuloStatusBlinking) {
-        digitalWrite(LED_BUILTIN, millis() % 500 > 250);
-    } else {
-        digitalWrite(LED_BUILTIN, _controllerStatusLED == ModuloStatusOn);
     }
 }
 
 void ModuloGlobalReset() {
     moduloTransfer(BroadcastAddress, BroadcastCommandGlobalReset,
                    0, 0, 0, 0, 1);
-    _controllerAddress = 0;
+    _mainController.globalReset();
 }
 
 uint16_t ModuloGetNextDeviceID(uint16_t lastDeviceID) {
