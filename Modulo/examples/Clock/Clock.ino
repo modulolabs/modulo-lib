@@ -107,6 +107,7 @@ void DisplayFont(MiniDisplayModule &display) {
 
 MiniDisplayModule display;
 ClockModule clockModule;
+KnobModule knob;
 
 void PrintDateAndTime(const ClockModule::Time &t)
 {
@@ -164,28 +165,92 @@ bool GetTimeAndDate() {
 
 
 void setup() {
-    // put your setup code here, to run once:
-    Wire.begin();
     Serial.begin(9600);
-    ModuloSetHighBitRate();
+    ModuloSetup();
 }
 
+bool timerMode = false;
 
+bool button1Pressed = false;
+int knobStartPosition = 0;
+
+bool knobWasPressed = false;
+long timerStartTime = 0;
+int timerDuration = 0;
+bool timerRunning = false;
 
 void loop() {
-    uint32_t time = millis();
+    ModuloLoop();
 
-    ModuloSetHighBitRate();
+    if (display.getButton(1)) {
+        if (!button1Pressed) {
+            timerMode = !timerMode;
+            timerRunning = false;
+        }
+        button1Pressed = true;
+    } else {
+        button1Pressed = false;
+    }
 
-    ClockModule::Time t = clockModule.getTime();
+
+    if (!timerMode) {
+        ClockModule::Time t = clockModule.getTime();
     
-    display.fillScreen(0);
-    DisplayTime(display, t);
-    DisplayDate(display, t.year, t.month, t.day);
-    DisplaySeconds(display, t.second*1000.0);
-    DisplayTemperature(display, clockModule.getTemperatureF());
+        knob.setColor(0,0,0);
+        display.fillScreen(0);
+        DisplayTime(display, t);
+        DisplayDate(display, t.year, t.month, t.day);
+        DisplaySeconds(display, t.second*1000.0);
+        DisplayTemperature(display, clockModule.getTemperatureF());
+    } else {
+        int knobPosition = knob.getPosition();
+        if (knobPosition < knobStartPosition) {
+            knobStartPosition = knobPosition;
+        }
 
-    GetTimeAndDate();
+        bool knobIsPressed = knob.getButton();
+        if (knobIsPressed and !knobWasPressed) {
+            timerRunning = !timerRunning;
+            timerStartTime = millis();
+        }
+        knobWasPressed = knobIsPressed;
+
+
+        int displayTime = 0;
+        if (timerRunning) {
+            displayTime = timerDuration - (millis()-timerStartTime)/1000;
+            displayTime = max(0, displayTime);
+        } else {
+            timerDuration = knobPosition - knobStartPosition;
+            displayTime = timerDuration;
+        }
+
+        display.fillScreen(0);
+        display.setCursor(0,0);
+        display.setTextSize(2);
+        if (timerRunning) {
+            display.printlnCentered("Running");
+        } else {
+            display.printlnCentered("Stopped");
+        }
+
+        char timeString[64];
+        sprintf(timeString, "%d:%02d", displayTime/60, displayTime % 60);
+
+        display.setTextSize(4);
+        display.setCursor(0, 30);
+        display.printlnCentered(timeString);
+        display.setTextSize(1);
+
+        if (timerRunning and displayTime == 0) {
+            knob.setColor(millis() % 500 > 250, 0, 0);
+        } else {
+            knob.setColor(0,0,0);
+        }
+
+    }
+
+    //GetTimeAndDate();
     
     display.display();
 }
