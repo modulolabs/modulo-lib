@@ -3,13 +3,37 @@
 
 MiniDisplayModule display;
 DPadModule dpad;
-  
+
+void onButtonPress(DPadModule &module, uint8_t button) {
+    for (int i=0; i < 5; i++) {
+        Serial.print(module.getButton(i));
+    }
+    Serial.print(" ");
+    Serial.print(button);
+    Serial.println(" Pressed");
+}
+
+void onButtonRelease(DPadModule &module, uint8_t button) {
+    for (int i=0; i < 5; i++) {
+        Serial.print(module.getButton(i));
+    }
+    Serial.print(" ");
+    Serial.print(button);
+    Serial.println(" Released");
+}
+
 void setup() {
     // put your setup code here, to run once:
     Serial.begin(9600);
+    ModuloSetup();
+
+    dpad.setButtonPressCallback(onButtonPress);
+    dpad.setButtonReleaseCallback(onButtonRelease);
 }
 
 void loop() {
+    ModuloLoop();
+
     uint8_t w = MiniDisplayModule::WIDTH;
     uint8_t h = MiniDisplayModule::HEIGHT;
     uint8_t size = 30;
