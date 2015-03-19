@@ -8,6 +8,7 @@
 #include "DPadModule.h"
 #include "ThermocoupleModule.h"
 #include "ControllerModule.h"
+#include "ColorDisplayModule.h"
 
 enum ModuloStatus {
     ModuloStatusOff,
