@@ -62,7 +62,7 @@ uint16_t TxLEDPulse = 0; // time remaining for Tx LED pulse
 uint16_t RxLEDPulse = 0; // time remaining for Rx LED pulse
 
 /* Bootloader timeout timer */
-#define TIMEOUT_PERIOD	2000
+#define TIMEOUT_PERIOD	8000
 uint16_t Timeout = 0;
 
 uint16_t bootKey = 0x7777;
