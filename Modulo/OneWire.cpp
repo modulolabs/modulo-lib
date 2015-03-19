@@ -114,6 +114,7 @@ sample code bearing this copyright.
 //--------------------------------------------------------------------------
 */
 
+#ifdef ARDUINO
 #include "OneWire.h"
 
 namespace ModuloOneWire {
@@ -558,3 +559,5 @@ namespace ModuloOneWire {
     #endif
 
 }
+#endif
+

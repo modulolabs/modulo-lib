@@ -17,11 +17,8 @@ All text above, and the splash screen must be included in any redistribution
 *********************************************************************/
 
 
-
-#include <avr/pgmspace.h>
 #include <stdlib.h>
 
-#include <Wire.h>
 
 #include "MiniDisplayModule.h"
 #include "Modulo.h"
@@ -33,6 +30,12 @@ All text above, and the splash screen must be included in any redistribution
 // drawing code, but it takes up 1k of program space. Setting this to 0 will
 // cause it to not be used, and the compiler will optimize it away.
 #define USE_SPLASH_SCREEN 0
+
+#ifdef SPARK
+#define PROGMEM
+#else
+#include <avr/pgmspace.h>
+#endif
 
 const uint8_t spashScreen[MiniDisplayModule::WIDTH*MiniDisplayModule::HEIGHT/8] PROGMEM = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, \
@@ -162,7 +165,7 @@ void MiniDisplayModule::drawPixel(int16_t x, int16_t y, uint16_t color) {
 
 
 bool MiniDisplayModule::getButton(int button) {
-    return getButtons() & _BV(button);
+    return getButtons() & (1 << button);
 }
 
 uint8_t MiniDisplayModule::getButtons() {
@@ -218,7 +221,7 @@ void MiniDisplayModule::clearDisplay(void) {
 
 
 void MiniDisplayModule::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) {
-  boolean bSwap = false;
+  bool bSwap = false;
   switch(rotation) { 
     case 0:
       // 0 degree rotation, do nothing

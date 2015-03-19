@@ -1,6 +1,12 @@
 #include "ColorDisplayModule.h"
 #include "Modulo.h"
 
+#ifdef SPARK
+#include "spark_wiring.h"
+#else
+#include "Arduino.h"
+#endif
+
 #define FUNCTION_APPEND_OP 0
 #define FUNCTION_IS_COMPLETE 1
 
@@ -137,6 +143,7 @@ void ColorDisplayModule::drawString(const char *s)
 size_t ColorDisplayModule::write(uint8_t c) {
     uint8_t sendData[] = {OpDrawString,c,0};
     moduloTransfer(getAddress(), FUNCTION_APPEND_OP, sendData, 3, 0, 0);
+    return 1;
 }
 
 bool ColorDisplayModule::isComplete() {

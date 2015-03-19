@@ -1,5 +1,6 @@
 #include "KnobModule.h"
 #include "Modulo.h"
+#include <math.h>
 
 #define FUNCTION_KNOB_GET_BUTTON 0
 #define FUNCTION_KNOB_GET_POSITION 1

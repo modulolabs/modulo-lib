@@ -1,7 +1,12 @@
 #include "Module.h"
-#include "Wire.h"
 #include "Modulo.h"
 
+#ifdef SPARK
+#include <spark_wiring.h>
+#else
+#include "Arduino.h"
+#include "Wire.h"
+#endif
 
 uint8_t Module::_lastAssignedAddress = 9;
 Module* Module::_firstModule = NULL;

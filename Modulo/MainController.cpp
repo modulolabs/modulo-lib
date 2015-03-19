@@ -1,5 +1,10 @@
 #include "MainController.h"
+
+#ifdef SPARK
+#include <spark_wiring.h>
+#else
 #include "DallasTemperature.h"
+#endif
 
 #define FUNCTION_SET_PIN_DIRECTION 0
 #define FUNCTION_GET_DIGITAL_INPUT 1
@@ -27,11 +32,13 @@ _MainController::_MainController() :
 }
 
 void _MainController::loop() {
+#ifdef ARDUINO
     if (_status == ModuloStatusBlinking) {
         digitalWrite(LED_BUILTIN, millis() % 500 > 250);
     } else {
         digitalWrite(LED_BUILTIN, _status == ModuloStatusOn);
     }
+#endif
 }
 
 uint8_t _MainController::getAddress() {
@@ -53,7 +60,7 @@ bool _MainController::processTransfer(
             if (sendLen == 1 and receiveLen == 0) {
                 uint8_t pin = sendData[0] >> 2;
                 bool mode = sendData[0] & 3;
-                pinMode(pin, mode);
+                pinMode(pin, mode ? OUTPUT : INPUT);
                 return true;
             }
             return false;
@@ -81,12 +88,14 @@ bool _MainController::processTransfer(
             }
             return false;
         case FUNCTION_READ_TEMPERATURE_PROBE:
+#ifdef ARDUINO
             if (sendLen == 1 and receiveLen == 2) {
                 uint16_t temp = ModuloOneWire::ReadOneWireTemp(sendData[0])*10;
                 receiveData[0] = temp & 0xFF;
                 receiveData[1] = temp >> 8;
                 return true;
             }
+#endif
         return false;
     }
     return false;
@@ -143,12 +152,14 @@ bool _MainController::processBroadcastTransfer(
         strcpy((char*)receiveData, "Controller");
         return true;
     case BroadcastCommandSetStatusLED:
-        if (sendLen != 3 or receiveLen != 0) {
-            return false;
+#ifdef ARDUINO
+        if (sendLen == 3 and receiveLen == 0) {
+            _status = (ModuloStatus)sendData[2];
+            pinMode(LED_BUILTIN, OUTPUT);
+            return true;
         }
-        _status = (ModuloStatus)sendData[2];
-        pinMode(LED_BUILTIN, OUTPUT);
-        return true;
+#endif
+        return false;
     }
     return false;
 }

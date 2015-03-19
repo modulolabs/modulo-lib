@@ -14,7 +14,7 @@ DPadModule::DPadModule(uint16_t deviceID) :
 bool DPadModule::getButton(uint8_t button) {
     _init();
     
-    return _buttonState & _BV(button);
+    return _buttonState & (1 << button);
 }
 
 bool DPadModule::getButton(Button button) {
@@ -49,7 +49,7 @@ void DPadModule::_processEvent(uint8_t eventCode, uint16_t eventData) {
 
     if (_buttonPressCallback) {
         for (int i=0; i < 5; i++) {
-            if (buttonPresses & _BV(i)) {
+            if (buttonPresses & (1 << i)) {
                 _buttonPressCallback(*this, i);
             }
         }
@@ -57,7 +57,7 @@ void DPadModule::_processEvent(uint8_t eventCode, uint16_t eventData) {
 
     if (_buttonReleaseCallback) {
         for (int i=0; i < 5; i++) {
-            if (buttonReleases & _BV(i)) {
+            if (buttonReleases & (1 << i)) {
                 _buttonReleaseCallback(*this, i);
             }
         }

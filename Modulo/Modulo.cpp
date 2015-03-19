@@ -1,11 +1,15 @@
-#include <Wire.h>
 #include "Modulo.h"
-#include "Arduino.h"
 #include "MainController.h"
 
+#ifdef SPARK
+#include "spark_wiring_i2c.h"
+#else
+#include "Arduino.h"
+#include "Wire.h"
 extern "C" {
     #include <utility/twi.h>
 }
+#endif
 
 #define BroadcastAddress 9
 
@@ -35,11 +39,13 @@ void ModuloSetup(bool highBitRate) {
 
     _initialized = true;
 
+#ifdef ARDUINO
     twi_init();
     if (highBitRate) {
         TWBR = 6;
         TWSR &= ~(3);
     }
+#endif
 }
 
 uint8_t

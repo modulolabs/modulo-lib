@@ -1,6 +1,8 @@
 #ifndef DallasTemperature_h
 #define DallasTemperature_h
 
+#ifdef ARDUINO
+
 #define DALLASTEMPLIBVERSION "3.7.2"
 
 // This library is free software; you can redistribute it and/or
@@ -255,4 +257,6 @@ namespace ModuloOneWire {
     float ReadOneWireTemp(int pin);
 
 };
+
+#endif
 #endif

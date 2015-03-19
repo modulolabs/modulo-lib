@@ -1,11 +1,10 @@
 #ifndef _ADAFRUIT_GFX_H
 #define _ADAFRUIT_GFX_H
 
-#if ARDUINO >= 100
- #include "Arduino.h"
- #include "Print.h"
+#ifdef SPARK
+#include "spark_wiring_print.h"
 #else
- #include "WProgram.h"
+#include "Print.h"
 #endif
 
 #define swap(a, b) { int16_t t = a; a = b; b = t; }
@@ -37,7 +36,7 @@ class ModuloGFX : public Print {
   virtual void fillScreen(uint16_t color);
 
   /// Set invert display
-  virtual void invertDisplay(boolean i);
+  virtual void invertDisplay(bool i);
 
   /// Print a line of text, centered on the screen
   void printlnCentered(const char *text);
@@ -99,17 +98,13 @@ class ModuloGFX : public Print {
   void setTextSize(uint8_t s);
   
   /// Set text wrap
-  void setTextWrap(boolean w);
+  void setTextWrap(bool w);
 
   /// Set rotation
   void setRotation(uint8_t r);
 
   /// Write a charachter
-#if ARDUINO >= 100
   virtual size_t write(uint8_t);
-#else
-  virtual void   write(uint8_t);
-#endif
 
   /// Get the display height
   int16_t height(void) const;
@@ -131,7 +126,7 @@ class ModuloGFX : public Print {
   uint8_t
     textsize,
     rotation;
-  boolean
+  bool
     wrap; // If set, 'wrap' text at right edge of display
 };
 

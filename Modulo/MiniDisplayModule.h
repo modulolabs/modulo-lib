@@ -1,13 +1,6 @@
 #ifndef MODULO_MINI_DISPLAY_H
 #define MODULO_MINI_DISPLAY_H
 
-#if ARDUINO >= 100
- #include "Arduino.h"
- #define WIRE_WRITE Wire.write
-#else
- #include "WProgram.h"
-  #define WIRE_WRITE Wire.send
-#endif
 
 #include "Module.h"
 #include "ModuloGFX.h"

@@ -1,6 +1,11 @@
 #include "ControllerModule.h"
 #include "Modulo.h"
 
+#ifdef SPARK
+#include "spark_wiring.h"
+#else
+#include "Arduino.h"
+#endif
 
 #define FUNCTION_SET_PIN_DIRECTION 0
 #define FUNCTION_GET_DIGITAL_INPUT 1

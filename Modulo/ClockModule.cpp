@@ -1,6 +1,11 @@
 #include "ClockModule.h"
 #include "Modulo.h"
+
+#ifdef SPARK
+#include "spark_wiring_print.h"
+#else
 #include "Print.h"
+#endif
 
 #define FUNCTION_GET_TIME 0
 #define FUNCTION_SET_TIME 1

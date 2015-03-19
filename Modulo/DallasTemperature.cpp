@@ -8,6 +8,7 @@
 // Modified by Jordan Hochenbaum
 
 #include "DallasTemperature.h"
+#ifdef ARDUINO
 
 #if ARDUINO >= 100
 #include "Arduino.h"
@@ -777,3 +778,5 @@ namespace ModuloOneWire {
 #endif
 
 }
+#endif
+

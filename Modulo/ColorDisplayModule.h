@@ -2,8 +2,12 @@
 #define MODULO_COLOR_DISPLAY_H
 
 #include "Module.h"
-#include "Print.h"
 
+#ifdef SPARK
+#include "spark_wiring_print.h"
+#else
+#include "Print.h"
+#endif
 
 /// A tiny color OLED screen
 class ColorDisplayModule : public Module, public Print {

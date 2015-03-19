@@ -32,7 +32,9 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "ModuloGFX.h"
-#include "glcdfont.c"
+
+extern const unsigned char font[];
+
 #ifdef __AVR__
  #include <avr/pgmspace.h>
 #else
@@ -403,11 +405,7 @@ void ModuloGFX::drawXBitmap(int16_t x, int16_t y,
   }
 }
 
-#if ARDUINO >= 100
 size_t ModuloGFX::write(uint8_t c) {
-#else
-void ModuloGFX::write(uint8_t c) {
-#endif
   if (c == '\n') {
     cursor_y += textsize*8;
     cursor_x  = 0;
@@ -487,7 +485,7 @@ void ModuloGFX::setTextColor(uint16_t c, uint16_t b) {
   textbgcolor = b; 
 }
 
-void ModuloGFX::setTextWrap(boolean w) {
+void ModuloGFX::setTextWrap(bool w) {
   wrap = w;
 }
 
@@ -520,7 +518,7 @@ int16_t ModuloGFX::height(void) const {
   return _height;
 }
 
-void ModuloGFX::invertDisplay(boolean i) {
+void ModuloGFX::invertDisplay(bool i) {
   // Do nothing, must be subclassed if supported
 }
 

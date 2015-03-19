@@ -1,6 +1,8 @@
 #ifndef OneWire_h
 #define OneWire_h
 
+#ifdef ARDUINO
+
 #include <inttypes.h>
 
 #if ARDUINO >= 100
@@ -230,3 +232,5 @@ namespace ModuloOneWire {
 };
 
 #endif
+#endif
+
