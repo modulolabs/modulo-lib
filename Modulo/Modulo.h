@@ -9,6 +9,7 @@
 #include "ThermocoupleModule.h"
 #include "ControllerModule.h"
 #include "ColorDisplayModule.h"
+#include "JoystickModule.h"
 
 enum ModuloStatus {
     ModuloStatusOff,
