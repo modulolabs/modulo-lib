@@ -252,5 +252,5 @@ void loop() {
 
     //GetTimeAndDate();
     
-    display.display();
+    display.refresh();
 }

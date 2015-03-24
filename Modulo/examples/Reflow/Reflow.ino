@@ -135,7 +135,7 @@ void update() {
     //display.fillRect(0, 0, display.width(), graphMaxY, 0); // Clear the title area
     //display.fillRect(0, graphMinY, display.width(), display.height(), 0); // Clear the bottom info area
     
-    display.clearDisplay();
+    display.clear();
     display.setTextSize(2);
     display.setCursor((display.width()-strlen(phaseName)*12)/2,0);
     display.println(phaseName);
@@ -186,7 +186,7 @@ void update() {
         display.printlnCentered("Stop");
     }
     //display.fillRect(0, 60, display.width()*(currentTime/totalDuration), 3, 1);
-    display.display();
+    display.refresh();
 }
 
 bool button0WasPressed = false;

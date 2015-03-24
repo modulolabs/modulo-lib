@@ -42,7 +42,7 @@ void loop() {
      knob.setColor(0,0,255);
   }
 
-  display.display();
+  display.refresh();
     
 }
 

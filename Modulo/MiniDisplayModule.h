@@ -25,11 +25,11 @@ public:
     /// Use the MiniDisplay with the specified deviceID
     MiniDisplayModule(uint16_t deviceID);
 
-    /// Clear the display, setting all pixels to black.
-    void clearDisplay(void);
+    /// Clear the display, setting all pixels to black and moving the cursor to (0,0).
+    void clear(void);
 
     /// Update the MiniDisplay with the current frame buffer.
-    void display();
+    void refresh();
 
     virtual void drawPixel(int16_t x, int16_t y, uint16_t color);
     virtual void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);

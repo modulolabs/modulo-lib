@@ -53,7 +53,7 @@ void loop() {
     display.print(int(sliderValue));
     display.drawRect(display.width()-20, 10, 20, display.height()-10, WHITE);
     display.fillRect(display.width()-20, 10+(display.height()-10)*(1-sliderValue/100.0), 20, display.height()-10, WHITE);
-    display.display();
+    display.refresh();
 
 }
 

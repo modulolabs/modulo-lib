@@ -29,5 +29,5 @@ void loop() {
         display.println();        
     }
 
-    display.display();
+    display.refresh();
 }

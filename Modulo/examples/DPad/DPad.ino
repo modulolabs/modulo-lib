@@ -93,5 +93,5 @@ void loop() {
 
     display.fillCircle(w/2, h/2, size/2, dpad.getButton(DPadModule::CENTER) ? WHITE : BLACK);
     display.drawCircle(w/2, h/2, size/2, WHITE);    
-    display.display();
+    display.refresh();
 }

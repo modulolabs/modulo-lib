@@ -13,7 +13,7 @@ bool nextButtonWasPressed = false;
 bool prevButtonWasPressed = false;
 
 void loop() {
-    display.clearDisplay();
+    display.clear();
     display.setCursor(0,0);
 
     bool nextButtonIsPressed = display.getButton(2);
@@ -44,6 +44,6 @@ void loop() {
         }
         display.println();
     }
-    display.display();
+    display.refresh();
 
 }

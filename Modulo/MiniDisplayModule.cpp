@@ -178,7 +178,7 @@ uint8_t MiniDisplayModule::getButtons() {
 
 uint8_t _crc8_ccitt_update (uint8_t inCrc, uint8_t inData);
 
-void MiniDisplayModule::display() {
+void MiniDisplayModule::refresh() {
     // Data is sent to the display module in blocks that are 8 pixels high (1 page) and
     // 16 pixels wide. To reduce bandwidth, we only send the blocks that have changed.
     // We detect changes using a CRC of each block's pixels, which lets us avoid the RAM
@@ -215,8 +215,9 @@ void MiniDisplayModule::display() {
 }
 
 // clear everything
-void MiniDisplayModule::clearDisplay(void) {
+void MiniDisplayModule::clear(void) {
     memset(_buffer, 0, (MiniDisplayModule::WIDTH*MiniDisplayModule::HEIGHT/8));
+    setCursor(0,0);
 }
 
 
