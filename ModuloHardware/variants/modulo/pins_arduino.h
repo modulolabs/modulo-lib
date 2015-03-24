@@ -234,7 +234,7 @@ const uint8_t PROGMEM digital_pin_to_timer_PGM[] = {
 
 const uint8_t PROGMEM analog_pin_to_channel_PGM[] = {
     4,  // A0 D0 ADC4
-    1,  // A1 D1 ADC1
+    7,  // A1 D1 ADC7
     6,  // A2 D2 ADC6
     12, // A3 D3 ADC12
     10, // A4 D4 ADC10
