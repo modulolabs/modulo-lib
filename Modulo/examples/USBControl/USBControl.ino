@@ -54,27 +54,18 @@ void drawFatLine(int x0, int y0, int x1, int y1, int thickness, int color=1) {
     display.fillRect(x0, y0, width, height, color);
 }
 
-void drawLogo(int center_x=64, int center_y=36, int stepWidth=12) {
-    int left = center_x - stepWidth*1.5;
-    int bottom = center_y + stepWidth;
-    int circleOffset = stepWidth/2;
-    int radius = stepWidth/2;
-    int lineWidth = stepWidth/4;
+void drawLogo(int x=0, int y=0, int width=49, int height=49) {
 
-    for (int i=0; i < 3; i++) {
-        drawFatLine(left+i*stepWidth, bottom-i*stepWidth,
-                    left+(i+1)*stepWidth, bottom-i*stepWidth, lineWidth);
-        if (i < 2) {
-            drawFatLine(left+(i+1)*stepWidth, bottom-i*stepWidth,
-                        left+(i+1)*stepWidth, bottom-(i+1)*stepWidth,
-                        lineWidth);
-        }
-    }
-    display.fillCircle(left-circleOffset, bottom, radius, 1);
-    display.fillCircle(left-circleOffset, bottom, radius/2, 0);
+    int lineWidth = width/7;
 
-    display.fillCircle(left+3*stepWidth+circleOffset, bottom-2*stepWidth, radius, 1);
-    display.fillCircle(left+3*stepWidth+circleOffset, bottom-2*stepWidth, radius/2, 0);
+    display.fillRect(x, y, width, lineWidth, 1);
+    display.fillRect(x, y, lineWidth, height, 1);
+    display.fillRect(x+width-lineWidth, y, lineWidth, height, 1);
+
+    display.fillRect(x+lineWidth*2, y+lineWidth*2, lineWidth, height-lineWidth*2, 1);
+    display.fillRect(x+lineWidth*4, y+lineWidth*2, lineWidth, height-lineWidth*2, 1);
+    display.fillRect(x+lineWidth*2, y+height-lineWidth, lineWidth*3, lineWidth, 1);
+
 
 }
 
@@ -85,22 +76,22 @@ void showWelcomeScreen() {
     }
 
     if (deviceID == 0xFFFF) {            
-        display.clearDisplay();
-        display.setCursor(0,0);
-        display.setTextSize(2);
-        display.printlnCentered("Modulo");
+        display.clear();
+        display.setCursor(0,40);
+        display.setTextSize(1);
+        display.printlnCentered("MODULO");
 
-        drawLogo();
+        drawLogo(display.WIDTH/2-18, 10, 35, 26);
 
 
         display.setTextSize(1);
         display.setCursor(0, display.height()-8);
         display.println("            Devices >");
-        display.display();           
+        display.refresh();           
     } else {
         ModuloSetStatus(deviceID, ModuloStatusBlinking);
 
-        display.clearDisplay();
+        display.clear();
         display.setCursor(0,0);
         display.setTextSize(1);
 
@@ -116,7 +107,7 @@ void showWelcomeScreen() {
         display.setCursor(0, display.height()-8);
         display.println("               Next >");
 
-        display.display();
+        display.refresh();
     }
 
     bool buttonIsPressed = display.getButton(2);
