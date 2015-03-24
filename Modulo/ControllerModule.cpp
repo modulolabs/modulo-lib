@@ -58,11 +58,11 @@ void ControllerModule::setPWMOutput(uint8_t pin, float value) {
 
 
 float ControllerModule::getAnalogInput(uint8_t pin) {
-    uint8_t value;
-    if (!moduloTransfer(getAddress(), FUNCTION_GET_ANALOG_INPUT, &pin, 1, &value, 1)) {
+    uint8_t receiveData[] = {0,0};
+    if (!moduloTransfer(getAddress(), FUNCTION_GET_ANALOG_INPUT, &pin, 1, receiveData, 2)) {
         return 0.0;
     }
-    return value/255.0;
+    return (receiveData[0] | receiveData[1] << 8)/1023.0;
 }
 
 
