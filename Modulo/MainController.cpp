@@ -58,9 +58,16 @@ bool _MainController::processTransfer(
     switch (command) {
         case FUNCTION_SET_PIN_DIRECTION:
             if (sendLen == 1 and receiveLen == 0) {
+                bool output = sendData[0] & 1;
+                bool pullup = sendData[0] & 2;
                 uint8_t pin = sendData[0] >> 2;
-                bool mode = sendData[0] & 3;
-                pinMode(pin, mode ? OUTPUT : INPUT);
+                if (output) {
+                    pinMode(pin, OUTPUT);
+                } else if (pullup) {
+                    pinMode(pin, INPUT_PULLUP);
+                } else {
+                    pinMode(pin, INPUT);
+                }
                 return true;
             }
             return false;
@@ -82,8 +89,10 @@ bool _MainController::processTransfer(
             }
             return false;
         case FUNCTION_GET_ANALOG_INPUT:
-            if (sendLen == 1 and receiveLen == 1) {
-                receiveData[0] = analogRead(sendData[0]);
+            if (sendLen == 1 and receiveLen == 2) {
+                int val = analogRead(sendData[0]);
+                receiveData[0] = val & 0xFF;
+                receiveData[1] = val >> 8;
                 return true;
             }
             return false;
