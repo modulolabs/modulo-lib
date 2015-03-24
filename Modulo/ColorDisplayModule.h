@@ -44,6 +44,8 @@ public:
     /// Use the MiniDisplay with the specified deviceID
     ColorDisplayModule(uint16_t deviceID);
 
+    void clear();
+    
     //void setRotation(uint8_t r);
     //void setCursor(int x, int y);
     void setLineColor(const Color &c);
