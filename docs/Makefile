@@ -5,4 +5,3 @@ docs :
 upload :
 	scp -r html/* root@104.236.184.33:/var/www/arduino/
 
-	
