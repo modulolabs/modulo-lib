@@ -5,7 +5,7 @@ bootloader/.dep
 bootloader/*.lst
 !bootloader/Caterina.h
 !bootloader/Caterina.c
-Modulo/docs/html
+docs/html
 
 
 
