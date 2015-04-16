@@ -170,7 +170,7 @@ bool MiniDisplayModule::getButton(int button) {
 
 uint8_t MiniDisplayModule::getButtons() {
     uint8_t receivedData[1] = {0};
-    if (!moduloTransfer(getAddress(), GET_BUTTONS_COMMAND, 0, 0, receivedData, 1)) {
+    if (!_transfer(GET_BUTTONS_COMMAND, 0, 0, receivedData, 1)) {
         return false;
     }
     return receivedData[0];
@@ -204,7 +204,7 @@ void MiniDisplayModule::refresh() {
             if (_forceRedisplay or hashIndex == _lastForcedBlock or
                 newHash != _hashes[hashIndex]) {
                 memcpy(buffer+2, &_buffer[page*WIDTH + x], 16);
-                moduloTransfer(getAddress(), SET_PIXELS_COMMAND, buffer, 18, 0, 0);
+                _transfer(SET_PIXELS_COMMAND, buffer, 18, 0, 0);
             }
             _hashes[hashIndex] = newHash;
             hashIndex++;

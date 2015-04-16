@@ -62,21 +62,21 @@ void ColorDisplayModule::setLineColor(const Color &color) {
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpSetLineColor, color.r, color.g, color.b, color.a};
-    moduloTransfer(getAddress(), FUNCTION_APPEND_OP, sendData, 5, 0, 0);
+    _transfer(FUNCTION_APPEND_OP, sendData, 5, 0, 0);
 }
 
 void ColorDisplayModule::setFillColor(const Color &color) {
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpSetFillColor, color.r, color.g, color.b, color.a};
-    moduloTransfer(getAddress(), FUNCTION_APPEND_OP, sendData, 5, 0, 0);
+    _transfer(FUNCTION_APPEND_OP, sendData, 5, 0, 0);
 }
 
 void ColorDisplayModule::setTextColor(const Color &color) {
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpSetTextColor, color.r, color.g, color.b, color.a};
-    moduloTransfer(getAddress(), FUNCTION_APPEND_OP, sendData, 5, 0, 0);
+    _transfer(FUNCTION_APPEND_OP, sendData, 5, 0, 0);
 }
 
 void ColorDisplayModule::setCursor(int x, int y)
@@ -84,7 +84,7 @@ void ColorDisplayModule::setCursor(int x, int y)
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpSetCursor, x, y};
-    moduloTransfer(getAddress(), FUNCTION_APPEND_OP, sendData, 3, 0, 0);   
+    _transfer(FUNCTION_APPEND_OP, sendData, 3, 0, 0);   
 }
 
 void ColorDisplayModule::refresh()
@@ -92,7 +92,7 @@ void ColorDisplayModule::refresh()
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpRefresh};
-    moduloTransfer(getAddress(), FUNCTION_APPEND_OP, sendData, 1, 0, 0);
+    _transfer(FUNCTION_APPEND_OP, sendData, 1, 0, 0);
 
     _isRefreshing = true;
 }
@@ -103,7 +103,7 @@ void ColorDisplayModule::fillScreen(Color color)
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpFillScreen, color.r, color.g, color.b, color.a};
-    moduloTransfer(getAddress(), FUNCTION_APPEND_OP, sendData, 5, 0, 0);
+    _transfer(FUNCTION_APPEND_OP, sendData, 5, 0, 0);
 }
 
 
@@ -112,7 +112,7 @@ void ColorDisplayModule::drawLine(int x0, int y0, int x1, int y1)
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpDrawLine, x0, y0, x1, y1};
-    moduloTransfer(getAddress(), FUNCTION_APPEND_OP, sendData, 5, 0, 0);
+    _transfer(FUNCTION_APPEND_OP, sendData, 5, 0, 0);
 }
 
 void ColorDisplayModule::drawRect(int x, int y, int w, int h, int radius)
@@ -120,7 +120,7 @@ void ColorDisplayModule::drawRect(int x, int y, int w, int h, int radius)
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpDrawRect, x, y, w, h, radius};
-    moduloTransfer(getAddress(), FUNCTION_APPEND_OP, sendData, 6, 0, 0);
+    _transfer(FUNCTION_APPEND_OP, sendData, 6, 0, 0);
 }
 
 void ColorDisplayModule::drawString(const char *s)
@@ -138,7 +138,7 @@ void ColorDisplayModule::drawString(const char *s)
         if (*s == 0) {
             sendData[i++] = 0;
         }
-        moduloTransfer(getAddress(), FUNCTION_APPEND_OP, sendData, i, 0, 0);
+        _transfer(FUNCTION_APPEND_OP, sendData, i, 0, 0);
         i = 0;
     }
 
@@ -147,13 +147,13 @@ void ColorDisplayModule::drawString(const char *s)
 
 size_t ColorDisplayModule::write(uint8_t c) {
     uint8_t sendData[] = {OpDrawString,c,0};
-    moduloTransfer(getAddress(), FUNCTION_APPEND_OP, sendData, 3, 0, 0);
+    _transfer(FUNCTION_APPEND_OP, sendData, 3, 0, 0);
     return 1;
 }
 
 bool ColorDisplayModule::isComplete() {
     uint8_t complete = 0;
-    moduloTransfer(getAddress(), FUNCTION_IS_COMPLETE, 0, 0, &complete, 1);
+    _transfer(FUNCTION_IS_COMPLETE, 0, 0, &complete, 1);
     return complete;
 }
 
@@ -174,7 +174,7 @@ bool ColorDisplayModule::getButton(int button) {
 
 uint8_t ColorDisplayModule::getButtons() {
     uint8_t receivedData[1] = {0};
-    if (!moduloTransfer(getAddress(), FUNCTION_GET_BUTTONS, 0, 0, receivedData, 1)) {
+    if (!_transfer(FUNCTION_GET_BUTTONS, 0, 0, receivedData, 1)) {
         return false;
     }
 

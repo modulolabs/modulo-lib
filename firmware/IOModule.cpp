@@ -31,7 +31,7 @@ IOModule::IOModule(uint16_t deviceID) : Module("co.modulo.io", deviceID)
 bool IOModule::getDigitalInput(uint8_t pin) {
     uint8_t value = false;
 
-    if (!moduloTransfer(getAddress(), FUNCTION_GET_DIGITAL_INPUT, &pin, sizeof(pin),
+    if (!_transfer(FUNCTION_GET_DIGITAL_INPUT, &pin, sizeof(pin),
                         &value, sizeof(value))) {
         return false;
     }
@@ -42,7 +42,7 @@ bool IOModule::getDigitalInput(uint8_t pin) {
 uint8_t IOModule::getDigitalInputs() {
     uint8_t value = 0;
 
-    if (!moduloTransfer(getAddress(), FUNCTION_GET_DIGITAL_INPUTS, 0, 0,
+    if (!_transfer(FUNCTION_GET_DIGITAL_INPUTS, 0, 0,
                         &value, sizeof(value))) {
         return false;
     }
@@ -54,7 +54,7 @@ float IOModule::getAnalogInput(uint8_t pin, AnalogReference ref) {
     uint8_t sendData[] = {pin, ref};
     uint8_t receiveData[2];
 
-    if (!moduloTransfer(getAddress(), FUNCTION_GET_ANALOG_INPUT, sendData, sizeof(sendData),
+    if (!_transfer(FUNCTION_GET_ANALOG_INPUT, sendData, sizeof(sendData),
                         receiveData, sizeof(receiveData))) {
         return 0;
     }
@@ -64,13 +64,13 @@ float IOModule::getAnalogInput(uint8_t pin, AnalogReference ref) {
 void IOModule::setDigitalOutput(uint8_t pin, bool value) {
     uint8_t sendData[] = {pin, value};
     
-    if (!moduloTransfer(getAddress(), FUNCTION_SET_DIGITAL_OUTPUT, sendData, sizeof(sendData), 0, 0)) {
+    if (!_transfer(FUNCTION_SET_DIGITAL_OUTPUT, sendData, sizeof(sendData), 0, 0)) {
         // Handle error?
     }
 }
 
 bool IOModule::setDigitalOutputs(uint8_t values) {
-    return moduloTransfer(getAddress(), FUNCTION_SET_DIGITAL_OUTPUTS, &values, 1, 0, 0);
+    return _transfer(FUNCTION_SET_DIGITAL_OUTPUTS, &values, 1, 0, 0);
 }
 
 void IOModule::setPWMValue(uint8_t pin, float value) {
@@ -78,7 +78,7 @@ void IOModule::setPWMValue(uint8_t pin, float value) {
     
     uint8_t sendData[] = {pin, v & 0xFF, v >> 8};    
 
-    if (!moduloTransfer(getAddress(), FUNCTION_SET_PWM_OUTPUT, sendData, sizeof(sendData), 0, 0)) {
+    if (!_transfer(FUNCTION_SET_PWM_OUTPUT, sendData, sizeof(sendData), 0, 0)) {
         // Handle error?
     }
 }
@@ -86,7 +86,7 @@ void IOModule::setPWMValue(uint8_t pin, float value) {
 void IOModule::setPullup(uint8_t pin, bool enable) {
     uint8_t sendData[] = {pin, enable};
 
-    if (!moduloTransfer(getAddress(), FUNCTION_SET_PULLUP, sendData, sizeof(sendData), 0, 0)) {
+    if (!_transfer(FUNCTION_SET_PULLUP, sendData, sizeof(sendData), 0, 0)) {
         // Handle error?
     }
 }
@@ -94,7 +94,7 @@ void IOModule::setPullup(uint8_t pin, bool enable) {
 void IOModule::setDebounce(uint8_t pin, bool enable) {
     uint8_t sendData[] = {pin, enable};
 
-    if (!moduloTransfer(getAddress(), FUNCTION_SET_DEBOUNCE, sendData, sizeof(sendData), 0, 0)) {
+    if (!_transfer(FUNCTION_SET_DEBOUNCE, sendData, sizeof(sendData), 0, 0)) {
         // Handle error?
     }
 }
@@ -102,7 +102,7 @@ void IOModule::setDebounce(uint8_t pin, bool enable) {
 void IOModule::setPWMFrequency(uint8_t pin, uint16_t value) {
     uint8_t sendData[] = {pin, value & 0xFF, value >> 8};
 
-    if (!moduloTransfer(getAddress(), FUNCTION_SET_PWM_FREQUENCY, sendData, sizeof(sendData), 0, 0)) {
+    if (!_transfer(FUNCTION_SET_PWM_FREQUENCY, sendData, sizeof(sendData), 0, 0)) {
         // Handle error?
     }
 }

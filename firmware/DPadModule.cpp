@@ -37,7 +37,7 @@ bool DPadModule::_init()
 }
 
 void DPadModule::_refreshState() {
-    moduloTransfer(getAddress(), DPAD_FUNCTION_GET_BUTTONS, 0, 0, &_buttonState, 1);
+    _transfer(DPAD_FUNCTION_GET_BUTTONS, 0, 0, &_buttonState, 1);
 }
 
 void DPadModule::_processEvent(uint8_t eventCode, uint16_t eventData) {

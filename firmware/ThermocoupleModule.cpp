@@ -19,7 +19,7 @@ float ThermocoupleModule::getTemperatureC() {
     
     uint8_t receiveData[2] = {0,0};
     
-    if (!moduloTransfer(getAddress(), FUNCTION_GET_TEMPERATURE, 0, 0,
+    if (!_transfer(FUNCTION_GET_TEMPERATURE, 0, 0,
                         receiveData, 2)) {
         return 0;
         // Handle error?

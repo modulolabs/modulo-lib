@@ -21,7 +21,7 @@ MotorModule::MotorModule(uint16_t deviceID) :
 void MotorModule::setChannel(uint8_t channel, float amount) {
     uint16_t intValue = constrain(amount, 0, 1)*0xFFFF;
     uint8_t data[] = {channel, intValue & 0xFF, intValue >> 8};
-    moduloTransfer(getAddress(), _FunctionSetValue, data, 3, 0, 0);
+    _transfer(_FunctionSetValue, data, 3, 0, 0);
 } 
 
 
@@ -49,12 +49,12 @@ void MotorModule::setMotorB(float value) {
 
 void MotorModule::setEnableA(bool enable) {
     uint8_t dataToSend[] = {0, enable};
-    moduloTransfer(getAddress(), _FunctionSetEnabled, dataToSend, 2, 0, 0);
+    _transfer(_FunctionSetEnabled, dataToSend, 2, 0, 0);
 
 }
   
 
 void MotorModule::setEnableB(bool enable) {
     uint8_t dataToSend[] = {2, enable};
-    moduloTransfer(getAddress(), _FunctionSetEnabled, dataToSend, 2, 0, 0);
+    _transfer(_FunctionSetEnabled, dataToSend, 2, 0, 0);
 }

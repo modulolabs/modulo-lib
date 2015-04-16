@@ -21,7 +21,7 @@ ClockModule::Time ClockModule::getTime() {
     uint8_t receivedData[9];
     Time t;
     
-    if (moduloTransfer(getAddress(), FUNCTION_GET_TIME, 0, 0,
+    if (_transfer(FUNCTION_GET_TIME, 0, 0,
                         receivedData, 9)) {
         t.second = receivedData[0];
         t.minute = receivedData[1];
@@ -48,12 +48,12 @@ void ClockModule::setTime(const Time &t) {
     sendData[5] = t.month;
     sendData[6] = t.year - 2000;
 
-    moduloTransfer(getAddress(), FUNCTION_SET_TIME, sendData, 7, 0, 0);
+    _transfer(FUNCTION_SET_TIME, sendData, 7, 0, 0);
 }
   
 float ClockModule::getTemperatureC() {
     uint8_t receiveData[2] = {0,0};
-    if (!moduloTransfer(getAddress(), FUNCTION_GET_TEMPERATURE, 0, 0, receiveData, 2)) {
+    if (!_transfer(FUNCTION_GET_TEMPERATURE, 0, 0, receiveData, 2)) {
         return 0;
     }
     int16_t tenths = (receiveData[0] | receiveData[1] << 8);

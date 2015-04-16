@@ -48,11 +48,11 @@ bool JoystickModule::_init()
 
 void JoystickModule::_refreshState() {
     uint8_t buttonState = 0;
-    moduloTransfer(getAddress(), FUNCTION_GET_BUTTON, 0, 0, &buttonState, 1);
+    _transfer(FUNCTION_GET_BUTTON, 0, 0, &buttonState, 1);
     _buttonState = buttonState;
 
     uint8_t posResult[2] = {0,0};
-    moduloTransfer(getAddress(), FUNCTION_GET_POSITION, 0, 0, posResult, 2);
+    _transfer(FUNCTION_GET_POSITION, 0, 0, posResult, 2);
 
     _hPos = posResult[0];
     _vPos = posResult[1];
