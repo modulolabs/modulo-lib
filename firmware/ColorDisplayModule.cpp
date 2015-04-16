@@ -9,6 +9,7 @@
 
 #define FUNCTION_APPEND_OP 0
 #define FUNCTION_IS_COMPLETE 1
+#define FUNCTION_GET_BUTTONS 2
 
 static const int OpRefresh = 0;
 static const int OpFillScreen = 1;
@@ -165,4 +166,48 @@ void ColorDisplayModule::_waitOnRefresh()
         }
     }
 }
+
+bool ColorDisplayModule::getButton(int button) {
+
+    return getButtons() & (1 << button);
+}
+
+uint8_t ColorDisplayModule::getButtons() {
+    uint8_t receivedData[1] = {0};
+    if (!moduloTransfer(getAddress(), FUNCTION_GET_BUTTONS, 0, 0, receivedData, 1)) {
+        return false;
+    }
+
+    return receivedData[0];
+}
+
+void ColorDisplayModule::drawSplashScreen() {
+    setFillColor(ColorDisplayModule::Color(90,0,50));
+    setLineColor(ColorDisplayModule::Color(0,0,0,0));
+    drawRect(0, 0, WIDTH, HEIGHT);
+    setCursor(0, 40);
+
+    print("     MODULO");
+
+    setFillColor(ColorDisplayModule::Color(255,255,255));
+
+    drawLogo(WIDTH/2-18, 10, 35, 26);
+    
+}
+
+void ColorDisplayModule::drawLogo(int x, int y, int width, int height) {
+
+    int lineWidth = width/7;
+
+    drawRect(x, y, width, lineWidth, 1);
+    drawRect(x, y, lineWidth, height, 1);
+    drawRect(x+width-lineWidth, y, lineWidth, height, 1);
+
+    drawRect(x+lineWidth*2, y+lineWidth*2, lineWidth, height-lineWidth*2, 1);
+    drawRect(x+lineWidth*4, y+lineWidth*2, lineWidth, height-lineWidth*2, 1);
+    drawRect(x+lineWidth*2, y+height-lineWidth, lineWidth*3, lineWidth, 1);
+}
+
+
+
 

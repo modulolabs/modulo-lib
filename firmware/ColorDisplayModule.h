@@ -8,7 +8,6 @@
 #else
 #include "Print.h"
 #endif
-
 /// A tiny color OLED screen
 class ColorDisplayModule : public Module, public Print {
 public:
@@ -72,7 +71,17 @@ public:
 
     bool isComplete();
 
+    /// Return whether the specified button is currently pressed
+    bool getButton(int button);
 
+    /// Return the state of all three buttons, one in each bit.
+    uint8_t getButtons();
+
+    /// Draw the Modulo logo and the word 'MODULO' on a purple background
+    void drawSplashScreen();
+
+    /// Draw the Modulo logo
+    void drawLogo(int x=0, int y=0, int width=49, int height=49);
 
 private:
     void _waitOnRefresh();
