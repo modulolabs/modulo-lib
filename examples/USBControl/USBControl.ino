@@ -4,8 +4,7 @@
 
 #define BUFFER_SIZE 32
 
-
-MiniDisplayModule display;
+ColorDisplayModule display;
 
 int page = 255;
 bool serialConnected = false;
@@ -51,23 +50,21 @@ void drawFatLine(int x0, int y0, int x1, int y1, int thickness, int color=1) {
         height = -height;
     }
 
-    display.fillRect(x0, y0, width, height, color);
+    display.drawRect(x0, y0, width, height, color);
 }
 
-void drawLogo(int x=0, int y=0, int width=49, int height=49) {
+KnobModule knob;
 
-    int lineWidth = width/7;
-
-    display.fillRect(x, y, width, lineWidth, 1);
-    display.fillRect(x, y, lineWidth, height, 1);
-    display.fillRect(x+width-lineWidth, y, lineWidth, height, 1);
-
-    display.fillRect(x+lineWidth*2, y+lineWidth*2, lineWidth, height-lineWidth*2, 1);
-    display.fillRect(x+lineWidth*4, y+lineWidth*2, lineWidth, height-lineWidth*2, 1);
-    display.fillRect(x+lineWidth*2, y+height-lineWidth, lineWidth*3, lineWidth, 1);
+void drawKnobDisplay(uint16_t deviceID) {
 
 
+    display.println(knob.getPosition());
+    display.setLineColor(ColorDisplayModule::White);
+    float angle = knob.getPosition()*M_PI/24.0;
+    display.drawLine(display.WIDTH/2, display.HEIGHT/2,
+        display.WIDTH/2 + 10*cos(angle), display.HEIGHT/2+10*sin(angle));
 }
+
 
 void showWelcomeScreen() {
     uint16_t deviceID = ModuloGetNextDeviceID(0);
@@ -77,34 +74,34 @@ void showWelcomeScreen() {
 
     if (deviceID == 0xFFFF) {            
         display.clear();
-        display.setCursor(0,40);
-        display.setTextSize(1);
-        display.printlnCentered("MODULO");
-
-        drawLogo(display.WIDTH/2-18, 10, 35, 26);
+     
+        display.drawSplashScreen();
 
 
-        display.setTextSize(1);
-        display.setCursor(0, display.height()-8);
-        display.println("            Devices >");
+        display.setCursor(0, display.HEIGHT-8);
+        display.println("       Devices >");
         display.refresh();           
     } else {
         ModuloSetStatus(deviceID, ModuloStatusBlinking);
 
         display.clear();
         display.setCursor(0,0);
-        display.setTextSize(1);
 
         char product[32];
         ModuloGetProduct(deviceID, product, 31);
 
-        display.print("Device ID: ");
+        display.print(product);
+        display.setCursor(66, 0);
         display.println(deviceID);
-        display.println();
-        display.print("Type: ");    
-        display.println(product);
+
+        char deviceType[32];
+        ModuloGetDeviceType(deviceID, deviceType, 31);
+        //if (strcmp(deviceType,"co.modulo.knob") == 0) {
+            drawKnobDisplay(deviceID);
+        //}
+
         
-        display.setCursor(0, display.height()-8);
+        display.setCursor(0, display.HEIGHT-8);
         display.println("               Next >");
 
         display.refresh();
