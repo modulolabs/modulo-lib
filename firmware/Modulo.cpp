@@ -127,7 +127,7 @@ bool _moduloTransfer(
 
 bool moduloTransfer(
     uint8_t address, uint8_t command, uint8_t *sendData, uint8_t sendLen,
-    uint8_t *receiveData, uint8_t receiveLen, uint8_t retries)
+    uint8_t *receiveData, uint8_t receiveLen)
 {            
     // Intercept broadcast transfers to deviceID 0, which is the controller
     if (address == BroadcastAddress and sendLen >= 2 and sendData[0] == 0 and sendData[1] == 0) {
@@ -137,12 +137,7 @@ bool moduloTransfer(
         return _mainController.processTransfer(command, sendData, sendLen, receiveData, receiveLen);
     }
 
-    for (int i=0; i < retries; i++) {
-        if (_moduloTransfer(address,command,sendData,sendLen,receiveData,receiveLen)) {
-            return true;
-        }
-    }
-    return false;
+    return _moduloTransfer(address,command,sendData,sendLen,receiveData,receiveLen);
 }
 
 void ModuloLoop() {
@@ -168,7 +163,7 @@ void ModuloLoop() {
 
 void ModuloGlobalReset() {
     moduloTransfer(BroadcastAddress, BroadcastCommandGlobalReset,
-                   0, 0, 0, 0, 1);
+                   0, 0, 0, 0);
     Module::_globalReset();
     _mainController.globalReset();
 }
@@ -177,7 +172,7 @@ uint16_t ModuloGetNextDeviceID(uint16_t lastDeviceID) {
     uint8_t sendData[2] = {lastDeviceID & 0xFF, lastDeviceID >> 8 };
     uint8_t receiveData[2] = {0xFF,0xFF};
     if (!moduloTransfer(BroadcastAddress, BroadcastCommandGetNextDeviceID,
-                        sendData, 2, receiveData, 2, 1)) {
+                        sendData, 2, receiveData, 2)) {
         return 0xFFFF;
     }
     return receiveData[1] | (receiveData[0] << 8);
@@ -186,14 +181,14 @@ uint16_t ModuloGetNextDeviceID(uint16_t lastDeviceID) {
 bool ModuloSetAddress(uint16_t deviceID, uint8_t address) {
     uint8_t sendData[3] = {deviceID & 0xFF, deviceID >> 8, address};
     return moduloTransfer(BroadcastAddress, BroadcastCommandSetAddress,
-                          sendData, 3, 0, 0, 1);
+                          sendData, 3, 0, 0);
 }
 
 uint8_t ModuloGetAddress(uint16_t deviceID) {
     uint8_t sendData[2] = {deviceID & 0xFF, deviceID >> 8};
     uint8_t address = 0;
     if (moduloTransfer(BroadcastAddress, BroadcastCommandGetAddress,
-                       sendData, 2, &address, 1, 1)){
+                       sendData, 2, &address, 1)){
         return address;
     }
     return 0;
@@ -202,25 +197,25 @@ uint8_t ModuloGetAddress(uint16_t deviceID) {
 bool ModuloGetDeviceType(uint16_t deviceID, char *deviceType, uint8_t maxLen) {
     uint8_t sendData[2] = {deviceID & 0xFF, deviceID >> 8};
     return moduloTransfer(BroadcastAddress, BroadcastCommandGetDeviceType,
-                          sendData, 2, (uint8_t*)deviceType, maxLen, 1);
+                          sendData, 2, (uint8_t*)deviceType, maxLen);
 }
 
 bool ModuloGetManufacturer(uint16_t deviceID, char *deviceType, uint8_t maxLen) {
     uint8_t sendData[2] = {deviceID & 0xFF, deviceID >> 8};
     return moduloTransfer(BroadcastAddress, BroadcastCommandGetCompanyName,
-                          sendData, 2, (uint8_t*)deviceType, maxLen, 1);
+                          sendData, 2, (uint8_t*)deviceType, maxLen);
 }
 
 bool ModuloGetProduct(uint16_t deviceID, char *deviceType, uint8_t maxLen) {
     uint8_t sendData[2] = {deviceID & 0xFF, deviceID >> 8};
     return moduloTransfer(BroadcastAddress, BroadcastCommandGetProductName,
-                          sendData, 2, (uint8_t*)deviceType, maxLen, 1);
+                          sendData, 2, (uint8_t*)deviceType, maxLen);
 }
 
 bool ModuloGetDocURL(uint16_t deviceID, char *deviceType, uint8_t maxLen) {
     uint8_t sendData[2] = {deviceID & 0xFF, deviceID >> 8};
     return moduloTransfer(BroadcastAddress, BroadcastCommandGetDocURL,
-                          sendData, 2, (uint8_t*)deviceType, maxLen, 1);
+                          sendData, 2, (uint8_t*)deviceType, maxLen);
 }
 
 bool ModuloSetStatus(uint16_t deviceID, ModuloStatus status) {

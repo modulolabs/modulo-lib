@@ -1,5 +1,6 @@
 #include "KnobModule.h"
 #include "Modulo.h"
+#include "Arduino.h"
 #include <math.h>
 
 #define FUNCTION_KNOB_GET_BUTTON 0
@@ -70,12 +71,12 @@ bool KnobModule::setHSV(float h, float s, float v) {
 
 bool KnobModule::setColor(float r, float g, float b) {
     uint8_t sendData[3] = {r*255, g*255, b*255};
-    return moduloTransfer(getAddress(), FUNCTION_KNOB_SET_COLOR, sendData, 3, 0, 0);
+    return _transfer(FUNCTION_KNOB_SET_COLOR, sendData, 3, 0, 0);
 }
 
 bool KnobModule::getButton() {
     uint8_t receivedData[1];
-    if (!moduloTransfer(getAddress(), FUNCTION_KNOB_GET_BUTTON, 0, 0, receivedData, 1)) {
+    if (!_transfer(FUNCTION_KNOB_GET_BUTTON, 0, 0, receivedData, 1)) {
         return false;
     }
     return receivedData[0];
@@ -83,7 +84,8 @@ bool KnobModule::getButton() {
 
 int16_t KnobModule::getPosition() {
     uint8_t receivedData[2];
-    if (!moduloTransfer(getAddress(), FUNCTION_KNOB_GET_POSITION, 0, 0, receivedData, 2)) {
+    if (!_transfer(FUNCTION_KNOB_GET_POSITION, 0, 0, receivedData, 2)) {
+        Serial.println("Failed to get position");
         return false;
     }
     return receivedData[0] | (receivedData[1] << 8);

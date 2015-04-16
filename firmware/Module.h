@@ -33,6 +33,10 @@ class Module {
     
     static void _globalReset();
 
+    bool _transfer(uint8_t command, uint8_t *sendData, uint8_t sendLen,
+        uint8_t *receiveData, uint8_t receiveLen, uint8_t retries=3);
+
+
  private:
     static uint8_t _lastAssignedAddress;
 

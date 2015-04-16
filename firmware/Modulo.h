@@ -10,6 +10,8 @@
 #include "ControllerModule.h"
 #include "ColorDisplayModule.h"
 #include "JoystickModule.h"
+#include "IMU.h"
+#include "MotorModule.h"
 
 enum ModuloStatus {
     ModuloStatusOff,
@@ -54,7 +56,7 @@ bool ModuloSetStatus(uint16_t deviceID, ModuloStatus status);
 /// Perform a data transfer on the modulo bus
 bool moduloTransfer(
     uint8_t address, uint8_t command, uint8_t *sendData, uint8_t sendLen,
-    uint8_t *receiveData, uint8_t receiveLen, uint8_t retries=3);
+    uint8_t *receiveData, uint8_t receiveLen);
 
 #endif
 

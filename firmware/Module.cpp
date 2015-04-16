@@ -97,13 +97,14 @@ bool Module::_init() {
         // Find the first device with the specified type and no assigned address
         uint16_t deviceID = ModuloGetNextDeviceID(0);
         while (deviceID != 0xFFFF) {
-            char deviceType[32] = {0};
-            ModuloGetDeviceType(deviceID, deviceType, 31);
-            if (strcmp(deviceType,_deviceType) == 0) {
-                _deviceID = deviceID;
-                break;
-            }
-            
+            if (ModuloGetAddress(deviceID) == 0) {
+                char deviceType[32] = {0};
+                ModuloGetDeviceType(deviceID, deviceType, 31);
+                if (strcmp(deviceType,_deviceType) == 0) {
+                    _deviceID = deviceID;
+                    break;
+                }
+            }            
             deviceID = ModuloGetNextDeviceID(deviceID+1);
         }
     }
@@ -119,4 +120,28 @@ bool Module::_init() {
         ModuloSetAddress(_deviceID, _address);
     }
     return true;
+}
+
+bool Module::_transfer(uint8_t command, uint8_t *sendData, uint8_t sendLen,
+        uint8_t *receiveData, uint8_t receiveLen, uint8_t retries)
+{
+    // Unable to assign an address. Return false.
+    uint8_t address = getAddress();
+    if (address == 0xFF) {
+        return false;
+    }
+
+    // We have a valid address, attempt the transfer.
+    if (moduloTransfer(address, command, sendData, sendLen,
+        receiveData, receiveLen)) {
+        return true;
+    }
+
+    // If the transfer failed, try to re-assign an address. The device may
+    // have been removed and re-connected
+    _address = 0xFF;
+
+    if (retries > 0) {
+        _transfer(command, sendData, sendLen, receiveData, receiveLen, retries-1);
+    }
 }
