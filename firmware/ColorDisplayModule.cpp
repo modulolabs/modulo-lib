@@ -22,7 +22,8 @@ static const int OpDrawCircle = 7;
 static const int OpDrawTriangle = 8;
 static const int OpDrawString = 9;
 static const int OpSetCursor = 10;
-     
+static const int OpSetTextSize = 11;
+
 const ColorDisplayModule::Color ColorDisplayModule::Black;
 const ColorDisplayModule::Color ColorDisplayModule::White(255,255,255);
 const ColorDisplayModule::Color ColorDisplayModule::Clear(0,0,0,0);
@@ -77,6 +78,14 @@ void ColorDisplayModule::setTextColor(const Color &color) {
 
     uint8_t sendData[] = {OpSetTextColor, color.r, color.g, color.b, color.a};
     _transfer(FUNCTION_APPEND_OP, sendData, 5, 0, 0);
+}
+
+
+void ColorDisplayModule::setTextSize(uint8_t size) {
+    _waitOnRefresh();
+
+    uint8_t sendData[] = {OpSetTextSize, size};
+    _transfer(FUNCTION_APPEND_OP, sendData, 2, 0, 0);
 }
 
 void ColorDisplayModule::setCursor(int x, int y)
@@ -153,12 +162,15 @@ size_t ColorDisplayModule::write(uint8_t c) {
 
 bool ColorDisplayModule::isComplete() {
     uint8_t complete = 0;
-    _transfer(FUNCTION_IS_COMPLETE, 0, 0, &complete, 1);
-    return complete;
+    if (_transfer(FUNCTION_IS_COMPLETE, 0, 0, &complete, 1)) {
+        return complete;
+    }
+    return true;
 }
 
 void ColorDisplayModule::_waitOnRefresh()
 {
+  
     if (_isRefreshing) {
         _isRefreshing = false;
         while (!isComplete()) {

@@ -50,7 +50,7 @@ public:
     void setLineColor(const Color &c);
     void setFillColor(const Color &c);
     void setTextColor(const Color &textColor);
-    //void setTextFormat(uint8_t size, TextAlignment alignment, bool wrap);
+    void setTextSize(uint8_t size);
 
 
     void fillScreen(Color color);
