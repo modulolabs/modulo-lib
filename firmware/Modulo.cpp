@@ -1,15 +1,9 @@
 #include "Modulo.h"
 #include "MainController.h"
 
-#ifdef SPARK
-#include "spark_wiring_i2c.h"
-#else
 #include "Arduino.h"
-#include "Wire.h"
-extern "C" {
-    #include <utility/twi.h>
-}
-#endif
+
+#include "ModuloTWI.h"
 
 #define BroadcastAddress 9
 
@@ -29,6 +23,30 @@ extern "C" {
 
 #define ControllerFunctionReadTemperatureProbe 0
 
+
+
+#ifdef SPARK
+#include "spark_wiring_i2c.h"
+
+
+#define TWI_INIT() Wire.begin()
+#define TWI_BEGIN_WRITE(address) Wire.beginTransmission(address)
+#define TWI_WRITE(data) Wire.write(data)
+#define TWI_END_WRITE() Wire.endTransmission(true)
+#define TWI_REQUEST_FROM(address, len) Wire.requestFrom((int)address, (int)len)
+#define TWI_READ() Wire.read()
+
+#else
+
+#define TWI_INIT() modulo_twi_init()
+#define TWI_BEGIN_WRITE(address) modulo_twi_beginWrite(address)
+#define TWI_WRITE(data) modulo_twi_write(data)
+#define TWI_END_WRITE() modulo_twi_endWrite(true /*wait*/, true/*sendStop*/)
+#define TWI_REQUEST_FROM(address, len) modulo_twi_readFrom(address, len, true /*sendStop*/)
+#define TWI_READ() modulo_twi_read()
+
+#endif
+
 static bool _initialized = false;
 _MainController _mainController;
 
@@ -40,7 +58,7 @@ void ModuloSetup(bool highBitRate) {
     _initialized = true;
 
 #ifdef ARDUINO
-    twi_init();
+    TWI_INIT();
     if (highBitRate) {
         TWBR = 6;
         TWSR &= ~(3);
@@ -66,30 +84,33 @@ _crc8_ccitt_update (uint8_t inCrc, uint8_t inData)
 }
 
 
+
 bool _moduloTransfer(
     uint8_t address, uint8_t command, uint8_t *sendData, uint8_t sendLen,
     uint8_t *receiveData, uint8_t receiveLen)
 {
+
     // Star the transmit CRC with the address in the upper 7 bits
     uint8_t crc =  _crc8_ccitt_update(0, address << 1);
     
-    Wire.beginTransmission(address);
+    TWI_BEGIN_WRITE(address);
 
     // Send the command and length
-    Wire.write(command);
-    Wire.write(sendLen);
+    TWI_WRITE(command);
+    TWI_WRITE(sendLen);
     crc = _crc8_ccitt_update(crc, command);
     crc = _crc8_ccitt_update(crc, sendLen);
     
     // Send the data
     for (int i=0; i < sendLen; i++) {
-        Wire.write(sendData[i]);
+        TWI_WRITE(sendData[i]);
         crc = _crc8_ccitt_update(crc, sendData[i]);
     }
 
     // Send the CRC and end the transmission
-    Wire.write(crc);
-    if (Wire.endTransmission() != 0) {
+    TWI_WRITE(crc);
+
+    if (TWI_END_WRITE() != 0) {
         return false;
     }
 
@@ -98,7 +119,7 @@ bool _moduloTransfer(
     }
     
     // Request receiveLen data bytes plus 1 CRC byte.
-    if (Wire.requestFrom((int)address, (int)receiveLen+1) != receiveLen+1) {
+    if (TWI_REQUEST_FROM((int)address, (int)receiveLen+1) != receiveLen+1) {
         return false;
     }
     
@@ -107,7 +128,7 @@ bool _moduloTransfer(
     
     // Receive the data
     for (int i=0; i < 32 and i < receiveLen; i++) {
-        receiveData[i] = Wire.read();
+        receiveData[i] = TWI_READ();
         
         // XXX: Hack to detect the end of variable length strings.
         if (i > 0 and receiveLen == 31 and
@@ -118,7 +139,7 @@ bool _moduloTransfer(
     }
     
     // Receive the CRC.
-    uint8_t receivedCRC = Wire.read();
+    uint8_t receivedCRC = TWI_READ();
 
     // Check the CRC.
     return (crc == receivedCRC);
@@ -142,6 +163,8 @@ bool moduloTransfer(
 
 void ModuloLoop() {
     _mainController.loop();
+
+    Module::loop();
 
     uint8_t event[5];
     if (moduloTransfer(BroadcastAddress, BroadcastCommandGetEvent, 0, 0, event, 5)) {

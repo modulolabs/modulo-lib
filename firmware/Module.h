@@ -15,6 +15,8 @@ class Module {
 
     static Module* findByDeviceID(uint16_t deviceID);
 
+    static void loop();
+
  protected:
     Module(const char *deviceType);
     Module(const char *deviceType, uint16_t deviceID);
@@ -25,6 +27,7 @@ class Module {
     // it failed or if the module was already initialized.
     virtual bool _init();
     virtual void _reset();
+    virtual void _loop();
 
     friend void ModuloLoop();
     friend void ModuloGlobalReset();
@@ -43,6 +46,7 @@ class Module {
     const char *_deviceType;
     uint16_t _deviceID;
     uint8_t _address;
+    bool _disconnected;
 
     // Linked list of modules
     static Module *_firstModule;

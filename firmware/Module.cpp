@@ -5,21 +5,21 @@
 #include <spark_wiring.h>
 #else
 #include "Arduino.h"
-#include "Wire.h"
+
 #endif
 
 uint8_t Module::_lastAssignedAddress = 9;
 Module* Module::_firstModule = NULL;
 
 Module::Module(const char *deviceType) :
-    _deviceType(deviceType), _deviceID(0xFFFF), _address(0xFF) {
+    _deviceType(deviceType), _deviceID(0xFFFF), _address(0xFF), _disconnected(true) {
     
     _nextModule = _firstModule;
     _firstModule = this;
 }
 
 Module::Module(const char *deviceType, uint16_t deviceID) : 
-    _deviceType(deviceType), _deviceID(deviceID), _address(0xFF) {
+    _deviceType(deviceType), _deviceID(deviceID), _address(0xFF), _disconnected(true) {
 
     _nextModule = _firstModule;
     _firstModule = this;
@@ -72,6 +72,20 @@ uint8_t Module::getAddress() {
     return _address;
 }
 
+void Module::loop() {
+    for (Module *m = _firstModule; m ; m = m->_nextModule) {
+        m->_loop();
+    }
+}
+
+void Module::_loop() {
+    if (_disconnected) {
+        if (getAddress() != 0xFF) {
+            _disconnected = false;
+        }
+    }
+}
+
 bool Module::_init() {
     if (_address != 0xFF) {
         return false;
@@ -97,14 +111,21 @@ bool Module::_init() {
         // Find the first device with the specified type and no assigned address
         uint16_t deviceID = ModuloGetNextDeviceID(0);
         while (deviceID != 0xFFFF) {
-            if (ModuloGetAddress(deviceID) == 0) {
+
+            // First look for a Module that already has this deviceID
+            Module *m = _firstModule;
+            for (; m && m->_deviceID != deviceID; m = m->_nextModule) {
+            }
+
+            if (m == NULL) {
                 char deviceType[32] = {0};
                 ModuloGetDeviceType(deviceID, deviceType, 31);
                 if (strcmp(deviceType,_deviceType) == 0) {
                     _deviceID = deviceID;
                     break;
                 }
-            }            
+            }
+
             deviceID = ModuloGetNextDeviceID(deviceID+1);
         }
     }
@@ -125,23 +146,31 @@ bool Module::_init() {
 bool Module::_transfer(uint8_t command, uint8_t *sendData, uint8_t sendLen,
         uint8_t *receiveData, uint8_t receiveLen, uint8_t retries)
 {
-    // Unable to assign an address. Return false.
-    uint8_t address = getAddress();
-    if (address == 0xFF) {
+    if (_disconnected) {
         return false;
     }
 
-    // We have a valid address, attempt the transfer.
-    if (moduloTransfer(address, command, sendData, sendLen,
-        receiveData, receiveLen)) {
-        return true;
+    for (int i=0; i < retries; i++) {
+        // Unable to assign an address. Return false.
+        uint8_t address = getAddress();
+        if (address == 0xFF) {
+            continue;
+        }
+
+        // We have a valid address, attempt the transfer.
+        if (moduloTransfer(address, command, sendData, sendLen,
+            receiveData, receiveLen)) {
+          
+            return true;
+        }
+
+        // If the transfer failed, try to re-assign an address. The device may
+        // have been removed and re-connected
+        ModuloSetAddress(_deviceID, _address);
     }
 
-    // If the transfer failed, try to re-assign an address. The device may
-    // have been removed and re-connected
-    _address = 0xFF;
 
-    if (retries > 0) {
-        _transfer(command, sendData, sendLen, receiveData, receiveLen, retries-1);
-    }
+    _disconnected = true;
+
+    return false;
 }
