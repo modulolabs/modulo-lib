@@ -1,4 +1,4 @@
-#include "Wire.h"
+
 #include "Modulo.h"
 #include <PID_v1.h>
 
@@ -20,7 +20,6 @@ enum Selection {
 
 Selection selection = SelectionTargetTemp;
 
-
 //
 // Variables for the PID Control Algorithm
 //
@@ -30,23 +29,30 @@ double currentTemp = 225;              // The latest temperature from the sensor
 double fanSpeed = 0;                   // The speed at which to run the fan
 
 // Create a PID controller object and connect it to our variables.
-PID myPID(&currentTemp, &fanSpeed, &targetTemp, 20, 0, 0, DIRECT);
+PID myPID(&currentTemp, &fanSpeed, &targetTemp, 3, .025, 0, DIRECT);
 
 
 //
 // Variables for the graph
 //
 double graphMinTemp = 50;      // The minimum temperature to display
-double graphMaxTemp = 350;     // The maximum temperature to display
+double graphMaxTemp = 400;     // The maximum temperature to display
 double graphMinY = ColorDisplayModule::HEIGHT-10; // The display Y position of the min temperatre
 double graphMaxY = 10; // The display Y position of the max temperature
-double graphDuration = 15*60; // Duration of the graph in seconds
+double graphDuration = 60*30; // Duration of the graph in seconds
+uint64_t nextDataLogTime = 0;
 
 const int graphWidth = 96;    // The width of the graph in pixels
-uint8_t currentTempGraph[graphWidth]; // The data for the graph
-uint8_t targetTempGraph[graphWidth];  // The data for the graph
-uint8_t fanSpeedGraph[graphWidth];  // The data for the graph
-uint8_t graphPos = 0;          // The index in the graph for the current time
+uint8_t currentTempGraph[graphWidth] = { // The data for the graph
+   55, 55, 55, 53, 52, 51, 48, 47, 45, 44, 44, 44, 44, 43, 43, 45,
+   45, 45, 43, 43, 40, 38, 36, 33, 31, 28, 26, 25, 25, 25, 25, 25};
+uint8_t targetTempGraph[graphWidth] = { // The data for the graph
+   45, 45, 43, 43, 40, 38, 36, 33, 31, 28, 26, 25, 25, 25, 25, 25,
+   35, 45, 48, 50, 50, 51, 48, 47, 45, 44, 44, 44, 44, 43, 43, 45};  // The data for the graph
+uint8_t fanSpeedGraph[graphWidth] = { // The data for the graph
+   33, 31, 28, 26, 25, 25, 25, 25, 25, 24, 24, 23, 22, 22, 21, 21,
+   23, 24, 25, 26, 27, 26, 24, 23, 25, 26, 28, 30, 32, 32, 30, 21};
+
 
 int tempToGraphY(float temp) {
     // Map temperature (in degrees) and to a value between 0 and 1
@@ -64,38 +70,56 @@ int speedToGraphY(float speed) {
     return s*graphMaxY + (1-s)*graphMinY;
 }
 
+void logData(float temp, float targetTemp, float fanSpeed) {
+
+  // Save the currentTemp and targetTemp at the current position in the graph
+  if (millis() > nextDataLogTime) {
+
+      nextDataLogTime = millis()+graphDuration*1000/graphWidth;
+
+
+      for (int i=0; i+1 < graphWidth; i++) {
+          currentTempGraph[i] = currentTempGraph[i+1];
+          targetTempGraph[i] = targetTempGraph[i+1];
+          fanSpeedGraph[i] = fanSpeedGraph[i+1];
+      }
+      currentTempGraph[graphWidth-1] = tempToGraphY(temp);
+      targetTempGraph[graphWidth-1] = tempToGraphY(targetTemp);
+      fanSpeedGraph[graphWidth-1] = speedToGraphY(fanSpeed);
+    }
+}
+
+
 void drawGraph(uint8_t *graphData) {
     // The Y position and starting X position of the
     // current line. Changes every time a new value is
     // encountered.
-    int lineY = 0;
     int lineStartX = 0;
+    int lineStartY = 0;
 
     // Walk over the graph from left to right
-    for (int x=0; x < graphWidth; x++) {
+    for (int i=0; i < graphWidth; i++) {
         // Figure out the index into the data
-        int i = (x+graphPos) % graphWidth;
+        int x = i*display.WIDTH/graphWidth;
+        int y = graphData[i];
 
         // If the value has not changed since the
         // previous position, we don't need to do anything
-        if (graphData[i] == lineY) {
+        if (y == lineStartY and i != graphWidth-1) {
             continue;
         }
 
+
         // Draw the line, but only if the value was not 0
-        if (lineY != 0) {
-            display.drawLine(lineStartX, lineY,
-                x, graphData[i]);
+        if (lineStartY != 0) {
+            display.drawLine(lineStartX, lineStartY, x, y);
         }
 
-        // Save the start position of the next line
+        // Save the start position of the next line segment
         lineStartX = x;
-        lineY = graphData[i];
+        lineStartY = y;
     }
 
-    // Draw the last line segment
-    display.drawLine(lineStartX, lineY,
-        graphWidth, lineY);
 }
 
 void setup() {
@@ -103,6 +127,7 @@ void setup() {
     myPID.SetMode(AUTOMATIC);
 
     // Initialize graphData. Values at or below 0 won't be drawn.
+
     for (int i=0; i < graphWidth; i++) {
         currentTempGraph[i] = 0;
         targetTempGraph[i] = 0;
@@ -139,7 +164,7 @@ void drawMainScreen() {
 
     display.setLineColor(currentTempColor);
     drawGraph(currentTempGraph);
-    
+
     display.refresh();
 }
 
@@ -168,24 +193,18 @@ void drawSettingsScreen() {
 int previousKnobPosition = 0;
 bool knobWasPressed = false;
 
+
 void loop() {
     ModuloLoop();
 
     // Read the thermocouple temperature, update the controller, and output the fan speed
     currentTemp = thermocouple.getTemperatureF();
+
     myPID.Compute();
     analogWrite(0, fanSpeed);
 
-    // Upgrade graphPos, the index into graphData that corresponds to the current
-    // time. We sample once a second (millis()/1000) and the index wraps around
-    // when it gets bigger than graphWidth. (% graphWidth).
-    float graphSampleRate = graphWidth/graphDuration;
-    graphPos = int((millis()/1000)*graphWidth/graphDuration) % graphWidth;
+    logData(currentTemp, targetTemp, fanSpeed);
 
-    // Save the currentTemp and targetTemp at the current position in the graph
-    currentTempGraph[graphPos] = tempToGraphY(currentTemp);
-    targetTempGraph[graphPos] = tempToGraphY(targetTemp);   
-    fanSpeedGraph[graphPos] = speedToGraphY(fanSpeed);  
 
     // When the knob is pressed, change the selection
     bool knobIsPressed = knob.getButton();
@@ -225,5 +244,13 @@ void loop() {
         drawSettingsScreen();
     }
 
-}
 
+    if (fabs(currentTemp-targetTemp) < 5) {
+        knob.setColor(0,1,0);
+    } else if (currentTemp > targetTemp) {
+        knob.setColor(1,0,0);
+    } else {
+        knob.setColor(0,0,1);
+    }
+
+}
