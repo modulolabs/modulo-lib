@@ -4,7 +4,7 @@
 
 #define BUFFER_SIZE 32
 
-ColorDisplayModule display;
+DisplayModulo display;
 
 int page = 255;
 bool serialConnected = false;
@@ -28,7 +28,7 @@ void processModuloTransfer() {
     uint8_t receiveLen = 0;
     Serial.readBytes(&receiveLen, 1);
 
-    bool retval = moduloTransfer(address, command, buffer,
+    bool retval = Modulo.transfer(address, command, buffer,
         sendLen, buffer, receiveLen);
 
     Serial.write(retval);
@@ -53,23 +53,23 @@ void drawFatLine(int x0, int y0, int x1, int y1, int thickness, int color=1) {
     display.drawRect(x0, y0, width, height, color);
 }
 
-KnobModule knob;
+KnobModulo knob;
 
 void drawKnobDisplay(uint16_t deviceID) {
 
 
     display.println(knob.getPosition());
-    display.setLineColor(ColorDisplayModule::White);
+    display.setLineColor(display.White);
     float angle = knob.getPosition()*M_PI/24.0;
-    display.drawLine(display.WIDTH/2, display.HEIGHT/2,
-        display.WIDTH/2 + 10*cos(angle), display.HEIGHT/2+10*sin(angle));
+    display.drawLine(display.width()/2, display.height()/2,
+        display.width()/2 + 10*cos(angle), display.height()/2+10*sin(angle));
 }
 
 
 void showWelcomeScreen() {
-    uint16_t deviceID = ModuloGetNextDeviceID(0);
+    uint16_t deviceID = Modulo.getNextDeviceID(0);
     for (int i=0; i < page && deviceID != 0xFFFF; i++) {
-        deviceID = ModuloGetNextDeviceID(deviceID+1);
+        deviceID = Modulo.getNextDeviceID(deviceID+1);
     }
 
     if (deviceID == 0xFFFF) {            
@@ -78,30 +78,30 @@ void showWelcomeScreen() {
         display.drawSplashScreen();
 
 
-        display.setCursor(0, display.HEIGHT-8);
+        display.setCursor(0, display.height()-8);
         display.println("       Devices >");
         display.refresh();           
     } else {
-        ModuloSetStatus(deviceID, ModuloStatusBlinking);
+        Modulo.setStatus(deviceID, ModuloStatusBlinking);
 
         display.clear();
         display.setCursor(0,0);
 
         char product[32];
-        ModuloGetProduct(deviceID, product, 31);
+        Modulo.getProduct(deviceID, product, 31);
 
         display.print(product);
         display.setCursor(66, 0);
         display.println(deviceID);
 
         char deviceType[32];
-        ModuloGetDeviceType(deviceID, deviceType, 31);
+        Modulo.getDeviceType(deviceID, deviceType, 31);
         //if (strcmp(deviceType,"co.modulo.knob") == 0) {
             drawKnobDisplay(deviceID);
         //}
 
         
-        display.setCursor(0, display.HEIGHT-8);
+        display.setCursor(0, display.height()-8);
         display.println("               Next >");
 
         display.refresh();
@@ -110,7 +110,7 @@ void showWelcomeScreen() {
     bool buttonIsPressed = display.getButton(2);
     if (buttonIsPressed and !buttonWasPressed) {
         if (deviceID != 0xFFFF) {
-            ModuloSetStatus(deviceID, ModuloStatusOff);
+            Modulo.setStatus(deviceID, ModuloStatusOff);
             page++;
         } else {
             page = 0;
@@ -120,13 +120,12 @@ void showWelcomeScreen() {
 }
 
 void setup() {
-    ModuloSetup(true /* highBitRate*/);
     Serial.begin(9600);
     pinMode(LED_BUILTIN, OUTPUT);
 }
 
 void loop() {
-    ModuloLoop();
+    Modulo.loop();
 
     if (serialConnected) {
         uint8_t command = Serial.read();
@@ -136,7 +135,7 @@ void loop() {
             digitalWrite(LED_BUILTIN, false);
         } else if (command == 'E') {
             serialConnected = false;
-            ModuloGlobalReset();
+            Modulo.globalReset();
         }
     } else {
         showWelcomeScreen();
