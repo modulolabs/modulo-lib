@@ -7,6 +7,9 @@
 #include "Arduino.h"
 #endif
 
+#define swap(a, b) { int16_t t = a; a = b; b = t; }
+
+
 #define FUNCTION_APPEND_OP 0
 #define FUNCTION_IS_COMPLETE 1
 #define FUNCTION_GET_BUTTONS 2
@@ -93,7 +96,7 @@ void ColorDisplayModule::setCursor(int x, int y)
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpSetCursor, x, y};
-    _transfer(FUNCTION_APPEND_OP, sendData, 3, 0, 0);   
+    _transfer(FUNCTION_APPEND_OP, sendData, 3, 0, 0);
 }
 
 void ColorDisplayModule::refresh()
@@ -132,13 +135,21 @@ void ColorDisplayModule::drawRect(int x, int y, int w, int h, int radius)
     _transfer(FUNCTION_APPEND_OP, sendData, 6, 0, 0);
 }
 
+void ColorDisplayModule::drawCircle(int x, int y, int radius)
+{
+    _waitOnRefresh();
+
+    uint8_t sendData[] = {OpDrawCircle, x, y, radius};
+    _transfer(FUNCTION_APPEND_OP, sendData, 4, 0, 0);
+}
+
 void ColorDisplayModule::drawString(const char *s)
 {
     _waitOnRefresh();
 
     const int maxLen = 31;
     uint8_t sendData[maxLen] = {OpDrawString};
-   
+
     int i = 1;
     while (*s != 0) {
         while (i < maxLen and *s) {
@@ -151,7 +162,7 @@ void ColorDisplayModule::drawString(const char *s)
         i = 0;
     }
 
-       
+
 }
 
 size_t ColorDisplayModule::write(uint8_t c) {
@@ -170,7 +181,6 @@ bool ColorDisplayModule::isComplete() {
 
 void ColorDisplayModule::_waitOnRefresh()
 {
-  
     if (_isRefreshing) {
         _isRefreshing = false;
         while (!isComplete()) {
@@ -204,7 +214,7 @@ void ColorDisplayModule::drawSplashScreen() {
     setFillColor(ColorDisplayModule::Color(255,255,255));
 
     drawLogo(WIDTH/2-18, 10, 35, 26);
-    
+
 }
 
 void ColorDisplayModule::drawLogo(int x, int y, int width, int height) {
@@ -219,7 +229,3 @@ void ColorDisplayModule::drawLogo(int x, int y, int width, int height) {
     drawRect(x+lineWidth*4, y+lineWidth*2, lineWidth, height-lineWidth*2, 1);
     drawRect(x+lineWidth*2, y+height-lineWidth, lineWidth*3, lineWidth, 1);
 }
-
-
-
-

@@ -8,16 +8,19 @@
 #else
 #include "Print.h"
 #endif
+
 /// A tiny color OLED screen
 class ColorDisplayModule : public Module, public Print {
 public:
     virtual ~ColorDisplayModule();
 
-    /// The width of the display
-    static const int WIDTH = 96;
+    int width() const {
+        return 96;
+    }
 
-    /// The height of the display
-    static const int HEIGHT = 64;
+    int height() const {
+        return 64;
+    }
 
     enum TextAlignment {
         Left,
@@ -44,7 +47,7 @@ public:
     ColorDisplayModule(uint16_t deviceID);
 
     void clear();
-    
+
     //void setRotation(uint8_t r);
     //void setCursor(int x, int y);
     void setLineColor(const Color &c);
@@ -52,16 +55,15 @@ public:
     void setTextColor(const Color &textColor);
     void setTextSize(uint8_t size);
 
-
     void fillScreen(Color color);
     void setCursor(int x, int y);
 
     void drawLine(int x0, int y0, int x1, int y1);
-    
+
     void drawRect(int x, int y, int w, int h, int radius=0);
 
-    //void drawCircle(int x, int y, int r);
-    
+    void drawCircle(int x, int y, int r);
+
     //void drawTriangle(int x0, int y0, int x1, int y1, int x2, int y2);
 
     void drawString(const char *s);
