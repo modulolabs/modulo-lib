@@ -37,11 +37,12 @@
   #define MODULO_TWI_MTX   2
   #define MODULO_TWI_SRX   3
   #define MODULO_TWI_STX   4
-  
+
   void modulo_twi_init();
   void modulo_twi_setAddress(uint8_t);
   uint8_t modulo_twi_readFrom(uint8_t, uint8_t, uint8_t);
   uint8_t modulo_twi_read();
+  bool modulo_twi_available();
 
   uint8_t modulo_twi_beginWrite(uint8_t address);
   bool modulo_twi_write(uint8_t data);
@@ -49,7 +50,7 @@
 
   //uint8_t modulo_twi_writeTo(uint8_t, uint8_t*, uint8_t, uint8_t, uint8_t);
   //uint8_t modulo_twi_transmit(const uint8_t*, uint8_t);
-  
+
 
   void modulo_twi_attachSlaveRxEvent( void (*)(uint8_t*, int) );
   void modulo_twi_attachSlaveTxEvent( void (*)(void) );
@@ -58,4 +59,3 @@
   //void modulo_twi_releaseBus(void);
 
 #endif
-

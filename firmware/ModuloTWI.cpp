@@ -19,6 +19,10 @@
   Modified 2012 by Todd Krein (todd@krein.org) to implement repeated starts
 */
 
+
+#include "Modulo.h"
+#if MODULO_CUSTOM_WIRE
+
 #include <math.h>
 #include <stdlib.h>
 #include <inttypes.h>
@@ -72,7 +76,7 @@ void modulo_twi_force_reset(const char *msg) {
   modulo_twi_init();
 }
 
-/* 
+/*
  * Function modulo_twi_init
  * Desc     readys twi pins and sets twi bitrate
  * Input    none
@@ -84,7 +88,7 @@ void modulo_twi_init(void)
   modulo_twi_state = MODULO_TWI_READY;
   modulo_twi_sendStop = true;		// default value
   modulo_twi_inRepStart = false;
-  
+
   // activate internal pullups for twi.
   digitalWrite(SDA, 1);
   digitalWrite(SCL, 1);
@@ -103,7 +107,7 @@ void modulo_twi_init(void)
   TWCR = _BV(TWEN) | _BV(TWIE) | _BV(TWEA);
 }
 
-/* 
+/*
  * Function modulo_twi_slaveInit
  * Desc     sets slave address and enables interrupt
  * Input    none
@@ -115,7 +119,7 @@ void modulo_twi_setAddress(uint8_t address)
   TWAR = address << 1;
 }
 
-/* 
+/*
  * Function modulo_twi_readFrom
  * Desc     attempts to become twi bus master and read a
  *          series of bytes from a device on the bus
@@ -152,7 +156,7 @@ uint8_t modulo_twi_readFrom(uint8_t address, uint8_t length, uint8_t sendStop)
   modulo_twi_masterBufferIndex = 0;
   modulo_twi_masterBufferLength = length-1;  // This is not intuitive, read on...
   // On receive, the previously configured ACK/NACK setting is transmitted in
-  // response to the received byte before the interrupt is signalled. 
+  // response to the received byte before the interrupt is signalled.
   // Therefor we must actually set NACK when the _next_ to last byte is
   // received, causing that NACK to be sent in response to receiving the last
   // expected byte of data.
@@ -166,7 +170,7 @@ uint8_t modulo_twi_readFrom(uint8_t address, uint8_t length, uint8_t sendStop)
     // (@@@ we hope), and the TWI statemachine is just waiting for the address byte.
     // We need to remove ourselves from the repeated start state before we enable interrupts,
     // since the ISR is ASYNC, and we could get confused if we hit the ISR before cleaning
-    // up. Also, don't enable the START interrupt. There may be one pending from the 
+    // up. Also, don't enable the START interrupt. There may be one pending from the
     // repeated start that we sent outselves, and that would really confuse things.
     modulo_twi_inRepStart = false;			// remember, we're dealing with an ASYNC ISR
     TWDR = modulo_twi_slarw;
@@ -202,8 +206,11 @@ uint8_t modulo_twi_read() {
     }
     return modulo_twi_masterBuffer[modulo_twi_masterBufferReadIndex++];
 }
+bool modulo_twi_available() {
+    return (modulo_twi_masterBufferReadIndex >= modulo_twi_masterBufferIndex);
+}
 
-/* 
+/*
  * Function modulo_twi_writeTo
  * Desc     attempts to become twi bus master and write a
  *          series of bytes to a device on the bus
@@ -236,7 +243,7 @@ uint8_t modulo_twi_beginWrite(uint8_t address)
   // initialize buffer iteration vars
   modulo_twi_masterBufferIndex = 0;
   modulo_twi_masterBufferLength = 0;
-  
+
   // build sla+w, slave device address + w bit
   modulo_twi_slarw = TW_WRITE;
   modulo_twi_slarw |= address << 1;
@@ -247,7 +254,7 @@ uint8_t modulo_twi_beginWrite(uint8_t address)
 bool modulo_twi_write(uint8_t data) {
   if (modulo_twi_masterBufferLength >= MODULO_TWI_BUFFER_LENGTH) {
     return false;
-  }  
+  }
   modulo_twi_masterBuffer[modulo_twi_masterBufferLength++] = data;
   return true;
 }
@@ -276,10 +283,10 @@ uint8_t modulo_twi_endWrite(uint8_t wait, uint8_t sendStop) {
     // (@@@ we hope), and the TWI statemachine is just waiting for the address byte.
     // We need to remove ourselves from the repeated start state before we enable interrupts,
     // since the ISR is ASYNC, and we could get confused if we hit the ISR before cleaning
-    // up. Also, don't enable the START interrupt. There may be one pending from the 
+    // up. Also, don't enable the START interrupt. There may be one pending from the
     // repeated start that we sent outselves, and that would really confuse things.
     modulo_twi_inRepStart = false;			// remember, we're dealing with an ASYNC ISR
-    TWDR = modulo_twi_slarw;				
+    TWDR = modulo_twi_slarw;
     TWCR = _BV(TWINT) | _BV(TWEA) | _BV(TWEN) | _BV(TWIE);	// enable INTs, but not START
   } else {
     // send start condition
@@ -300,7 +307,7 @@ uint8_t modulo_twi_endWrite(uint8_t wait, uint8_t sendStop) {
     }
 
   }
-  
+
   if (modulo_twi_error == 0xFF)
     return 0;	// success
   else if (modulo_twi_error == TW_MT_SLA_NACK)
@@ -311,7 +318,7 @@ uint8_t modulo_twi_endWrite(uint8_t wait, uint8_t sendStop) {
     return 4;	// other twi error
 }
 
-/* 
+/*
  * Function modulo_twi_transmit
  * Desc     fills slave tx buffer with data
  *          must be called in slave tx event callback
@@ -330,23 +337,23 @@ uint8_t modulo_twi_transmit(const uint8_t* data, uint8_t length)
   if(MODULO_TWI_BUFFER_LENGTH < length){
     return 1;
   }
-  
+
   // ensure we are currently a slave transmitter
   if(MODULO_TWI_STX != modulo_twi_state){
     return 2;
   }
-  
+
   // set length and copy data into tx buffer
   modulo_twi_txBufferLength = length;
   for(i = 0; i < length; ++i){
     modulo_twi_txBuffer[i] = data[i];
   }
-  
+
   return 0;
 }
 #endif
 
-/* 
+/*
  * Function modulo_twi_attachSlaveRxEvent
  * Desc     sets function called before a slave read operation
  * Input    function: callback function to use
@@ -357,7 +364,7 @@ void modulo_twi_attachSlaveRxEvent( void (*function)(uint8_t*, int) )
   modulo_twi_onSlaveReceive = function;
 }
 
-/* 
+/*
  * Function modulo_twi_attachSlaveTxEvent
  * Desc     sets function called before a slave write operation
  * Input    function: callback function to use
@@ -368,7 +375,7 @@ void modulo_twi_attachSlaveTxEvent( void (*function)(void) )
   modulo_twi_onSlaveTransmit = function;
 }
 
-/* 
+/*
  * Function modulo_twi_reply
  * Desc     sends byte or readys receive line
  * Input    ack: byte indicating to ack or to nack
@@ -384,7 +391,7 @@ static void modulo_twi_reply(uint8_t ack)
   }
 }
 
-/* 
+/*
  * Function modulo_twi_stop
  * Desc     relinquishes bus master status
  * Input    none
@@ -413,7 +420,7 @@ static void modulo_twi_stop(void)
   modulo_twi_state = MODULO_TWI_READY;
 }
 
-/* 
+/*
  * Function modulo_twi_releaseBus
  * Desc     releases bus control
  * Input    none
@@ -443,7 +450,7 @@ ISR(TWI_vect)
     // Master Transmitter
     case TW_MT_SLA_ACK:  // slave receiver acked address
     case TW_MT_DATA_ACK: // slave receiver acked data
-      // if there is data to send, send it, otherwise stop 
+      // if there is data to send, send it, otherwise stop
       if(modulo_twi_masterBufferIndex < modulo_twi_masterBufferLength){
         // copy data to output register and ack
         TWDR = modulo_twi_masterBuffer[modulo_twi_masterBufferIndex++];
@@ -453,7 +460,7 @@ ISR(TWI_vect)
           modulo_twi_stop();
 	else {
 	  modulo_twi_inRepStart = true;	// we're gonna send the START
-	  // don't enable the interrupt. We'll generate the start, but we 
+	  // don't enable the interrupt. We'll generate the start, but we
 	  // avoid handling the interrupt until we're in the next transaction,
 	  // at the point where we would normally issue the start.
 	  TWCR = _BV(TWINT) | _BV(TWSTA)| _BV(TWEN) ;
@@ -493,12 +500,12 @@ ISR(TWI_vect)
           modulo_twi_stop();
 	else {
 	  modulo_twi_inRepStart = true;	// we're gonna send the START
-	  // don't enable the interrupt. We'll generate the start, but we 
+	  // don't enable the interrupt. We'll generate the start, but we
 	  // avoid handling the interrupt until we're in the next transaction,
 	  // at the point where we would normally issue the start.
 	  TWCR = _BV(TWINT) | _BV(TWSTA)| _BV(TWEN) ;
 	  modulo_twi_state = MODULO_TWI_READY;
-	}    
+	}
 	break;
     case TW_MR_SLA_NACK: // address sent, nack received
       modulo_twi_stop();
@@ -547,7 +554,7 @@ ISR(TWI_vect)
       // nack back at master
       modulo_twi_reply(0);
       break;
-    
+
     // Slave Transmitter
     case TW_ST_SLA_ACK:          // addressed, returned ack
     case TW_ST_ARB_LOST_SLA_ACK: // arbitration lost, returned ack
@@ -576,7 +583,7 @@ ISR(TWI_vect)
         modulo_twi_reply(0);
       }
       break;
-    case TW_ST_DATA_NACK: // received nack, we are done 
+    case TW_ST_DATA_NACK: // received nack, we are done
     case TW_ST_LAST_DATA: // received ack, but we are done already!
       // ack future responses
       modulo_twi_reply(1);
@@ -595,3 +602,4 @@ ISR(TWI_vect)
 
 }
 
+#endif
