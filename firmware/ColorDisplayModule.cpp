@@ -206,14 +206,14 @@ uint8_t ColorDisplayModule::getButtons() {
 void ColorDisplayModule::drawSplashScreen() {
     setFillColor(ColorDisplayModule::Color(90,0,50));
     setLineColor(ColorDisplayModule::Color(0,0,0,0));
-    drawRect(0, 0, WIDTH, HEIGHT);
+    drawRect(0, 0, width(), height());
     setCursor(0, 40);
 
     print("     MODULO");
 
     setFillColor(ColorDisplayModule::Color(255,255,255));
 
-    drawLogo(WIDTH/2-18, 10, 35, 26);
+    drawLogo(width()/2-18, 10, 35, 26);
 
 }
 
