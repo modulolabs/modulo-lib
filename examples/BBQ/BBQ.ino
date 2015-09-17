@@ -2,6 +2,9 @@
 #include "Modulo.h"
 #include <PID_v1.h>
 
+#include "Wire.h"
+
+
 ColorDisplayModule display;
 ThermocoupleModule thermocouple;
 KnobModule knob;
@@ -123,6 +126,8 @@ void drawGraph(uint8_t *graphData) {
 }
 
 void setup() {
+    ModuloSetup();
+
     //turn the PID on
     myPID.SetMode(AUTOMATIC);
 
