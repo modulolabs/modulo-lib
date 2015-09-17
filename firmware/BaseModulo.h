@@ -4,8 +4,9 @@
 #include <inttypes.h>
 class _Modulo;
 
-/// The base class for all modules
-class ModuloBase {
+/// The base class for all modulos. 
+/// Handles things like discovering devices and assigning an address.
+class BaseModulo {
  public:
     /// Return the i2c address, or 0xFF if no device could be found
     uint8_t getAddress();
@@ -14,15 +15,15 @@ class ModuloBase {
     uint16_t getDeviceID();
     
 
-    static ModuloBase* findByDeviceID(uint16_t deviceID);
+    static BaseModulo* findByDeviceID(uint16_t deviceID);
 
     static void loop();
 
  protected:
-    ModuloBase(const char *deviceType);
-    ModuloBase(const char *deviceType, uint16_t deviceID);
+    BaseModulo(const char *deviceType);
+    BaseModulo(const char *deviceType, uint16_t deviceID);
     
-    virtual ~ModuloBase();
+    virtual ~BaseModulo();
 
     // Initialize the module. Return true if initialization took place, false if
     // it failed or if the module was already initialized.
@@ -49,8 +50,8 @@ class ModuloBase {
     bool _disconnected;
 
     // Linked list of modules
-    static ModuloBase *_firstModuloBase;
-    ModuloBase *_nextModuloBase;
+    static BaseModulo *_firstBaseModulo;
+    BaseModulo *_nextBaseModulo;
 };
 
 #endif

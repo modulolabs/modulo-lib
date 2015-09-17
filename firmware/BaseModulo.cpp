@@ -1,4 +1,4 @@
-#include "Module.h"
+#include "BaseModulo.h"
 #include "Modulo.h"
 
 #ifdef SPARK
@@ -7,40 +7,40 @@
 #include "Arduino.h"
 #endif
 
-uint8_t ModuloBase::_lastAssignedAddress = 9;
-ModuloBase* ModuloBase::_firstModuloBase = NULL;
+uint8_t BaseModulo::_lastAssignedAddress = 9;
+BaseModulo* BaseModulo::_firstBaseModulo = NULL;
 
-ModuloBase::ModuloBase(const char *deviceType) :
+BaseModulo::BaseModulo(const char *deviceType) :
     _deviceType(deviceType), _deviceID(0xFFFF), _address(0xFF), _disconnected(true) {
 
-    _nextModuloBase = _firstModuloBase;
-    _firstModuloBase = this;
+    _nextBaseModulo = _firstBaseModulo;
+    _firstBaseModulo = this;
 }
 
-ModuloBase::ModuloBase(const char *deviceType, uint16_t deviceID) :
+BaseModulo::BaseModulo(const char *deviceType, uint16_t deviceID) :
     _deviceType(deviceType), _deviceID(deviceID), _address(0xFF), _disconnected(true) {
 
-    _nextModuloBase = _firstModuloBase;
-    _firstModuloBase = this;
+    _nextBaseModulo = _firstBaseModulo;
+    _firstBaseModulo = this;
 }
 
-ModuloBase::~ModuloBase() {
+BaseModulo::~BaseModulo() {
 
     // Remove this module from the linked list
-    ModuloBase *prev = NULL;
-    for (ModuloBase *m = _firstModuloBase; m ; m = m->_nextModuloBase) {
+    BaseModulo *prev = NULL;
+    for (BaseModulo *m = _firstBaseModulo; m ; m = m->_nextBaseModulo) {
         if (m == this) {
             if (prev) {
-                prev->_nextModuloBase = _nextModuloBase;
+                prev->_nextBaseModulo = _nextBaseModulo;
             } else {
-                _firstModuloBase = _nextModuloBase;
+                _firstBaseModulo = _nextBaseModulo;
             }
         }
     }
 }
 
-ModuloBase *ModuloBase::findByDeviceID(uint16_t deviceID) {
-    for (ModuloBase *m = _firstModuloBase; m ; m = m->_nextModuloBase) {
+BaseModulo *BaseModulo::findByDeviceID(uint16_t deviceID) {
+    for (BaseModulo *m = _firstBaseModulo; m ; m = m->_nextBaseModulo) {
         if (m->getDeviceID() == deviceID) {
             return m;
         }
@@ -48,36 +48,36 @@ ModuloBase *ModuloBase::findByDeviceID(uint16_t deviceID) {
     return NULL;
 }
 
-void ModuloBase::_reset() {
+void BaseModulo::_reset() {
     _address = 0xFF;
 }
 
-void ModuloBase::_globalReset() {
-    for (ModuloBase *m = _firstModuloBase; m ; m = m->_nextModuloBase) {
+void BaseModulo::_globalReset() {
+    for (BaseModulo *m = _firstBaseModulo; m ; m = m->_nextBaseModulo) {
         m->_reset();
     }
 }
 
-void ModuloBase::_processEvent(uint8_t eventCode, uint16_t eventData) {
+void BaseModulo::_processEvent(uint8_t eventCode, uint16_t eventData) {
 }
 
-uint16_t ModuloBase::getDeviceID() {
+uint16_t BaseModulo::getDeviceID() {
     _init();
     return _deviceID;
 }
 
-uint8_t ModuloBase::getAddress() {
+uint8_t BaseModulo::getAddress() {
     _init();
     return _address;
 }
 
-void ModuloBase::loop() {
-    for (ModuloBase *m = _firstModuloBase; m ; m = m->_nextModuloBase) {
+void BaseModulo::loop() {
+    for (BaseModulo *m = _firstBaseModulo; m ; m = m->_nextBaseModulo) {
         m->_loop();
     }
 }
 
-void ModuloBase::_loop() {
+void BaseModulo::_loop() {
     if (_disconnected) {
         if (getAddress() != 0xFF) {
             _disconnected = false;
@@ -85,7 +85,7 @@ void ModuloBase::_loop() {
     }
 }
 
-bool ModuloBase::_init() {
+bool BaseModulo::_init() {
     if (_address != 0xFF) {
         return false;
     }
@@ -111,9 +111,9 @@ bool ModuloBase::_init() {
         uint16_t deviceID = Modulo.getNextDeviceID(0);
         while (deviceID != 0xFFFF) {
 
-            // First look for a ModuloBase that already has this deviceID
-            ModuloBase *m = _firstModuloBase;
-            for (; m && m->_deviceID != deviceID; m = m->_nextModuloBase) {
+            // First look for a BaseModulo that already has this deviceID
+            BaseModulo *m = _firstBaseModulo;
+            for (; m && m->_deviceID != deviceID; m = m->_nextBaseModulo) {
             }
 
             if (m == NULL) {
@@ -142,7 +142,7 @@ bool ModuloBase::_init() {
     return true;
 }
 
-bool ModuloBase::_transfer(uint8_t command, uint8_t *sendData, uint8_t sendLen,
+bool BaseModulo::_transfer(uint8_t command, uint8_t *sendData, uint8_t sendLen,
         uint8_t *receiveData, uint8_t receiveLen, uint8_t retries)
 {
     if (_disconnected) {

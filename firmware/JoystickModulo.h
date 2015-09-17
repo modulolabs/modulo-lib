@@ -1,10 +1,10 @@
 #ifndef JOYSTICK_MODULE_H
 #define JOYSTICK_MODULE_H
 
-#include "Module.h"
+#include "BaseModulo.h"
 #include <inttypes.h>
 
-class JoystickModulo : public ModuloBase {
+class JoystickModulo : public BaseModulo {
  public:
  
     /// Use the first JoystickModulo module that's not already in use

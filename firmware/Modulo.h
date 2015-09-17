@@ -3,14 +3,14 @@
 
 #define MODULO_CUSTOM_WIRE 0
 
-#include "BlankSlate.h"
-#include "KnobModule.h"
-#include "ThermocoupleModule.h"
-#include "ControllerModule.h"
-#include "ColorDisplayModule.h"
-#include "JoystickModule.h"
-#include "MotorModule.h"
-#include "TemperatureProbe.h"
+#include "BlankSlateModulo.h"
+#include "ControllerModulo.h"
+#include "DisplayModulo.h"
+#include "JoystickModulo.h"
+#include "KnobModulo.h"
+#include "MotorDriverModulo.h"
+#include "TemperatureProbeModulo.h"
+#include "ThermocoupleModulo.h"
 
 enum ModuloStatus {
     ModuloStatusOff,

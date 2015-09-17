@@ -1,4 +1,4 @@
-#include "MotorModule.h"
+#include "MotorDriverModulo.h"
 
 #include "Modulo.h"
 
@@ -17,11 +17,11 @@ static const uint8_t _FunctionGetCurrent = 1;
 static const uint8_t _FunctionSetEnabled = 2;
 static const uint8_t _FunctionSetFrequency = 3;
 
-MotorDriverModulo::MotorDriverModulo() : ModuloBase("co.modulo.motor") {
+MotorDriverModulo::MotorDriverModulo() : BaseModulo("co.modulo.motor") {
 }
 
 MotorDriverModulo::MotorDriverModulo(uint16_t deviceID) :
-    ModuloBase("co.modulo.motor", deviceID) {
+    BaseModulo("co.modulo.motor", deviceID) {
 }
 
 void MotorDriverModulo::setChannel(uint8_t channel, float amount) {

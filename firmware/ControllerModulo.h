@@ -1,10 +1,10 @@
 #ifndef CONTROLLER_MODULE_H
 #define CONTROLLER_MODULE_H
 
-#include "Module.h"
+#include "BaseModulo.h"
 
 /// The controller module. Drives the bus and provides 6 I/O pins.
-class ControllerModulo : public ModuloBase {
+class ControllerModulo : public BaseModulo {
 
 public:
     ControllerModulo();

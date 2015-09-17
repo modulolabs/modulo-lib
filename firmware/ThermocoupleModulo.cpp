@@ -1,13 +1,13 @@
-#include "ThermocoupleModule.h"
+#include "ThermocoupleModulo.h"
 #include "Modulo.h"
 
 ThermocoupleModulo::ThermocoupleModulo() :
-    ModuloBase("co.modulo.thermocouple")
+    BaseModulo("co.modulo.thermocouple")
 {
 }
 
 ThermocoupleModulo::ThermocoupleModulo(uint16_t deviceID) :
-    ModuloBase("co.modulo.thermocouple", deviceID)
+    BaseModulo("co.modulo.thermocouple", deviceID)
 {
 }
 

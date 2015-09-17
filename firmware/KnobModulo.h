@@ -1,10 +1,10 @@
 #ifndef KNOB_MODULE_H
 #define KNOB_MODULE_H
 
-#include "Module.h"
+#include "BaseModulo.h"
 
 /// An illuminated knob and push button
-class KnobModulo : public ModuloBase {
+class KnobModulo : public BaseModulo {
 
 public:
     /// Use the first KnobModulo that's not already in use

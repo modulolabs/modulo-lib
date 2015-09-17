@@ -1,4 +1,4 @@
-#include "JoystickModule.h"
+#include "JoystickModulo.h"
 #include "Modulo.h"
 #include <stdlib.h>
 
@@ -8,11 +8,11 @@
 #define EVENT_BUTTON_CHANGED 0
 #define EVENT_POSITION_CHANGED 1
 
-JoystickModulo::JoystickModulo() : ModuloBase("co.modulo.joystick"), _buttonState(0), _hPos(0), _vPos(0),
+JoystickModulo::JoystickModulo() : BaseModulo("co.modulo.joystick"), _buttonState(0), _hPos(0), _vPos(0),
     _buttonPressCallback(NULL), _buttonReleaseCallback(NULL), _positionChangeCallback(NULL) {}
 
 JoystickModulo::JoystickModulo(uint16_t deviceID) :
-    ModuloBase("co.modulo.joystick", deviceID), _hPos(0), _vPos(0), _buttonState(0),
+    BaseModulo("co.modulo.joystick", deviceID), _hPos(0), _vPos(0), _buttonState(0),
     _buttonPressCallback(NULL), _buttonReleaseCallback(NULL), _positionChangeCallback(NULL) {
 }
 
@@ -38,7 +38,7 @@ float JoystickModulo::getVPos() {
 
 bool JoystickModulo::_init()
 {
-    if (ModuloBase::_init()) {
+    if (BaseModulo::_init()) {
         _refreshState();
         return true;
     }

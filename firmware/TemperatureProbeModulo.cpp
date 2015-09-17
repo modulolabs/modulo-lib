@@ -1,13 +1,13 @@
-#include "TemperatureProbe.h"
+#include "TemperatureProbeModulo.h"
 #include "Modulo.h"
 
 TemperatureProbeModulo::TemperatureProbeModulo() :
-    ModuloBase("co.modulo.tempprobe")
+    BaseModulo("co.modulo.tempprobe")
 {
 }
 
 TemperatureProbeModulo::TemperatureProbeModulo(uint16_t deviceID) :
-    ModuloBase("co.modulo.tempprobe", deviceID)
+    BaseModulo("co.modulo.tempprobe", deviceID)
 {
 }
 

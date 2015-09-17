@@ -1,4 +1,4 @@
-#include "ColorDisplayModule.h"
+#include "DisplayModulo.h"
 #include "Modulo.h"
 
 #ifdef SPARK
@@ -33,12 +33,12 @@ const DisplayModulo::Color DisplayModulo::Clear(0,0,0,0);
 
 
 DisplayModulo::DisplayModulo() :
-    ModuloBase("co.modulo.colordisplay")
+    BaseModulo("co.modulo.colordisplay")
 {
 }
 
 DisplayModulo::DisplayModulo(uint16_t deviceID) :
-    ModuloBase("co.modulo.colordisplay", deviceID)
+    BaseModulo("co.modulo.colordisplay", deviceID)
 {
 }
 

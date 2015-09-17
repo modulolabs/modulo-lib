@@ -1,5 +1,4 @@
-#include "BlankSlate.h"
-#include "Modulo.h"
+#include "BlankSlateModulo.h"
 #include <math.h>
 
 namespace {
@@ -20,11 +19,11 @@ namespace {
     };
 };
 
-BlankSlateModulo::BlankSlateModulo() : ModuloBase("co.modulo.io")
+BlankSlateModulo::BlankSlateModulo() : BaseModulo("co.modulo.io")
 {
 }
 
-BlankSlateModulo::BlankSlateModulo(uint16_t deviceID) : ModuloBase("co.modulo.io", deviceID)
+BlankSlateModulo::BlankSlateModulo(uint16_t deviceID) : BaseModulo("co.modulo.io", deviceID)
 {
 }
 

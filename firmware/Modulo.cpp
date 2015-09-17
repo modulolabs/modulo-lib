@@ -1,5 +1,5 @@
 #include "Modulo.h"
-#include "MainController.h"
+#include "ControllerModuloBackend.h"
 
 #define BroadcastAddress 9
 
@@ -161,7 +161,7 @@ bool _Modulo::transfer(
 void _Modulo::loop() {
     _mainController.loop();
 
-    ModuloBase::loop();
+    BaseModulo::loop();
 
     uint8_t event[5];
     if (transfer(BroadcastAddress, BroadcastCommandGetEvent, 0, 0, event, 5)) {
@@ -171,7 +171,7 @@ void _Modulo::loop() {
         uint16_t deviceID = event[1] | (event[2] << 8);
         uint16_t eventData = event[3] | (event[4] << 8);
 
-        ModuloBase *m = ModuloBase::findByDeviceID(deviceID);
+        BaseModulo *m = BaseModulo::findByDeviceID(deviceID);
         if (m) {
             m->_processEvent(eventCode, eventData);
         }
@@ -181,7 +181,7 @@ void _Modulo::loop() {
 void _Modulo::globalReset() {
     transfer(BroadcastAddress, BroadcastCommandGlobalReset,
                    0, 0, 0, 0);
-    ModuloBase::_globalReset();
+    BaseModulo::_globalReset();
     _mainController.globalReset();
 }
 

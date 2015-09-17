@@ -1,5 +1,4 @@
-#include "ControllerModule.h"
-#include "Modulo.h"
+#include "ControllerModulo.h"
 
 #ifdef SPARK
 #include "spark_wiring.h"
@@ -15,7 +14,7 @@
 #define FUNCTION_READ_TEMPERATURE_PROBE 5
 
 ControllerModulo::ControllerModulo() :
-    ModuloBase("co.modulo.controller", 0 /*deviceID*/)
+    BaseModulo("co.modulo.controller", 0 /*deviceID*/)
 {
 }
 

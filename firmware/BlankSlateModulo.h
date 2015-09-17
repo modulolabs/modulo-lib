@@ -2,10 +2,10 @@
 #define MOD_IO_H
 
 #include <inttypes.h>
-#include "Module.h"
+#include "BaseModulo.h"
 
 /// A general purpose I/O module for digital input, digital output, analog input, and PWM output.
-class BlankSlateModulo : public ModuloBase {
+class BlankSlateModulo : public BaseModulo {
 public:
     BlankSlateModulo();
     BlankSlateModulo(uint16_t deviceID);

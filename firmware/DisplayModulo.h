@@ -1,7 +1,7 @@
 #ifndef MODULO_COLOR_DISPLAY_H
 #define MODULO_COLOR_DISPLAY_H
 
-#include "Module.h"
+#include "BaseModulo.h"
 
 #ifdef SPARK
 #include "spark_wiring_print.h"
@@ -10,7 +10,7 @@
 #endif
 
 /// A tiny color OLED screen
-class DisplayModulo : public ModuloBase, public Print {
+class DisplayModulo : public BaseModulo, public Print {
 public:
     virtual ~DisplayModulo();
 

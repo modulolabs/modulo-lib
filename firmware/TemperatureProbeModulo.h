@@ -1,14 +1,14 @@
-#ifndef THERMOCOUPLE_MODULE_H
-#define THERMOCOUPLE_MODULE_H
+#ifndef TEMP_PROBE_MODULE_H
+#define TEMP_PROBE_MODULE_H
 
-#include "Module.h"
+#include "BaseModulo.h"
 
 /// A module for reading the temperature from a thermocouple
-class ThermocoupleModulo : public ModuloBase {
+class TemperatureProbeModulo : public BaseModulo {
  public:
-    explicit ThermocoupleModulo(uint16_t deviceID);
-    ThermocoupleModulo();
-  
+    explicit TemperatureProbeModulo(uint16_t deviceID);
+    TemperatureProbeModulo();
+
     /// Return the temperature of the thermocouple in celsius
     /// If no thermocouple is connected, returns InvalidTemperature.
     float getTemperatureC();

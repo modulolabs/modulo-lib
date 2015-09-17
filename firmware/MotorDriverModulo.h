@@ -1,11 +1,11 @@
 #ifndef MOTOR_MODULE_H
 #define MOTOR_MODULE_H
 
-#include "Module.h"
+#include "BaseModulo.h"
 
 
 /// A driver for DC Motors, Stepper Motor, and other high current devices.
-class MotorDriverModulo : public ModuloBase {
+class MotorDriverModulo : public BaseModulo {
 public:
     /// Use the first Motor  that's not already in use
     MotorDriverModulo();

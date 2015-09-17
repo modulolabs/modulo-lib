@@ -1,4 +1,4 @@
-#include "KnobModule.h"
+#include "KnobModulo.h"
 #include "Modulo.h"
 #include <math.h>
 
@@ -8,12 +8,12 @@
 #define FUNCTION_KNOB_SET_COLOR 3
 
 KnobModulo::KnobModulo(uint16_t deviceID) :
-    ModuloBase("co.modulo.knob", deviceID)
+    BaseModulo("co.modulo.knob", deviceID)
 {
 }
 
 KnobModulo::KnobModulo() :
-    ModuloBase("co.modulo.knob")
+    BaseModulo("co.modulo.knob")
 {
 }
 
