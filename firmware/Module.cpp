@@ -5,7 +5,6 @@
 #include <spark_wiring.h>
 #else
 #include "Arduino.h"
-
 #endif
 
 uint8_t Module::_lastAssignedAddress = 9;
@@ -13,12 +12,12 @@ Module* Module::_firstModule = NULL;
 
 Module::Module(const char *deviceType) :
     _deviceType(deviceType), _deviceID(0xFFFF), _address(0xFF), _disconnected(true) {
-    
+
     _nextModule = _firstModule;
     _firstModule = this;
 }
 
-Module::Module(const char *deviceType, uint16_t deviceID) : 
+Module::Module(const char *deviceType, uint16_t deviceID) :
     _deviceType(deviceType), _deviceID(deviceID), _address(0xFF), _disconnected(true) {
 
     _nextModule = _firstModule;
@@ -106,7 +105,7 @@ bool Module::_init() {
         ModuloGlobalReset();
         _moduloInitialized = true;
     }
-    
+
     if (_deviceID == 0xFFFF) {
         // Find the first device with the specified type and no assigned address
         uint16_t deviceID = ModuloGetNextDeviceID(0);
@@ -134,7 +133,7 @@ bool Module::_init() {
         // Couldn't find a device
         return false;
     }
-    
+
     _address = ModuloGetAddress(_deviceID);
     if (_address == 0) {
         _address = ++_lastAssignedAddress;
@@ -160,7 +159,6 @@ bool Module::_transfer(uint8_t command, uint8_t *sendData, uint8_t sendLen,
         // We have a valid address, attempt the transfer.
         if (moduloTransfer(address, command, sendData, sendLen,
             receiveData, receiveLen)) {
-          
             return true;
         }
 
@@ -171,6 +169,5 @@ bool Module::_transfer(uint8_t command, uint8_t *sendData, uint8_t sendLen,
 
 
     _disconnected = true;
-
     return false;
 }
