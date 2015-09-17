@@ -1,9 +1,6 @@
 #include "Modulo.h"
 #include "MainController.h"
 
-#include "Arduino.h"
-
-#include "ModuloTWI.h"
 
 #define BroadcastAddress 9
 
@@ -23,28 +20,99 @@
 
 #define ControllerFunctionReadTemperatureProbe 0
 
+/*
+#define PACKET_CODE_ANNOUNCE 251
+#define PACKET_CODE_ASSIGN_ADDRESS 253
+#define PACKET_CODE_GLOBAL_RESET 255
+
+namespace {
+    template<int BUFFER_LEN=64>
+    class CircularBuffer {
+    public:
+        static const uint8_t BUFFER_SIZE=BUFFER_LEN;
+
+        CircularBuffer() : _size(0), _readPos(0), _writePos(0) {
+        }
+
+        bool putPacket(uint8_t *data, uint8_t len) {
+            if (_size+len+1 > BUFFER_LEN) {
+                return false;
+            }
+            _size += len+1;
+            _putByte(len);
+            for (int i=0; i < len; i++) {
+                _putByte(data[i]);
+            }
+            return true;
+        }
+
+        uint8_t getPacket(uint8_t *buffer) {
+            ModuloDriver::disableInterrupts();
+            if (_size == 0) {
+                ModuloDriver::enableInterrupts();
+                return 0;
+            }
+            uint8_t len = _getByte();
+            for (int i=0; i < len; i++) {
+                buffer[i] = _getByte();
+            }
+            ModuloDriver::enableInterrupts();
+            _size -= len+1;
+            return len;
+        }
+
+        uint8_t size() {
+            return _size;
+        }
+
+    private:
+        void _putByte(uint8_t b) {
+            _buffer[_writePos] = b;
+            _writePos = (_writePos+1) % BUFFER_LEN;
+        }
+        uint8_t _getByte() {
+            uint8_t b = _buffer[_readPos];
+            _readPos = (_readPos+1) % BUFFER_LEN;
+            return b;
+        }
+
+        volatile uint8_t _bufferSize;
+        volatile uint8_t _buffer[BUFFER_LEN];
+        volatile uint8_t _size;
+        volatile uint8_t _readPos;
+        volatile uint8_t _writePos;
+    };
+}
+
+static CircularBuffer<64> _receiveBuffer;
+*/
 
 
-#ifdef SPARK
-#include "spark_wiring_i2c.h"
-
-
-#define TWI_INIT() Wire.begin()
-#define TWI_BEGIN_WRITE(address) Wire.beginTransmission(address)
-#define TWI_WRITE(data) Wire.write(data)
-#define TWI_END_WRITE() Wire.endTransmission(true)
-#define TWI_REQUEST_FROM(address, len) Wire.requestFrom((int)address, (int)len)
-#define TWI_READ() Wire.read()
-
-#else
+#if MODULO_CUSTOM_WIRE
+#include "ModuloTWI.h"
 
 #define TWI_INIT() modulo_twi_init()
 #define TWI_BEGIN_WRITE(address) modulo_twi_beginWrite(address)
 #define TWI_WRITE(data) modulo_twi_write(data)
-#define TWI_END_WRITE() modulo_twi_endWrite(true /*wait*/, true/*sendStop*/)
+#define TWI_END_WRITE(sendStop) modulo_twi_endWrite(true /*wait*/, sendStop/*sendStop*/)
 #define TWI_REQUEST_FROM(address, len) modulo_twi_readFrom(address, len, true /*sendStop*/)
 #define TWI_READ() modulo_twi_read()
+#define TWI_AVAILABLE() modulo_twi_available()
+#else
 
+#ifdef SPARK
+#include "spark_wiring_i2c.h"
+#else
+#include "Wire.h"
+#endif
+
+#define TWI_INIT() Wire.begin()
+#define TWI_BEGIN_WRITE(address) Wire.beginTransmission(address)
+#define TWI_WRITE(data) Wire.write(data)
+#define TWI_END_WRITE(sendStop) Wire.endTransmission(sendStop)
+#define TWI_REQUEST_FROM(address, len) Wire.requestFrom((int)address, (int)len)
+#define TWI_READ() Wire.read()
+#define TWI_AVAILABLE() Wire.available()
 #endif
 
 static bool _initialized = false;
@@ -57,13 +125,7 @@ void ModuloSetup(bool highBitRate) {
 
     _initialized = true;
 
-#ifdef ARDUINO
     TWI_INIT();
-    if (highBitRate) {
-        TWBR = 6;
-        TWSR &= ~(3);
-    }
-#endif
 }
 
 uint8_t
@@ -89,10 +151,9 @@ bool _moduloTransfer(
     uint8_t address, uint8_t command, uint8_t *sendData, uint8_t sendLen,
     uint8_t *receiveData, uint8_t receiveLen)
 {
-
     // Star the transmit CRC with the address in the upper 7 bits
     uint8_t crc =  _crc8_ccitt_update(0, address << 1);
-    
+
     TWI_BEGIN_WRITE(address);
 
     // Send the command and length
@@ -100,7 +161,7 @@ bool _moduloTransfer(
     TWI_WRITE(sendLen);
     crc = _crc8_ccitt_update(crc, command);
     crc = _crc8_ccitt_update(crc, sendLen);
-    
+
     // Send the data
     for (int i=0; i < sendLen; i++) {
         TWI_WRITE(sendData[i]);
@@ -110,26 +171,30 @@ bool _moduloTransfer(
     // Send the CRC and end the transmission
     TWI_WRITE(crc);
 
-    if (TWI_END_WRITE() != 0) {
+    if (TWI_END_WRITE(receiveLen == 0) != 0) {
         return false;
     }
 
     if (receiveLen == 0) {
         return true;
     }
-    
+
+    while (TWI_AVAILABLE()) {
+        TWI_READ();
+    }
+
     // Request receiveLen data bytes plus 1 CRC byte.
     if (TWI_REQUEST_FROM((int)address, (int)receiveLen+1) != receiveLen+1) {
         return false;
     }
-    
+
     // Start the CRC with the I2C address byte (address in upper 7, 1 in lsb)
     crc = _crc8_ccitt_update(0, address << 1 | 1);
-    
+
     // Receive the data
     for (int i=0; i < 32 and i < receiveLen; i++) {
         receiveData[i] = TWI_READ();
-        
+
         // XXX: Hack to detect the end of variable length strings.
         if (i > 0 and receiveLen == 31 and
             receiveData[i-1] == 0 and receiveData[i] == crc) {
@@ -137,7 +202,7 @@ bool _moduloTransfer(
         }
         crc = _crc8_ccitt_update(crc, receiveData[i]);
     }
-    
+
     // Receive the CRC.
     uint8_t receivedCRC = TWI_READ();
 
@@ -149,7 +214,7 @@ bool _moduloTransfer(
 bool moduloTransfer(
     uint8_t address, uint8_t command, uint8_t *sendData, uint8_t sendLen,
     uint8_t *receiveData, uint8_t receiveLen)
-{            
+{
     // Intercept broadcast transfers to deviceID 0, which is the controller
     if (address == BroadcastAddress and sendLen >= 2 and sendData[0] == 0 and sendData[1] == 0) {
         return _mainController.processBroadcastTransfer(command, sendData, sendLen, receiveData, receiveLen);
@@ -161,7 +226,97 @@ bool moduloTransfer(
     return _moduloTransfer(address,command,sendData,sendLen,receiveData,receiveLen);
 }
 
+#if 0
+//static
+bool Modulo::_processNextReceivedPacket() {
+    // First read the data into a temporary buffer on the stack
+    uint8_t data[_receiveBuffer.BUFFER_SIZE];
+    uint8_t len = _receiveBuffer.getPacket(data);
+    if (len < 2) {
+        return false;
+    }
+
+    uint8_t sourceAddress = data[0];
+    uint8_t packetCode = data[1];
+
+    if (packetCode == PACKET_CODE_ANNOUNCE) {
+        uint16_t deviceID = getUint16(data, 2);
+        uint8_t apiVersion = data[4];
+        const char *deviceType = getString(data, _receiveBuffer.BUFFER_SIZE, 5);
+
+        // First look for a Modulo object with the exact deviceID
+        for (Modulo *m=_firstModulo; m; m = m->_nextModulo) {
+
+            if (m->_deviceID == deviceID and
+                strcmp(m->_deviceType, deviceType) == 0) {
+                m->_apiVersion = apiVersion;
+                m->_assignAddress();
+                return true;
+            }
+        }
+
+        // The exact deviceID was not found, so look for a Modulo
+        // with no deviceID but the correct device type
+        for (Modulo *m=_firstModulo; m; m = m->_nextModulo) {
+            if (m->_deviceID == 0 and strcmp(m->_deviceType, deviceType) == 0) {
+                m->_deviceID = deviceID;
+                m->_apiVersion = apiVersion;
+                m->_assignAddress();
+                return true;
+            }
+        }
+    }
+
+    if (sourceAddress != 0 and len >= 2) {
+        for (Modulo *m=_firstModulo; m; m = m->_nextModulo) {
+            if (m->_address == sourceAddress) {
+                m->_receivePacket(packetCode, data+2, len-2);
+            }
+        }
+    }
+    return true;
+}
+#endif
+
+#if 0
+// static
+void Modulo::_receiveData(uint8_t *data, int byteCount) {
+    // First read the data into a temporary buffer on the stack
+    if (byteCount < 2 or byteCount > _receiveBuffer.BUFFER_SIZE) {
+        // invalid packet length. discard.
+        return;
+    }
+
+    //_receiveBuffer.putPacket(data, byteCount);
+
+
+    // Check the CRC
+    uint16_t receivedCRC = data[byteCount-2] | (data[byteCount-1] << 8);
+    uint16_t crc = 0xFFFF;
+    crc = _crc16_update(crc, 2);
+    for (int i = 0; i < byteCount-2; i++) {
+        crc = _crc16_update(crc, data[i]);
+    }
+
+    if (crc != receivedCRC) {
+        Serial.println("CRC Failed. Got: ");
+        Serial.print(receivedCRC);
+        Serial.print(". Expected: ");
+        Serial.println(crc);
+        return;
+    }
+
+    // Packet looks okay, so add it to the incoming buffer
+    // Exclude the CRC since we already checked it.
+    _receiveBuffer.putPacket(data, byteCount-2);
+
+}
+#endif
+
 void ModuloLoop() {
+    //while (_processNextReceivedPacket()) {
+    //}
+
     _mainController.loop();
 
     Module::loop();
@@ -178,9 +333,6 @@ void ModuloLoop() {
         if (m) {
             m->_processEvent(eventCode, eventData);
         }
-  
-
-   
     }
 }
 
