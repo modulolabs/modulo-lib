@@ -1,21 +1,21 @@
 #include "ThermocoupleModule.h"
 #include "Modulo.h"
 
-ThermocoupleModule::ThermocoupleModule() :
-    Module("co.modulo.thermocouple")
+ThermocoupleModulo::ThermocoupleModulo() :
+    ModuloBase("co.modulo.thermocouple")
 {
 }
 
-ThermocoupleModule::ThermocoupleModule(uint16_t deviceID) :
-    Module("co.modulo.thermocouple", deviceID)
+ThermocoupleModulo::ThermocoupleModulo(uint16_t deviceID) :
+    ModuloBase("co.modulo.thermocouple", deviceID)
 {
 }
 
 #define FUNCTION_GET_TEMPERATURE 0
 
-const float ThermocoupleModule::InvalidTemperature = -1000;
+const float ThermocoupleModulo::InvalidTemperature = -1000;
   
-float ThermocoupleModule::getTemperatureC() {
+float ThermocoupleModulo::getTemperatureC() {
     
     uint8_t receiveData[2] = {0,0};
     
@@ -28,6 +28,6 @@ float ThermocoupleModule::getTemperatureC() {
     return value/10.0;
 }
 
-float ThermocoupleModule::getTemperatureF() {
+float ThermocoupleModulo::getTemperatureF() {
     return getTemperatureC()*1.8 + 32;
 }

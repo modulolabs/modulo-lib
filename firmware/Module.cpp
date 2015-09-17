@@ -7,40 +7,40 @@
 #include "Arduino.h"
 #endif
 
-uint8_t Module::_lastAssignedAddress = 9;
-Module* Module::_firstModule = NULL;
+uint8_t ModuloBase::_lastAssignedAddress = 9;
+ModuloBase* ModuloBase::_firstModuloBase = NULL;
 
-Module::Module(const char *deviceType) :
+ModuloBase::ModuloBase(const char *deviceType) :
     _deviceType(deviceType), _deviceID(0xFFFF), _address(0xFF), _disconnected(true) {
 
-    _nextModule = _firstModule;
-    _firstModule = this;
+    _nextModuloBase = _firstModuloBase;
+    _firstModuloBase = this;
 }
 
-Module::Module(const char *deviceType, uint16_t deviceID) :
+ModuloBase::ModuloBase(const char *deviceType, uint16_t deviceID) :
     _deviceType(deviceType), _deviceID(deviceID), _address(0xFF), _disconnected(true) {
 
-    _nextModule = _firstModule;
-    _firstModule = this;
+    _nextModuloBase = _firstModuloBase;
+    _firstModuloBase = this;
 }
 
-Module::~Module() {
+ModuloBase::~ModuloBase() {
 
     // Remove this module from the linked list
-    Module *prev = NULL;
-    for (Module *m = _firstModule; m ; m = m->_nextModule) {
+    ModuloBase *prev = NULL;
+    for (ModuloBase *m = _firstModuloBase; m ; m = m->_nextModuloBase) {
         if (m == this) {
             if (prev) {
-                prev->_nextModule = _nextModule;
+                prev->_nextModuloBase = _nextModuloBase;
             } else {
-                _firstModule = _nextModule;
+                _firstModuloBase = _nextModuloBase;
             }
         }
     }
 }
 
-Module *Module::findByDeviceID(uint16_t deviceID) {
-    for (Module *m = _firstModule; m ; m = m->_nextModule) {
+ModuloBase *ModuloBase::findByDeviceID(uint16_t deviceID) {
+    for (ModuloBase *m = _firstModuloBase; m ; m = m->_nextModuloBase) {
         if (m->getDeviceID() == deviceID) {
             return m;
         }
@@ -48,36 +48,36 @@ Module *Module::findByDeviceID(uint16_t deviceID) {
     return NULL;
 }
 
-void Module::_reset() {
+void ModuloBase::_reset() {
     _address = 0xFF;
 }
 
-void Module::_globalReset() {
-    for (Module *m = _firstModule; m ; m = m->_nextModule) {
+void ModuloBase::_globalReset() {
+    for (ModuloBase *m = _firstModuloBase; m ; m = m->_nextModuloBase) {
         m->_reset();
     }
 }
 
-void Module::_processEvent(uint8_t eventCode, uint16_t eventData) {
+void ModuloBase::_processEvent(uint8_t eventCode, uint16_t eventData) {
 }
 
-uint16_t Module::getDeviceID() {
+uint16_t ModuloBase::getDeviceID() {
     _init();
     return _deviceID;
 }
 
-uint8_t Module::getAddress() {
+uint8_t ModuloBase::getAddress() {
     _init();
     return _address;
 }
 
-void Module::loop() {
-    for (Module *m = _firstModule; m ; m = m->_nextModule) {
+void ModuloBase::loop() {
+    for (ModuloBase *m = _firstModuloBase; m ; m = m->_nextModuloBase) {
         m->_loop();
     }
 }
 
-void Module::_loop() {
+void ModuloBase::_loop() {
     if (_disconnected) {
         if (getAddress() != 0xFF) {
             _disconnected = false;
@@ -85,7 +85,7 @@ void Module::_loop() {
     }
 }
 
-bool Module::_init() {
+bool ModuloBase::_init() {
     if (_address != 0xFF) {
         return false;
     }
@@ -101,31 +101,31 @@ bool Module::_init() {
             delay(100-t);
         }
 
-        ModuloSetup();
-        ModuloGlobalReset();
+        Modulo.setup();
+        Modulo.globalReset();
         _moduloInitialized = true;
     }
 
     if (_deviceID == 0xFFFF) {
         // Find the first device with the specified type and no assigned address
-        uint16_t deviceID = ModuloGetNextDeviceID(0);
+        uint16_t deviceID = Modulo.getNextDeviceID(0);
         while (deviceID != 0xFFFF) {
 
-            // First look for a Module that already has this deviceID
-            Module *m = _firstModule;
-            for (; m && m->_deviceID != deviceID; m = m->_nextModule) {
+            // First look for a ModuloBase that already has this deviceID
+            ModuloBase *m = _firstModuloBase;
+            for (; m && m->_deviceID != deviceID; m = m->_nextModuloBase) {
             }
 
             if (m == NULL) {
                 char deviceType[32] = {0};
-                ModuloGetDeviceType(deviceID, deviceType, 31);
+                Modulo.getDeviceType(deviceID, deviceType, 31);
                 if (strcmp(deviceType,_deviceType) == 0) {
                     _deviceID = deviceID;
                     break;
                 }
             }
 
-            deviceID = ModuloGetNextDeviceID(deviceID+1);
+            deviceID = Modulo.getNextDeviceID(deviceID+1);
         }
     }
 
@@ -134,15 +134,15 @@ bool Module::_init() {
         return false;
     }
 
-    _address = ModuloGetAddress(_deviceID);
+    _address = Modulo.getAddress(_deviceID);
     if (_address == 0) {
         _address = ++_lastAssignedAddress;
-        ModuloSetAddress(_deviceID, _address);
+        Modulo.setAddress(_deviceID, _address);
     }
     return true;
 }
 
-bool Module::_transfer(uint8_t command, uint8_t *sendData, uint8_t sendLen,
+bool ModuloBase::_transfer(uint8_t command, uint8_t *sendData, uint8_t sendLen,
         uint8_t *receiveData, uint8_t receiveLen, uint8_t retries)
 {
     if (_disconnected) {
@@ -157,14 +157,14 @@ bool Module::_transfer(uint8_t command, uint8_t *sendData, uint8_t sendLen,
         }
 
         // We have a valid address, attempt the transfer.
-        if (moduloTransfer(address, command, sendData, sendLen,
+        if (Modulo.transfer(address, command, sendData, sendLen,
             receiveData, receiveLen)) {
             return true;
         }
 
         // If the transfer failed, try to re-assign an address. The device may
         // have been removed and re-connected
-        ModuloSetAddress(_deviceID, _address);
+        Modulo.setAddress(_deviceID, _address);
     }
 
 

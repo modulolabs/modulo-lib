@@ -3,10 +3,10 @@
 
 #include "Modulo.h"
 
-class _MainController {
+class _ControllerModuloBackend {
 public:
 
-    _MainController();
+    _ControllerModuloBackend();
 
     void loop();
 
@@ -26,5 +26,6 @@ private:
     uint8_t _address;
     ModuloStatus _status;
 };
+
 
 #endif

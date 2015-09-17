@@ -2,9 +2,10 @@
 #define MODULO_BASE_H
 
 #include <inttypes.h>
+class _Modulo;
 
 /// The base class for all modules
-class Module {
+class ModuloBase {
  public:
     /// Return the i2c address, or 0xFF if no device could be found
     uint8_t getAddress();
@@ -13,15 +14,15 @@ class Module {
     uint16_t getDeviceID();
     
 
-    static Module* findByDeviceID(uint16_t deviceID);
+    static ModuloBase* findByDeviceID(uint16_t deviceID);
 
     static void loop();
 
  protected:
-    Module(const char *deviceType);
-    Module(const char *deviceType, uint16_t deviceID);
+    ModuloBase(const char *deviceType);
+    ModuloBase(const char *deviceType, uint16_t deviceID);
     
-    virtual ~Module();
+    virtual ~ModuloBase();
 
     // Initialize the module. Return true if initialization took place, false if
     // it failed or if the module was already initialized.
@@ -29,8 +30,7 @@ class Module {
     virtual void _reset();
     virtual void _loop();
 
-    friend void ModuloLoop();
-    friend void ModuloGlobalReset();
+    friend _Modulo;
 
     virtual void _processEvent(uint8_t eventCode, uint16_t eventData);
     
@@ -49,9 +49,8 @@ class Module {
     bool _disconnected;
 
     // Linked list of modules
-    static Module *_firstModule;
-    Module *_nextModule;
+    static ModuloBase *_firstModuloBase;
+    ModuloBase *_nextModuloBase;
 };
 
-    
 #endif

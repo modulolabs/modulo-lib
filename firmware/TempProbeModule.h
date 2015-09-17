@@ -4,10 +4,10 @@
 #include "Module.h"
 
 /// A module for reading the temperature from a thermocouple
-class TempProbeModule : public Module {
+class TemperatureProbeModulo : public ModuloBase {
  public:
-    explicit TempProbeModule(uint16_t deviceID);
-    TempProbeModule();
+    explicit TemperatureProbeModulo(uint16_t deviceID);
+    TemperatureProbeModulo();
 
     /// Return the temperature of the thermocouple in celsius
     /// If no thermocouple is connected, returns InvalidTemperature.

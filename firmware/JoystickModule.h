@@ -4,21 +4,21 @@
 #include "Module.h"
 #include <inttypes.h>
 
-class JoystickModule : public Module {
+class JoystickModulo : public ModuloBase {
  public:
  
-    /// Use the first Joystick module that's not already in use
-    JoystickModule();
+    /// Use the first JoystickModulo module that's not already in use
+    JoystickModulo();
 
-    /// Use the Joystick with the provided deviceID
-    JoystickModule(uint16_t deviceID);
+    /// Use the JoystickModulo with the provided deviceID
+    JoystickModulo(uint16_t deviceID);
 
     /// Return true if the button is currently pressed
     bool getButton();
     float getHPos();
     float getVPos();
 
-    typedef void (EventCallback)(JoystickModule &module);
+    typedef void (EventCallback)(JoystickModulo &module);
 
     void setButtonPressCallback(EventCallback *handler);
     void setButtonReleaseCallback(EventCallback *handler);
@@ -39,5 +39,6 @@ private:
     EventCallback *_positionChangeCallback;
 
 };
+
 
 #endif

@@ -4,10 +4,10 @@
 #include "Module.h"
 
 /// The controller module. Drives the bus and provides 6 I/O pins.
-class ControllerModule : public Module {
+class ControllerModulo : public ModuloBase {
 
 public:
-    ControllerModule();
+    ControllerModulo();
 
     /// Configure the specified \a pin to behave as an input or an output.
     /// If configured as an input, also either enable or disable the pullup
@@ -29,16 +29,12 @@ public:
 
     /// Enable pulse width modulation on the specified \a pin. The
     /// provided value represents the precentage of time that the
-    /// output will be high. 
+    /// output will be high.
     void setPWMOutput(uint8_t pin, float value);
 
     /// Read the analog voltage on the specified pin. This will return a
     /// value between 0 and 1 representing a voltage between 0 and 5V.
     float getAnalogInput(uint8_t pin);
-
-    /// Get the temperature in celsius from a 1-wire temperature
-    /// sensor connected to the specified pin.
-    float readTemperatureInput(uint8_t pin);
 };
 
 #endif

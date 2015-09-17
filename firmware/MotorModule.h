@@ -3,14 +3,15 @@
 
 #include "Module.h"
 
+
 /// A driver for DC Motors, Stepper Motor, and other high current devices.
-class MotorModule : public Module {
+class MotorDriverModulo : public ModuloBase {
 public:
     /// Use the first Motor  that's not already in use
-    MotorModule();
+    MotorDriverModulo();
 
     /// Use the Motor with the provided deviceID
-    MotorModule(uint16_t deviceID);
+    MotorDriverModulo(uint16_t deviceID);
 
     /// Set a single channel (0-3) to the specified amount, between 0 and 1.
     void setChannel(uint8_t channel, float amount);

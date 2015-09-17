@@ -27,11 +27,11 @@
 #define BroadcastCommandGetInterrupt 10
 #define BroadcastCommandSetStatusLED 11
 
-_MainController::_MainController() :
+_ControllerModuloBackend::_ControllerModuloBackend() :
     _address(0), _status(ModuloStatusOff) {
 }
 
-void _MainController::loop() {
+void _ControllerModuloBackend::loop() {
 #ifdef ARDUINO
     if (_status == ModuloStatusBlinking) {
         digitalWrite(LED_BUILTIN, millis() % 500 > 250);
@@ -41,17 +41,17 @@ void _MainController::loop() {
 #endif
 }
 
-uint8_t _MainController::getAddress() {
+uint8_t _ControllerModuloBackend::getAddress() {
     return _address;
 }
 
-void _MainController::globalReset() {
+void _ControllerModuloBackend::globalReset() {
     _status = ModuloStatusOff;
     _address = 0;
 }
 
 
-bool _MainController::processTransfer(
+bool _ControllerModuloBackend::processTransfer(
     uint8_t command, uint8_t *sendData, uint8_t sendLen,
     uint8_t *receiveData, uint8_t receiveLen)
 {
@@ -102,7 +102,7 @@ bool _MainController::processTransfer(
 }
 
 
-bool _MainController::processBroadcastTransfer(
+bool _ControllerModuloBackend::processBroadcastTransfer(
     uint8_t command, uint8_t *sendData, uint8_t sendLen,
     uint8_t *receiveData, uint8_t receiveLen)
 {

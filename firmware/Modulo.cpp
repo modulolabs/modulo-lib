@@ -1,7 +1,6 @@
 #include "Modulo.h"
 #include "MainController.h"
 
-
 #define BroadcastAddress 9
 
 #define BroadcastCommandGlobalReset 0
@@ -48,9 +47,10 @@
 #endif
 
 static bool _initialized = false;
-_MainController _mainController;
+_ControllerModuloBackend _mainController;
+_Modulo Modulo;
 
-void ModuloSetup(bool highBitRate) {
+void _Modulo::setup(bool highBitRate) {
     if (_initialized) {
         return;
     }
@@ -143,7 +143,7 @@ bool _moduloTransfer(
 }
 
 
-bool moduloTransfer(
+bool _Modulo::transfer(
     uint8_t address, uint8_t command, uint8_t *sendData, uint8_t sendLen,
     uint8_t *receiveData, uint8_t receiveLen)
 {
@@ -158,85 +158,86 @@ bool moduloTransfer(
     return _moduloTransfer(address,command,sendData,sendLen,receiveData,receiveLen);
 }
 
-void ModuloLoop() {
+void _Modulo::loop() {
     _mainController.loop();
 
-    Module::loop();
+    ModuloBase::loop();
 
     uint8_t event[5];
-    if (moduloTransfer(BroadcastAddress, BroadcastCommandGetEvent, 0, 0, event, 5)) {
+    if (transfer(BroadcastAddress, BroadcastCommandGetEvent, 0, 0, event, 5)) {
 
-        moduloTransfer(BroadcastAddress, BroadcastCommandClearEvent, event, 5, 0, 0);
+        transfer(BroadcastAddress, BroadcastCommandClearEvent, event, 5, 0, 0);
         uint8_t eventCode = event[0];
         uint16_t deviceID = event[1] | (event[2] << 8);
         uint16_t eventData = event[3] | (event[4] << 8);
 
-        Module *m = Module::findByDeviceID(deviceID);
+        ModuloBase *m = ModuloBase::findByDeviceID(deviceID);
         if (m) {
             m->_processEvent(eventCode, eventData);
         }
     }
 }
 
-void ModuloGlobalReset() {
-    moduloTransfer(BroadcastAddress, BroadcastCommandGlobalReset,
+void _Modulo::globalReset() {
+    transfer(BroadcastAddress, BroadcastCommandGlobalReset,
                    0, 0, 0, 0);
-    Module::_globalReset();
+    ModuloBase::_globalReset();
     _mainController.globalReset();
 }
 
-uint16_t ModuloGetNextDeviceID(uint16_t lastDeviceID) {
+uint16_t _Modulo::getNextDeviceID(uint16_t lastDeviceID) {
     uint8_t sendData[2] = {lastDeviceID & 0xFF, lastDeviceID >> 8 };
     uint8_t receiveData[2] = {0xFF,0xFF};
-    if (!moduloTransfer(BroadcastAddress, BroadcastCommandGetNextDeviceID,
+    if (!transfer(BroadcastAddress, BroadcastCommandGetNextDeviceID,
                         sendData, 2, receiveData, 2)) {
         return 0xFFFF;
     }
     return receiveData[1] | (receiveData[0] << 8);
 }
 
-bool ModuloSetAddress(uint16_t deviceID, uint8_t address) {
+bool _Modulo::setAddress(uint16_t deviceID, uint8_t address) {
     uint8_t sendData[3] = {deviceID & 0xFF, deviceID >> 8, address};
-    return moduloTransfer(BroadcastAddress, BroadcastCommandSetAddress,
+    return transfer(BroadcastAddress, BroadcastCommandSetAddress,
                           sendData, 3, 0, 0);
 }
 
-uint8_t ModuloGetAddress(uint16_t deviceID) {
+uint8_t _Modulo::getAddress(uint16_t deviceID) {
     uint8_t sendData[2] = {deviceID & 0xFF, deviceID >> 8};
     uint8_t address = 0;
-    if (moduloTransfer(BroadcastAddress, BroadcastCommandGetAddress,
+    if (transfer(BroadcastAddress, BroadcastCommandGetAddress,
                        sendData, 2, &address, 1)){
         return address;
     }
     return 0;
 }
 
-bool ModuloGetDeviceType(uint16_t deviceID, char *deviceType, uint8_t maxLen) {
+bool _Modulo::getDeviceType(uint16_t deviceID, char *deviceType, uint8_t maxLen) {
     uint8_t sendData[2] = {deviceID & 0xFF, deviceID >> 8};
-    return moduloTransfer(BroadcastAddress, BroadcastCommandGetDeviceType,
+    return transfer(BroadcastAddress, BroadcastCommandGetDeviceType,
                           sendData, 2, (uint8_t*)deviceType, maxLen);
 }
 
-bool ModuloGetManufacturer(uint16_t deviceID, char *deviceType, uint8_t maxLen) {
+bool _Modulo::getManufacturer(uint16_t deviceID, char *deviceType, uint8_t maxLen) {
     uint8_t sendData[2] = {deviceID & 0xFF, deviceID >> 8};
-    return moduloTransfer(BroadcastAddress, BroadcastCommandGetCompanyName,
+    return transfer(BroadcastAddress, BroadcastCommandGetCompanyName,
                           sendData, 2, (uint8_t*)deviceType, maxLen);
 }
 
-bool ModuloGetProduct(uint16_t deviceID, char *deviceType, uint8_t maxLen) {
+bool _Modulo::getProduct(uint16_t deviceID, char *deviceType, uint8_t maxLen) {
     uint8_t sendData[2] = {deviceID & 0xFF, deviceID >> 8};
-    return moduloTransfer(BroadcastAddress, BroadcastCommandGetProductName,
+    return transfer(BroadcastAddress, BroadcastCommandGetProductName,
                           sendData, 2, (uint8_t*)deviceType, maxLen);
 }
 
-bool ModuloGetDocURL(uint16_t deviceID, char *deviceType, uint8_t maxLen) {
+bool _Modulo::getDocURL(uint16_t deviceID, char *deviceType, uint8_t maxLen) {
     uint8_t sendData[2] = {deviceID & 0xFF, deviceID >> 8};
-    return moduloTransfer(BroadcastAddress, BroadcastCommandGetDocURL,
+    return transfer(BroadcastAddress, BroadcastCommandGetDocURL,
                           sendData, 2, (uint8_t*)deviceType, maxLen);
 }
 
-bool ModuloSetStatus(uint16_t deviceID, ModuloStatus status) {
+bool _Modulo::setStatus(uint16_t deviceID, ModuloStatus status) {
     uint8_t sendData[3] = {deviceID & 0xFF, deviceID >> 8, status};
-    return moduloTransfer(BroadcastAddress, BroadcastCommandSetStatusLED,
+    return transfer(BroadcastAddress, BroadcastCommandSetStatusLED,
                           sendData, 3, 0, 0);
 }
+

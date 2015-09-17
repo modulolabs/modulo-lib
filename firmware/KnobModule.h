@@ -3,15 +3,15 @@
 
 #include "Module.h"
 
-/// An illuminated Knob and push button
-class KnobModule : public Module {
+/// An illuminated knob and push button
+class KnobModulo : public ModuloBase {
 
 public:
-    /// Use the first Knob that's not already in use
-    KnobModule();
+    /// Use the first KnobModulo that's not already in use
+    KnobModulo();
 
     /// Use the knob with the specified deviceID
-    KnobModule(uint16_t deviceID);
+    KnobModulo(uint16_t deviceID);
 
     /// Set the color of the knob's LED in rgb.
     bool setColor(float r, float g, float b);

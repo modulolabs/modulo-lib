@@ -7,13 +7,13 @@
 #define FUNCTION_KNOB_ADD_POSITION_OFFSET 2
 #define FUNCTION_KNOB_SET_COLOR 3
 
-KnobModule::KnobModule(uint16_t deviceID) :
-    Module("co.modulo.knob", deviceID)
+KnobModulo::KnobModulo(uint16_t deviceID) :
+    ModuloBase("co.modulo.knob", deviceID)
 {
 }
 
-KnobModule::KnobModule() :
-    Module("co.modulo.knob")
+KnobModulo::KnobModulo() :
+    ModuloBase("co.modulo.knob")
 {
 }
 
@@ -62,18 +62,18 @@ static void HSVToRGB(float h, float s, float v,
     *b += m;
 }
 
-bool KnobModule::setHSV(float h, float s, float v) {
+bool KnobModulo::setHSV(float h, float s, float v) {
     float r,g,b;
     HSVToRGB(h,s,v,&r,&g,&b);
     setColor(r, g, b);
 }
 
-bool KnobModule::setColor(float r, float g, float b) {
+bool KnobModulo::setColor(float r, float g, float b) {
     uint8_t sendData[3] = {r*255, g*255, b*255};
     return _transfer(FUNCTION_KNOB_SET_COLOR, sendData, 3, 0, 0);
 }
 
-bool KnobModule::getButton() {
+bool KnobModulo::getButton() {
     uint8_t receivedData[1];
     if (!_transfer(FUNCTION_KNOB_GET_BUTTON, 0, 0, receivedData, 1)) {
         return false;
@@ -81,7 +81,7 @@ bool KnobModule::getButton() {
     return receivedData[0];
 }
 
-int16_t KnobModule::getPosition() {
+int16_t KnobModulo::getPosition() {
     uint8_t receivedData[2];
     if (!_transfer(FUNCTION_KNOB_GET_POSITION, 0, 0, receivedData, 2)) {
         return false;
@@ -89,7 +89,7 @@ int16_t KnobModule::getPosition() {
     return receivedData[0] | (receivedData[1] << 8);
 }
 
-int16_t KnobModule::getAngle() {
+int16_t KnobModulo::getAngle() {
     int16_t position = -getPosition();
     position = ((position % 24) + 24) % 24;
     return position*360/24;

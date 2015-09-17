@@ -1,21 +1,21 @@
-#include "TempProbeModule.h"
+#include "TemperatureProbe.h"
 #include "Modulo.h"
 
-TempProbeModule::TempProbeModule() :
-    Module("co.modulo.tempprobe")
+TemperatureProbeModulo::TemperatureProbeModulo() :
+    ModuloBase("co.modulo.tempprobe")
 {
 }
 
-TempProbeModule::TempProbeModule(uint16_t deviceID) :
-    Module("co.modulo.tempprobe", deviceID)
+TemperatureProbeModulo::TemperatureProbeModulo(uint16_t deviceID) :
+    ModuloBase("co.modulo.tempprobe", deviceID)
 {
 }
 
 #define FUNCTION_GET_TEMPERATURE 0
 
-const float TempProbeModule::InvalidTemperature = -1000;
+const float TemperatureProbeModulo::InvalidTemperature = -1000;
 
-float TempProbeModule::getTemperatureC() {
+float TemperatureProbeModulo::getTemperatureC() {
 
     uint8_t receiveData[2] = {0,0};
 
@@ -28,6 +28,6 @@ float TempProbeModule::getTemperatureC() {
     return value/10.0;
 }
 
-float TempProbeModule::getTemperatureF() {
+float TemperatureProbeModulo::getTemperatureF() {
     return getTemperatureC()*1.8 + 32;
 }

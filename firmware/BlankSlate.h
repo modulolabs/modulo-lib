@@ -5,10 +5,10 @@
 #include "Module.h"
 
 /// A general purpose I/O module for digital input, digital output, analog input, and PWM output.
-class BlankSlate : public Module {
+class BlankSlateModulo : public ModuloBase {
 public:
-    BlankSlate();
-    BlankSlate(uint16_t deviceID);
+    BlankSlateModulo();
+    BlankSlateModulo(uint16_t deviceID);
 
     enum AnalogReference {
         AREF_VCC,          // Bus power supply voltage
@@ -18,7 +18,7 @@ public:
         AREF_EXTERNAL      // External voltage reference on pin 7
     };
 
-    BlankSlate(uint8_t address);
+    BlankSlateModulo(uint8_t address);
 
     // Disables the output on the specified pin and returns the pin's value
     bool getDigitalInput(uint8_t pin);
@@ -57,8 +57,6 @@ public:
 
 private:
     uint64_t currentMessageTimestamp;
-
-
 };
 
 #endif

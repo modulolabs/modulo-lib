@@ -27,31 +27,31 @@ static const int OpDrawString = 9;
 static const int OpSetCursor = 10;
 static const int OpSetTextSize = 11;
 
-const ColorDisplayModule::Color ColorDisplayModule::Black;
-const ColorDisplayModule::Color ColorDisplayModule::White(255,255,255);
-const ColorDisplayModule::Color ColorDisplayModule::Clear(0,0,0,0);
+const DisplayModulo::Color DisplayModulo::Black;
+const DisplayModulo::Color DisplayModulo::White(255,255,255);
+const DisplayModulo::Color DisplayModulo::Clear(0,0,0,0);
 
 
-ColorDisplayModule::ColorDisplayModule() :
-    Module("co.modulo.colordisplay")
+DisplayModulo::DisplayModulo() :
+    ModuloBase("co.modulo.colordisplay")
 {
 }
 
-ColorDisplayModule::ColorDisplayModule(uint16_t deviceID) :
-    Module("co.modulo.colordisplay", deviceID)
+DisplayModulo::DisplayModulo(uint16_t deviceID) :
+    ModuloBase("co.modulo.colordisplay", deviceID)
 {
 }
 
-ColorDisplayModule::~ColorDisplayModule() {
+DisplayModulo::~DisplayModulo() {
 
 }
 
-void ColorDisplayModule::clear() {
+void DisplayModulo::clear() {
     fillScreen(Black);
     setCursor(0,0);
 }
 /*
-uint16_t ColorDisplayModule::Color(uint8_t r, uint8_t g, uint8_t b) {
+uint16_t DisplayModulo::Color(uint8_t r, uint8_t g, uint8_t b) {
     uint16_t c;
     c = r >> 3;
     c <<= 6;
@@ -62,21 +62,21 @@ uint16_t ColorDisplayModule::Color(uint8_t r, uint8_t g, uint8_t b) {
     return c;
 }
 */
-void ColorDisplayModule::setLineColor(const Color &color) {
+void DisplayModulo::setLineColor(const Color &color) {
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpSetLineColor, color.r, color.g, color.b, color.a};
     _transfer(FUNCTION_APPEND_OP, sendData, 5, 0, 0);
 }
 
-void ColorDisplayModule::setFillColor(const Color &color) {
+void DisplayModulo::setFillColor(const Color &color) {
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpSetFillColor, color.r, color.g, color.b, color.a};
     _transfer(FUNCTION_APPEND_OP, sendData, 5, 0, 0);
 }
 
-void ColorDisplayModule::setTextColor(const Color &color) {
+void DisplayModulo::setTextColor(const Color &color) {
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpSetTextColor, color.r, color.g, color.b, color.a};
@@ -84,14 +84,14 @@ void ColorDisplayModule::setTextColor(const Color &color) {
 }
 
 
-void ColorDisplayModule::setTextSize(uint8_t size) {
+void DisplayModulo::setTextSize(uint8_t size) {
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpSetTextSize, size};
     _transfer(FUNCTION_APPEND_OP, sendData, 2, 0, 0);
 }
 
-void ColorDisplayModule::setCursor(int x, int y)
+void DisplayModulo::setCursor(int x, int y)
 {
     _waitOnRefresh();
 
@@ -99,7 +99,7 @@ void ColorDisplayModule::setCursor(int x, int y)
     _transfer(FUNCTION_APPEND_OP, sendData, 3, 0, 0);
 }
 
-void ColorDisplayModule::refresh()
+void DisplayModulo::refresh()
 {
     _waitOnRefresh();
 
@@ -110,7 +110,7 @@ void ColorDisplayModule::refresh()
 }
 
 
-void ColorDisplayModule::fillScreen(Color color)
+void DisplayModulo::fillScreen(Color color)
 {
     _waitOnRefresh();
 
@@ -119,7 +119,7 @@ void ColorDisplayModule::fillScreen(Color color)
 }
 
 
-void ColorDisplayModule::drawLine(int x0, int y0, int x1, int y1)
+void DisplayModulo::drawLine(int x0, int y0, int x1, int y1)
 {
     _waitOnRefresh();
 
@@ -127,7 +127,7 @@ void ColorDisplayModule::drawLine(int x0, int y0, int x1, int y1)
     _transfer(FUNCTION_APPEND_OP, sendData, 5, 0, 0);
 }
 
-void ColorDisplayModule::drawRect(int x, int y, int w, int h, int radius)
+void DisplayModulo::drawRect(int x, int y, int w, int h, int radius)
 {
     _waitOnRefresh();
 
@@ -135,7 +135,7 @@ void ColorDisplayModule::drawRect(int x, int y, int w, int h, int radius)
     _transfer(FUNCTION_APPEND_OP, sendData, 6, 0, 0);
 }
 
-void ColorDisplayModule::drawCircle(int x, int y, int radius)
+void DisplayModulo::drawCircle(int x, int y, int radius)
 {
     _waitOnRefresh();
 
@@ -143,7 +143,7 @@ void ColorDisplayModule::drawCircle(int x, int y, int radius)
     _transfer(FUNCTION_APPEND_OP, sendData, 4, 0, 0);
 }
 
-void ColorDisplayModule::drawString(const char *s)
+void DisplayModulo::drawString(const char *s)
 {
     _waitOnRefresh();
 
@@ -165,13 +165,13 @@ void ColorDisplayModule::drawString(const char *s)
 
 }
 
-size_t ColorDisplayModule::write(uint8_t c) {
+size_t DisplayModulo::write(uint8_t c) {
     uint8_t sendData[] = {OpDrawString,c,0};
     _transfer(FUNCTION_APPEND_OP, sendData, 3, 0, 0);
     return 1;
 }
 
-bool ColorDisplayModule::isComplete() {
+bool DisplayModulo::isComplete() {
     uint8_t complete = 0;
     if (_transfer(FUNCTION_IS_COMPLETE, 0, 0, &complete, 1)) {
         return complete;
@@ -179,7 +179,7 @@ bool ColorDisplayModule::isComplete() {
     return true;
 }
 
-void ColorDisplayModule::_waitOnRefresh()
+void DisplayModulo::_waitOnRefresh()
 {
     if (_isRefreshing) {
         _isRefreshing = false;
@@ -189,12 +189,12 @@ void ColorDisplayModule::_waitOnRefresh()
     }
 }
 
-bool ColorDisplayModule::getButton(int button) {
+bool DisplayModulo::getButton(int button) {
 
     return getButtons() & (1 << button);
 }
 
-uint8_t ColorDisplayModule::getButtons() {
+uint8_t DisplayModulo::getButtons() {
     uint8_t receivedData[1] = {0};
     if (!_transfer(FUNCTION_GET_BUTTONS, 0, 0, receivedData, 1)) {
         return false;
@@ -203,21 +203,21 @@ uint8_t ColorDisplayModule::getButtons() {
     return receivedData[0];
 }
 
-void ColorDisplayModule::drawSplashScreen() {
-    setFillColor(ColorDisplayModule::Color(90,0,50));
-    setLineColor(ColorDisplayModule::Color(0,0,0,0));
+void DisplayModulo::drawSplashScreen() {
+    setFillColor(DisplayModulo::Color(90,0,50));
+    setLineColor(DisplayModulo::Color(0,0,0,0));
     drawRect(0, 0, width(), height());
     setCursor(0, 40);
 
     print("     MODULO");
 
-    setFillColor(ColorDisplayModule::Color(255,255,255));
+    setFillColor(DisplayModulo::Color(255,255,255));
 
     drawLogo(width()/2-18, 10, 35, 26);
 
 }
 
-void ColorDisplayModule::drawLogo(int x, int y, int width, int height) {
+void DisplayModulo::drawLogo(int x, int y, int width, int height) {
 
     int lineWidth = width/7;
 

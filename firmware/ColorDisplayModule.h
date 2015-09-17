@@ -10,9 +10,9 @@
 #endif
 
 /// A tiny color OLED screen
-class ColorDisplayModule : public Module, public Print {
+class DisplayModulo : public ModuloBase, public Print {
 public:
-    virtual ~ColorDisplayModule();
+    virtual ~DisplayModulo();
 
     int width() const {
         return 96;
@@ -40,11 +40,11 @@ public:
     static const Color White;
     static const Color Clear;
 
-    /// Use the first MiniDisplay that's not already in use.
-    ColorDisplayModule();
+    /// Use the first DisplayModulo that's not already in use.
+    DisplayModulo();
 
-    /// Use the MiniDisplay with the specified deviceID
-    ColorDisplayModule(uint16_t deviceID);
+    /// Use the DisplayModulo with the specified deviceID
+    DisplayModulo(uint16_t deviceID);
 
     void clear();
 
