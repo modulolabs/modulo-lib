@@ -2,17 +2,12 @@
 #include "Modulo.h"
 #include "Wire.h"
 
-
-
-ColorDisplayModule display;
-KnobModule knob;
-ThermocoupleModule thermocouple;
+DisplayModulo display;
+KnobModulo knob;
+ThermocoupleModulo thermocouple;
 
 void setup() {
     // put your setup code here, to run once:
-    ModuloSetup();
-    Serial.begin(9600);
-    pinMode(0, OUTPUT);
     knob.setColor(0,0,0);
 }
 
@@ -139,7 +134,7 @@ void update() {
 
     display.clear();
     display.setTextSize(2);
-    display.setCursor((display.WIDTH-strlen(phaseName)*12)/2,0);
+    display.setCursor((display.width()-strlen(phaseName)*12)/2,0);
     display.println(phaseName);
 
     display.setTextSize(1);
@@ -174,7 +169,7 @@ void update() {
     display.print("Heating Element: ");
     display.println(heatingElementOn ? "On" : "Off");
     display.print("Temperature: ");
-    if (currentTemp == ThermocoupleModule::InvalidTemperature) {
+    if (currentTemp == thermocouple.InvalidTemperature) {
         display.println("---");
     } else {
         display.println(currentTemp);
@@ -183,9 +178,9 @@ void update() {
     display.println();
 
     if (phase == IdlePhase) {
-        display.println("Start");
+        display.println("     Start");
     } else {
-        display.println("Stop");
+        display.println("     Stop");
     }
     //display.fillRect(0, 60, display.width()*(currentTime/totalDuration), 3, 1);
     display.refresh();
@@ -196,7 +191,7 @@ bool button1WasPressed = false;
 bool button2WasPressed = false;
 
 void loop() {
-    ModuloLoop();
+    Modulo.loop();
 
     bool button0IsPressed = display.getButton(0);
     bool button1IsPressed = display.getButton(1);
