@@ -3,7 +3,7 @@
 #ifdef SPARK
 #include <spark_wiring.h>
 #else
-#include "DallasTemperature.h"
+#include "Arduino.h"
 #endif
 
 #define FUNCTION_SET_PIN_DIRECTION 0
@@ -96,15 +96,6 @@ bool _MainController::processTransfer(
                 return true;
             }
             return false;
-        case FUNCTION_READ_TEMPERATURE_PROBE:
-#ifdef ARDUINO
-            if (sendLen == 1 and receiveLen == 2) {
-                uint16_t temp = ModuloOneWire::ReadOneWireTemp(sendData[0])*10;
-                receiveData[0] = temp & 0xFF;
-                receiveData[1] = temp >> 8;
-                return true;
-            }
-#endif
         return false;
     }
     return false;
