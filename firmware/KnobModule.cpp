@@ -1,6 +1,5 @@
 #include "KnobModule.h"
 #include "Modulo.h"
-#include "Arduino.h"
 #include <math.h>
 
 #define FUNCTION_KNOB_GET_BUTTON 0
@@ -55,7 +54,7 @@ static void HSVToRGB(float h, float s, float v,
             *b = X;
             break;
     }
-    
+
     float m = v-C;
 
     *r += m;
@@ -85,7 +84,6 @@ bool KnobModule::getButton() {
 int16_t KnobModule::getPosition() {
     uint8_t receivedData[2];
     if (!_transfer(FUNCTION_KNOB_GET_POSITION, 0, 0, receivedData, 2)) {
-        Serial.println("Failed to get position");
         return false;
     }
     return receivedData[0] | (receivedData[1] << 8);
