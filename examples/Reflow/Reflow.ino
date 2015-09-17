@@ -1,14 +1,16 @@
 
-
 #include "Modulo.h"
 #include "Wire.h"
 
-MiniDisplayModule display;
+
+
+ColorDisplayModule display;
 KnobModule knob;
 ThermocoupleModule thermocouple;
-  
+
 void setup() {
     // put your setup code here, to run once:
+    ModuloSetup();
     Serial.begin(9600);
     pinMode(0, OUTPUT);
     knob.setColor(0,0,0);
@@ -134,10 +136,10 @@ void update() {
 
     //display.fillRect(0, 0, display.width(), graphMaxY, 0); // Clear the title area
     //display.fillRect(0, graphMinY, display.width(), display.height(), 0); // Clear the bottom info area
-    
+
     display.clear();
     display.setTextSize(2);
-    display.setCursor((display.width()-strlen(phaseName)*12)/2,0);
+    display.setCursor((display.WIDTH-strlen(phaseName)*12)/2,0);
     display.println(phaseName);
 
     display.setTextSize(1);
@@ -181,9 +183,9 @@ void update() {
     display.println();
 
     if (phase == IdlePhase) {
-        display.printlnCentered("Start");
+        display.println("Start");
     } else {
-        display.printlnCentered("Stop");
+        display.println("Stop");
     }
     //display.fillRect(0, 60, display.width()*(currentTime/totalDuration), 3, 1);
     display.refresh();
@@ -194,6 +196,8 @@ bool button1WasPressed = false;
 bool button2WasPressed = false;
 
 void loop() {
+    ModuloLoop();
+
     bool button0IsPressed = display.getButton(0);
     bool button1IsPressed = display.getButton(1);
     bool button2IsPressed = display.getButton(2);
@@ -217,4 +221,3 @@ void loop() {
 
     update();
 }
-
