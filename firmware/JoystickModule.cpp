@@ -1,6 +1,5 @@
 #include "JoystickModule.h"
 #include "Modulo.h"
-#include "Arduino.h"
 #include <stdlib.h>
 
 #define FUNCTION_GET_BUTTON 0
@@ -26,7 +25,7 @@ bool JoystickModule::getButton() {
 
 float JoystickModule::getHPos() {
     _init();
-   
+
     return _hPos*2/255.0 - 1;
 }
 
@@ -59,7 +58,7 @@ void JoystickModule::_refreshState() {
 }
 
 void JoystickModule::_processEvent(uint8_t eventCode, uint16_t eventData) {
- 
+
     if (eventCode == EVENT_BUTTON_CHANGED) {
         bool buttonPressed = eventData >> 8;
         bool buttonReleased = eventData & 0xFF;
@@ -76,15 +75,8 @@ void JoystickModule::_processEvent(uint8_t eventCode, uint16_t eventData) {
     }
 
     if (eventCode == EVENT_POSITION_CHANGED) {
-        Serial.println("Position Changed");
-
-
         _hPos = eventData >> 8;
         _vPos = eventData & 0xFF;
-
-
-        Serial.println(eventData, HEX);
-
 
         if (_positionChangeCallback) {
             _positionChangeCallback(*this);
@@ -105,4 +97,3 @@ void JoystickModule::setButtonReleaseCallback(EventCallback *callback) {
 void JoystickModule::setPositionChangeCallback(EventCallback *callback) {
     _positionChangeCallback = callback;
 }
-
