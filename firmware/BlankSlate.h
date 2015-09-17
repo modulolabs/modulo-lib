@@ -5,10 +5,10 @@
 #include "Module.h"
 
 /// A general purpose I/O module for digital input, digital output, analog input, and PWM output.
-class IOModule : public Module {
+class BlankSlate : public Module {
 public:
-    IOModule();
-    IOModule(uint16_t deviceID);
+    BlankSlate();
+    BlankSlate(uint16_t deviceID);
 
     enum AnalogReference {
         AREF_VCC,          // Bus power supply voltage
@@ -18,16 +18,16 @@ public:
         AREF_EXTERNAL      // External voltage reference on pin 7
     };
 
-    IOModule(uint8_t address);
+    BlankSlate(uint8_t address);
 
     // Disables the output on the specified pin and returns the pin's value
     bool getDigitalInput(uint8_t pin);
-    
+
     // Reads the digital inputs from all 8 pins. Does not enable/disable outputs on any pins.
     uint8_t getDigitalInputs();
-    
+
     // Disables the output on the specified pin and performs an analog read.
-    float getAnalogInput(uint8_t pin, AnalogReference ref=AREF_VCC);  
+    float getAnalogInput(uint8_t pin, AnalogReference ref=AREF_VCC);
 
     // Sets the pin direction to either output or input
     void setDirection(uint8_t pin, bool output);
@@ -46,18 +46,19 @@ public:
     void setPWMValue(uint8_t pin, float value);
 
     // Sets whether a pullup is enabled on the specified pin.
-    void setPullup(uint8_t pin, bool enable=true);  
-  
+    void setPullup(uint8_t pin, bool enable=true);
+
     // Sets whether debounce is enabled on the specified pin.
     // If enabled, digital input changes must be stable for 5ms before they are recognized.
     void setDebounce(uint8_t pin, bool enable=true);
 
     // Set the frequency for PWM signals on the specified pin.
     void setPWMFrequency(uint8_t pin, uint16_t value);
-    
+
 private:
+    uint64_t currentMessageTimestamp;
+
 
 };
 
 #endif
-

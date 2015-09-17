@@ -1,4 +1,4 @@
-#include "IOModule.h"
+#include "BlankSlate.h"
 #include "Modulo.h"
 #include <math.h>
 
@@ -20,15 +20,15 @@ namespace {
     };
 };
 
-IOModule::IOModule() : Module("co.modulo.io")
+BlankSlate::BlankSlate() : Module("co.modulo.io")
 {
 }
 
-IOModule::IOModule(uint16_t deviceID) : Module("co.modulo.io", deviceID)
+BlankSlate::BlankSlate(uint16_t deviceID) : Module("co.modulo.io", deviceID)
 {
 }
 
-bool IOModule::getDigitalInput(uint8_t pin) {
+bool BlankSlate::getDigitalInput(uint8_t pin) {
     uint8_t value = false;
 
     if (!_transfer(FUNCTION_GET_DIGITAL_INPUT, &pin, sizeof(pin),
@@ -37,9 +37,9 @@ bool IOModule::getDigitalInput(uint8_t pin) {
     }
     return value;
 }
- 
 
-uint8_t IOModule::getDigitalInputs() {
+
+uint8_t BlankSlate::getDigitalInputs() {
     uint8_t value = 0;
 
     if (!_transfer(FUNCTION_GET_DIGITAL_INPUTS, 0, 0,
@@ -49,8 +49,8 @@ uint8_t IOModule::getDigitalInputs() {
     return value;
 }
 
- 
-float IOModule::getAnalogInput(uint8_t pin, AnalogReference ref) {
+
+float BlankSlate::getAnalogInput(uint8_t pin, AnalogReference ref) {
     uint8_t sendData[] = {pin, ref};
     uint8_t receiveData[2];
 
@@ -61,37 +61,37 @@ float IOModule::getAnalogInput(uint8_t pin, AnalogReference ref) {
     return ((receiveData[1] << 8 ) | receiveData[0]) / 1023.0;
 }
 
-void IOModule::setDigitalOutput(uint8_t pin, bool value) {
+void BlankSlate::setDigitalOutput(uint8_t pin, bool value) {
     uint8_t sendData[] = {pin, value};
-    
+
     if (!_transfer(FUNCTION_SET_DIGITAL_OUTPUT, sendData, sizeof(sendData), 0, 0)) {
         // Handle error?
     }
 }
 
-bool IOModule::setDigitalOutputs(uint8_t values) {
+bool BlankSlate::setDigitalOutputs(uint8_t values) {
     return _transfer(FUNCTION_SET_DIGITAL_OUTPUTS, &values, 1, 0, 0);
 }
 
-void IOModule::setPWMValue(uint8_t pin, float value) {
+void BlankSlate::setPWMValue(uint8_t pin, float value) {
     uint16_t v = 65535.0 * fmax(0.0, fmin(1.0, value));
-    
-    uint8_t sendData[] = {pin, v & 0xFF, v >> 8};    
+
+    uint8_t sendData[] = {pin, v & 0xFF, v >> 8};
 
     if (!_transfer(FUNCTION_SET_PWM_OUTPUT, sendData, sizeof(sendData), 0, 0)) {
         // Handle error?
     }
 }
 
-void IOModule::setPullup(uint8_t pin, bool enable) {
+void BlankSlate::setPullup(uint8_t pin, bool enable) {
     uint8_t sendData[] = {pin, enable};
 
     if (!_transfer(FUNCTION_SET_PULLUP, sendData, sizeof(sendData), 0, 0)) {
         // Handle error?
     }
 }
-  
-void IOModule::setDebounce(uint8_t pin, bool enable) {
+
+void BlankSlate::setDebounce(uint8_t pin, bool enable) {
     uint8_t sendData[] = {pin, enable};
 
     if (!_transfer(FUNCTION_SET_DEBOUNCE, sendData, sizeof(sendData), 0, 0)) {
@@ -99,11 +99,10 @@ void IOModule::setDebounce(uint8_t pin, bool enable) {
     }
 }
 
-void IOModule::setPWMFrequency(uint8_t pin, uint16_t value) {
+void BlankSlate::setPWMFrequency(uint8_t pin, uint16_t value) {
     uint8_t sendData[] = {pin, value & 0xFF, value >> 8};
 
     if (!_transfer(FUNCTION_SET_PWM_FREQUENCY, sendData, sizeof(sendData), 0, 0)) {
         // Handle error?
     }
 }
-
