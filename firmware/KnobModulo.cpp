@@ -6,14 +6,18 @@
 #define FUNCTION_KNOB_GET_POSITION 1
 #define FUNCTION_KNOB_ADD_POSITION_OFFSET 2
 #define FUNCTION_KNOB_SET_COLOR 3
+#define EVENT_BUTTON_CHANGED 0
+#define EVENT_POSITION_CHANGED 1
 
 KnobModulo::KnobModulo(uint16_t deviceID) :
-    BaseModulo("co.modulo.knob", deviceID)
+    BaseModulo("co.modulo.knob", deviceID), _position(0), _buttonState(false),
+    _buttonPressCallback(NULL), _buttonReleaseCallback(NULL), _positionChangeCallback(NULL)
 {
 }
 
 KnobModulo::KnobModulo() :
-    BaseModulo("co.modulo.knob")
+    BaseModulo("co.modulo.knob"),  _position(0), _buttonState(false),
+    _buttonPressCallback(NULL), _buttonReleaseCallback(NULL), _positionChangeCallback(NULL)
 {
 }
 
@@ -74,24 +78,75 @@ bool KnobModulo::setColor(float r, float g, float b) {
 }
 
 bool KnobModulo::getButton() {
-    uint8_t receivedData[1];
-    if (!_transfer(FUNCTION_KNOB_GET_BUTTON, 0, 0, receivedData, 1)) {
-        return false;
-    }
-    return receivedData[0];
+    return _buttonState;
 }
 
 int16_t KnobModulo::getPosition() {
-    uint8_t receivedData[2];
-    if (!_transfer(FUNCTION_KNOB_GET_POSITION, 0, 0, receivedData, 2)) {
-        return false;
-    }
-    return receivedData[0] | (receivedData[1] << 8);
+    return _position;
 }
 
 int16_t KnobModulo::getAngle() {
     int16_t position = -getPosition();
     position = ((position % 24) + 24) % 24;
     return position*360/24;
-
 }
+
+bool KnobModulo::_init()
+{
+    if (BaseModulo::_init()) {
+        _refreshState();
+        return true;
+    }
+    return false;
+}
+
+void KnobModulo::_refreshState() {
+    uint8_t positionData[2];
+    if (_transfer(FUNCTION_KNOB_GET_POSITION, 0, 0, positionData, 2)) {
+        _position = positionData[0] | (positionData[1] << 8);
+    }
+
+    uint8_t buttonData[1];
+    if (_transfer(FUNCTION_KNOB_GET_BUTTON, 0, 0, buttonData, 1)) {
+        _buttonState = buttonData[0];
+    }
+}
+
+void KnobModulo::_processEvent(uint8_t eventCode, uint16_t eventData) {
+    if (eventCode == EVENT_BUTTON_CHANGED) {
+        bool buttonPressed = eventData >> 8;
+        bool buttonReleased = eventData & 0xFF;
+
+        _buttonState |= buttonPressed;
+        _buttonState &= !buttonReleased;
+
+        if (buttonPressed and _buttonPressCallback) {
+            _buttonPressCallback(*this);
+        }
+        if (buttonReleased and _buttonReleaseCallback) {
+            _buttonReleaseCallback(*this);
+        }
+    }
+
+    if (eventCode == EVENT_POSITION_CHANGED) {
+        _position = eventData;
+
+        if (_positionChangeCallback) {
+            _positionChangeCallback(*this);
+        }
+    }
+}
+
+
+void KnobModulo::setButtonPressCallback(EventCallback *callback) {
+    _buttonPressCallback = callback;
+}
+
+void KnobModulo::setButtonReleaseCallback(EventCallback *callback) {
+    _buttonReleaseCallback = callback;
+}
+
+void KnobModulo::setPositionChangeCallback(EventCallback *callback) {
+    _positionChangeCallback = callback;
+}
+

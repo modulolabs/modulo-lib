@@ -28,7 +28,23 @@ public:
     /// Return the position of the knob in clicks (24 per revolution).
     int16_t getPosition();
   
+    typedef void (EventCallback)(KnobModulo &module);
+
+    void setButtonPressCallback(EventCallback *handler);
+    void setButtonReleaseCallback(EventCallback *handler);
+    void setPositionChangeCallback(EventCallback *handler);
 private:
+    virtual bool _init();
+    virtual void _processEvent(uint8_t eventCode, uint16_t eventData);
+
+    void _refreshState();
+
+    EventCallback *_buttonPressCallback;
+    EventCallback *_buttonReleaseCallback;
+    EventCallback *_positionChangeCallback;
+
+    int16_t _position;
+    bool _buttonState;
 };
 
 #endif
