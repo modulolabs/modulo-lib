@@ -9,7 +9,8 @@
 #define EVENT_POSITION_CHANGED 1
 
 JoystickModulo::JoystickModulo() : BaseModulo("co.modulo.joystick"), _buttonState(0), _hPos(0), _vPos(0),
-    _buttonPressCallback(NULL), _buttonReleaseCallback(NULL), _positionChangeCallback(NULL) {}
+    _buttonPressCallback(NULL), _buttonReleaseCallback(NULL), _positionChangeCallback(NULL) {
+}
 
 JoystickModulo::JoystickModulo(uint16_t deviceID) :
     BaseModulo("co.modulo.joystick", deviceID), _hPos(0), _vPos(0), _buttonState(0),
