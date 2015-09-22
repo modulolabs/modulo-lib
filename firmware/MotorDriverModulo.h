@@ -24,13 +24,9 @@ public:
     /// Enables B0 and B1 if necessary.
     void setMotorB(float amount);
     
-    /// Set whether output drivers are enabled on outputs A0 and A1
-    void setEnableA(bool enable);
-    
-    /// Set whether output drivers are enabled on outputs B0 and B1
-    void setEnableB(bool enable);
+    /// Set whether output drivers are enabled
+    void setEnable(bool enable);
 
-  
 };
 
 #endif
