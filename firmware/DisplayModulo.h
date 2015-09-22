@@ -51,11 +51,27 @@ public:
     //void setRotation(uint8_t r);
     //void setCursor(int x, int y);
     void setLineColor(const Color &c);
+    void setLineColor(uint8_t r, uint8_t g, uint8_t b) {
+        setLineColor(Color(r,g,b));
+    }
+
     void setFillColor(const Color &c);
+    void setFillColor(uint8_t r, uint8_t g, uint8_t b) {
+        setFillColor(Color(r,g,b));
+    }
+
     void setTextColor(const Color &textColor);
+    void setTextColor(uint8_t r, uint8_t g, uint8_t b) {
+        setTextColor(Color(r,g,b));
+    }
+
     void setTextSize(uint8_t size);
 
     void fillScreen(Color color);
+    void fillScreen(uint8_t r, uint8_t g, uint8_t b) {
+        fillScreen(Color(r,g,b));
+    }
+
     void setCursor(int x, int y);
 
     void drawLine(int x0, int y0, int x1, int y1);
@@ -86,6 +102,19 @@ public:
     void drawLogo(int x=0, int y=0, int width=49, int height=49);
 
 private:
+    static const int OP_BUFFER_SIZE = 31;
+
+    uint8_t _currentOp;
+    uint8_t _opBuffer[OP_BUFFER_SIZE];
+    uint8_t _opBufferLen;
+
+    void _setCurrentOp(uint8_t opCode);
+    void _appendToOp(uint8_t data);
+    void _endPreviousOp();
+
+    // Helper for drawString. Draws string s of length len (no null byte)
+    void _drawString(const char *s, int len);
+
     void _waitOnRefresh();
 
     bool _isRefreshing;

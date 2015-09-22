@@ -33,18 +33,53 @@ const DisplayModulo::Color DisplayModulo::Clear(0,0,0,0);
 
 
 DisplayModulo::DisplayModulo() :
-    BaseModulo("co.modulo.colordisplay")
+    BaseModulo("co.modulo.colordisplay"), _currentOp(-1), _opBufferLen(0)
 {
 }
 
 DisplayModulo::DisplayModulo(uint16_t deviceID) :
-    BaseModulo("co.modulo.colordisplay", deviceID)
+    BaseModulo("co.modulo.colordisplay", deviceID), _currentOp(-1), _opBufferLen(0)
 {
 }
 
 DisplayModulo::~DisplayModulo() {
 
 }
+
+void DisplayModulo::_setCurrentOp(uint8_t opCode) {
+    if (_currentOp == opCode) {
+        return;
+    }
+
+    if (_currentOp != -1) {
+        _endPreviousOp();
+    }
+
+    _currentOp = opCode;
+    _opBufferLen = 1;
+    _opBuffer[0] = opCode;
+}
+
+void DisplayModulo::_appendToOp(uint8_t data) {
+    _opBuffer[_opBufferLen++] = data;
+    if (_opBufferLen == OP_BUFFER_SIZE) {
+        _transfer(FUNCTION_APPEND_OP, _opBuffer, _opBufferLen, 0, 0);
+        _opBufferLen = 0;
+    }
+}
+
+void DisplayModulo::_endPreviousOp() {
+    if (_currentOp == OpDrawString) {
+        _appendToOp(0);
+    }
+
+    if (_opBufferLen != 0) {
+        _transfer(FUNCTION_APPEND_OP, _opBuffer, _opBufferLen, 0, 0);
+    }
+    _opBufferLen = 0;
+    _currentOp = -1;
+}
+
 
 void DisplayModulo::clear() {
     fillScreen(Black);
@@ -63,6 +98,8 @@ uint16_t DisplayModulo::Color(uint8_t r, uint8_t g, uint8_t b) {
 }
 */
 void DisplayModulo::setLineColor(const Color &color) {
+    _endPreviousOp();
+
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpSetLineColor, color.r, color.g, color.b, color.a};
@@ -70,6 +107,8 @@ void DisplayModulo::setLineColor(const Color &color) {
 }
 
 void DisplayModulo::setFillColor(const Color &color) {
+    _endPreviousOp();
+
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpSetFillColor, color.r, color.g, color.b, color.a};
@@ -77,6 +116,8 @@ void DisplayModulo::setFillColor(const Color &color) {
 }
 
 void DisplayModulo::setTextColor(const Color &color) {
+    _endPreviousOp();
+
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpSetTextColor, color.r, color.g, color.b, color.a};
@@ -85,6 +126,8 @@ void DisplayModulo::setTextColor(const Color &color) {
 
 
 void DisplayModulo::setTextSize(uint8_t size) {
+    _endPreviousOp();
+
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpSetTextSize, size};
@@ -93,6 +136,8 @@ void DisplayModulo::setTextSize(uint8_t size) {
 
 void DisplayModulo::setCursor(int x, int y)
 {
+    _endPreviousOp();
+
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpSetCursor, x, y};
@@ -101,6 +146,8 @@ void DisplayModulo::setCursor(int x, int y)
 
 void DisplayModulo::refresh()
 {
+    _endPreviousOp();
+
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpRefresh};
@@ -121,6 +168,8 @@ void DisplayModulo::fillScreen(Color color)
 
 void DisplayModulo::drawLine(int x0, int y0, int x1, int y1)
 {
+    _endPreviousOp();
+
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpDrawLine, x0, y0, x1, y1};
@@ -129,6 +178,8 @@ void DisplayModulo::drawLine(int x0, int y0, int x1, int y1)
 
 void DisplayModulo::drawRect(int x, int y, int w, int h, int radius)
 {
+    _endPreviousOp();
+
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpDrawRect, x, y, w, h, radius};
@@ -137,6 +188,8 @@ void DisplayModulo::drawRect(int x, int y, int w, int h, int radius)
 
 void DisplayModulo::drawCircle(int x, int y, int radius)
 {
+    _endPreviousOp();
+
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpDrawCircle, x, y, radius};
@@ -147,27 +200,21 @@ void DisplayModulo::drawString(const char *s)
 {
     _waitOnRefresh();
 
-    const int maxLen = 31;
-    uint8_t sendData[maxLen] = {OpDrawString};
+    _setCurrentOp(OpDrawString);
 
-    int i = 1;
-    while (*s != 0) {
-        while (i < maxLen and *s) {
-            sendData[i++] = *(s++);
-        }
-        if (*s == 0) {
-            sendData[i++] = 0;
-        }
-        _transfer(FUNCTION_APPEND_OP, sendData, i, 0, 0);
-        i = 0;
+    int l = strlen(s);
+    for (int i=0; i < l; i++) {
+        _appendToOp(s[i]);
     }
-
-
 }
 
+
 size_t DisplayModulo::write(uint8_t c) {
-    uint8_t sendData[] = {OpDrawString,c,0};
-    _transfer(FUNCTION_APPEND_OP, sendData, 3, 0, 0);
+    _waitOnRefresh();
+
+    _setCurrentOp(OpDrawString);
+    _appendToOp(c);
+
     return 1;
 }
 
@@ -204,11 +251,12 @@ uint8_t DisplayModulo::getButtons() {
 }
 
 void DisplayModulo::drawSplashScreen() {
-    setFillColor(DisplayModulo::Color(90,0,50));
+    setFillColor(DisplayModulo::Color(80,0,60));
     setLineColor(DisplayModulo::Color(0,0,0,0));
     drawRect(0, 0, width(), height());
     setCursor(0, 40);
 
+    setTextSize(1);
     print("     MODULO");
 
     setFillColor(DisplayModulo::Color(255,255,255));
