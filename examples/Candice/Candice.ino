@@ -1,9 +1,11 @@
 #include "Modulo.h"
 #include "Wire.h"
+#include "ModuloServo.h"
 
 DisplayModulo display;
 KnobModulo knob;
 IRRemoteModulo ir;
+Servo servo;
 
 bool hasPermission = false;
 bool buttonPressed = false;
@@ -11,11 +13,25 @@ bool knobPressed = false;
 bool dispensing = false;
 int dispensingStart = 0;
 
+int servoClosedPos = 170;
+int servoOpenPos = 15;
+int openDuration = 1500;
+int closeDuration = 1500;
+
+
 void setup() {
+    servo.attach(1);
+    servo.write(servoClosedPos);
+    delay(500);
+    servo.detach();
+    
+    pinMode(LED_BUILTIN, OUTPUT);
 }
 
 void loop() {
+
     Modulo.loop();
+    digitalWrite(LED_BUILTIN, (millis()/500) % 2);
 
     bool hasCup = !digitalRead(0);
 
@@ -54,9 +70,18 @@ void loop() {
         display.setCursor(10,10);
         display.println("Candy!");
 
-        if (millis() > dispensingStart+3000) {
+        if (millis() < dispensingStart+openDuration) {
+            servo.attach(1);
+            servo.write(servoOpenPos);
+        } else if (millis() < dispensingStart+openDuration+closeDuration) {
+            servo.write(servoClosedPos);
+        } else {
+            servo.detach();
             dispensing = false;
         }
+
+        knob.setHSV(millis()/1000.0, 1, 1);
+
     } else if (!hasPermission) {
         display.fillScreen(255,0,0);
         display.setTextSize(2);
@@ -90,7 +115,7 @@ void loop() {
         display.setCursor(5, 30);
         display.println("Press the Knob");
         
-        knob.setHSV(millis()/1000.0, 1, 1);
+        knob.setColor(0,1,0);
     }
     display.refresh();
 }
