@@ -1,5 +1,6 @@
 #include "Modulo.h"
 #include "ControllerModuloBackend.h"
+#include "Arduino.h"
 
 #define BroadcastAddress 9
 
@@ -50,14 +51,25 @@ static bool _initialized = false;
 _ControllerModuloBackend _mainController;
 _Modulo Modulo;
 
-void _Modulo::setup(bool highBitRate) {
+void _Modulo::setup() {
     if (_initialized) {
         return;
     }
 
     _initialized = true;
 
+    // Wait until at least 100ms after startup
+    // so that connected devices can initialize
+    unsigned long t = millis();
+    if (t < 100) {
+        delay(100-t);
+    }
+
     TWI_INIT();
+
+    Wire.setClock(400000);
+
+    globalReset();
 }
 
 uint8_t
@@ -81,10 +93,10 @@ _crc8_ccitt_update (uint8_t inCrc, uint8_t inData)
 
 bool _moduloTransfer(
     uint8_t address, uint8_t command, uint8_t *sendData, uint8_t sendLen,
-    uint8_t *receiveData, uint8_t receiveLen)
+    uint8_t *receiveData, uint8_t receiveLen, bool receiveString)
 {
     // Star the transmit CRC with the address in the upper 7 bits
-    uint8_t crc =  _crc8_ccitt_update(0, address << 1);
+    uint8_t crc =  _crc8_ccitt_update(0, address);
 
     TWI_BEGIN_WRITE(address);
 
@@ -121,10 +133,10 @@ bool _moduloTransfer(
     }
 
     // Start the CRC with the I2C address byte (address in upper 7, 1 in lsb)
-    crc = _crc8_ccitt_update(0, address << 1 | 1);
+    crc = _crc8_ccitt_update(0, address);
 
     // Receive the data
-    for (int i=0; i < 32 and i < receiveLen; i++) {
+    for (int i=0; i < receiveLen; i++) {
         receiveData[i] = TWI_READ();
 
         // XXX: Hack to detect the end of variable length strings.
@@ -145,20 +157,27 @@ bool _moduloTransfer(
 
 bool _Modulo::transfer(
     uint8_t address, uint8_t command, uint8_t *sendData, uint8_t sendLen,
-    uint8_t *receiveData, uint8_t receiveLen)
+    uint8_t *receiveData, uint8_t receiveLen, bool receiveString)
 {
+    // Ensure that the twi bus has been initialised and a reset has been performed
+    setup();
+
     // Intercept broadcast transfers to deviceID 0, which is the controller
+    // XXX: event messages don't start with the deviceID
+/*
     if (address == BroadcastAddress and sendLen >= 2 and sendData[0] == 0 and sendData[1] == 0) {
-        return _mainController.processBroadcastTransfer(command, sendData, sendLen, receiveData, receiveLen);
+        return _mainController.processBroadcastTransfer(command, sendData, sendLen, receiveData, receiveLen, receiveString);
     } else if (address == _mainController.getAddress()) {
         // Handle controller transfer
-        return _mainController.processTransfer(command, sendData, sendLen, receiveData, receiveLen);
+        return _mainController.processTransfer(command, sendData, sendLen, receiveData, receiveLen, receiveString);
     }
+*/
 
-    return _moduloTransfer(address,command,sendData,sendLen,receiveData,receiveLen);
+    return _moduloTransfer(address, command, sendData, sendLen, receiveData, receiveLen, receiveString);
 }
 
 void _Modulo::loop() {
+
     _mainController.loop();
 
     BaseModulo::loop();
@@ -167,6 +186,7 @@ void _Modulo::loop() {
     if (transfer(BroadcastAddress, BroadcastCommandGetEvent, 0, 0, event, 5)) {
 
         transfer(BroadcastAddress, BroadcastCommandClearEvent, event, 5, 0, 0);
+
         uint8_t eventCode = event[0];
         uint16_t deviceID = event[1] | (event[2] << 8);
         uint16_t eventData = event[3] | (event[4] << 8);
@@ -186,7 +206,12 @@ void _Modulo::globalReset() {
 }
 
 uint16_t _Modulo::getNextDeviceID(uint16_t lastDeviceID) {
-    uint8_t sendData[2] = {lastDeviceID & 0xFF, lastDeviceID >> 8 };
+    if (lastDeviceID == 0xFFFF) {
+        return 0xFFFF;
+    }
+    uint16_t nextDeviceID = lastDeviceID +1;
+
+    uint8_t sendData[2] = {nextDeviceID & 0xFF, nextDeviceID >> 8 };
     uint8_t receiveData[2] = {0xFF,0xFF};
     if (!transfer(BroadcastAddress, BroadcastCommandGetNextDeviceID,
                         sendData, 2, receiveData, 2)) {
@@ -214,25 +239,25 @@ uint8_t _Modulo::getAddress(uint16_t deviceID) {
 bool _Modulo::getDeviceType(uint16_t deviceID, char *deviceType, uint8_t maxLen) {
     uint8_t sendData[2] = {deviceID & 0xFF, deviceID >> 8};
     return transfer(BroadcastAddress, BroadcastCommandGetDeviceType,
-                          sendData, 2, (uint8_t*)deviceType, maxLen);
+                          sendData, 2, (uint8_t*)deviceType, maxLen, true);
 }
 
 bool _Modulo::getManufacturer(uint16_t deviceID, char *deviceType, uint8_t maxLen) {
     uint8_t sendData[2] = {deviceID & 0xFF, deviceID >> 8};
     return transfer(BroadcastAddress, BroadcastCommandGetCompanyName,
-                          sendData, 2, (uint8_t*)deviceType, maxLen);
+                          sendData, 2, (uint8_t*)deviceType, maxLen, true);
 }
 
 bool _Modulo::getProduct(uint16_t deviceID, char *deviceType, uint8_t maxLen) {
     uint8_t sendData[2] = {deviceID & 0xFF, deviceID >> 8};
     return transfer(BroadcastAddress, BroadcastCommandGetProductName,
-                          sendData, 2, (uint8_t*)deviceType, maxLen);
+                          sendData, 2, (uint8_t*)deviceType, maxLen, true);
 }
 
 bool _Modulo::getDocURL(uint16_t deviceID, char *deviceType, uint8_t maxLen) {
     uint8_t sendData[2] = {deviceID & 0xFF, deviceID >> 8};
     return transfer(BroadcastAddress, BroadcastCommandGetDocURL,
-                          sendData, 2, (uint8_t*)deviceType, maxLen);
+                          sendData, 2, (uint8_t*)deviceType, maxLen, true);
 }
 
 bool _Modulo::setStatus(uint16_t deviceID, ModuloStatus status) {

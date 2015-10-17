@@ -66,6 +66,14 @@ uint16_t BaseModulo::getDeviceID() {
     return _deviceID;
 }
 
+void BaseModulo::setDeviceID(uint16_t deviceID) {
+    if (deviceID != _deviceID) {
+        _deviceID = deviceID;
+        _address = 0xFF;
+    }
+}
+
+
 uint8_t BaseModulo::getAddress() {
     _init();
     return _address;
@@ -90,22 +98,6 @@ bool BaseModulo::_init() {
         return false;
     }
 
-    // Ensure that a global reset has been performed
-    static bool _moduloInitialized = false;
-    if (!_moduloInitialized) {
-
-        // Wait until at least 100ms after startup
-        // so that connected devices can initialize
-        unsigned long t = millis();
-        if (t < 100) {
-            delay(100-t);
-        }
-
-        Modulo.setup();
-        Modulo.globalReset();
-        _moduloInitialized = true;
-    }
-
     if (_deviceID == 0xFFFF) {
         // Find the first device with the specified type and no assigned address
         uint16_t deviceID = Modulo.getNextDeviceID(0);
@@ -125,7 +117,7 @@ bool BaseModulo::_init() {
                 }
             }
 
-            deviceID = Modulo.getNextDeviceID(deviceID+1);
+            deviceID = Modulo.getNextDeviceID(deviceID);
         }
     }
 

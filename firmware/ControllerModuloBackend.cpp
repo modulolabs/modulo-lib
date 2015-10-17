@@ -32,13 +32,7 @@ _ControllerModuloBackend::_ControllerModuloBackend() :
 }
 
 void _ControllerModuloBackend::loop() {
-#ifdef ARDUINO
-    if (_status == ModuloStatusBlinking) {
-        digitalWrite(LED_BUILTIN, millis() % 500 > 250);
-    } else {
-        digitalWrite(LED_BUILTIN, _status == ModuloStatusOn);
-    }
-#endif
+
 }
 
 uint8_t _ControllerModuloBackend::getAddress() {
@@ -53,7 +47,7 @@ void _ControllerModuloBackend::globalReset() {
 
 bool _ControllerModuloBackend::processTransfer(
     uint8_t command, uint8_t *sendData, uint8_t sendLen,
-    uint8_t *receiveData, uint8_t receiveLen)
+    uint8_t *receiveData, uint8_t receiveLen, bool receiveString)
 {
     switch (command) {
         case FUNCTION_SET_PIN_DIRECTION:
@@ -104,7 +98,7 @@ bool _ControllerModuloBackend::processTransfer(
 
 bool _ControllerModuloBackend::processBroadcastTransfer(
     uint8_t command, uint8_t *sendData, uint8_t sendLen,
-    uint8_t *receiveData, uint8_t receiveLen)
+    uint8_t *receiveData, uint8_t receiveLen, bool receiveString)
 {
     switch (command) {
     case BroadcastCommandGetNextDeviceID :
@@ -127,10 +121,10 @@ bool _ControllerModuloBackend::processBroadcastTransfer(
         receiveData[0] = _address;
         return true;
     case BroadcastCommandGetDeviceType:
-        if (sendLen != 2 or receiveLen != 31) {
+        if (sendLen != 2 or !receiveString) {
             return false;
         }
-        strcpy((char*)receiveData, "co.modulo.controller");
+        strncpy((char*)receiveData, "co.modulo.controller", receiveLen);
         return true;
     case BroadcastCommandGetDeviceVersion:
         if (sendLen != 2 or receiveLen != 2) {
@@ -140,25 +134,18 @@ bool _ControllerModuloBackend::processBroadcastTransfer(
         receiveData[1] = 0;
         return true;
     case BroadcastCommandGetCompanyName:
-        if (sendLen != 2 or receiveLen != 31) {
+        if (sendLen != 2 or !receiveString) {
             return false;
         }
-        strcpy((char*)receiveData, "Integer Labs");
+        strncpy((char*)receiveData, "Modulo Labs", receiveLen);
         return true;
     case BroadcastCommandGetProductName:
-        if (sendLen != 2 or receiveLen != 31) {
+        if (sendLen != 2 or !receiveString) {
             return false;
         }
-        strcpy((char*)receiveData, "Controller");
+        strncpy((char*)receiveData, "Controller", receiveLen);
         return true;
     case BroadcastCommandSetStatusLED:
-#ifdef ARDUINO
-        if (sendLen == 3 and receiveLen == 0) {
-            _status = (ModuloStatus)sendData[2];
-            pinMode(LED_BUILTIN, OUTPUT);
-            return true;
-        }
-#endif
         return false;
     }
     return false;

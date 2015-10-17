@@ -8,12 +8,16 @@ class _Modulo;
 /// Handles things like discovering devices and assigning an address.
 class BaseModulo {
  public:
+    virtual ~BaseModulo();
+
     /// Return the i2c address, or 0xFF if no device could be found
     uint8_t getAddress();
 
     /// Return the device ID, or 0xFFFF if no device could be found
     uint16_t getDeviceID();
     
+    /// Sets the device ID. If the ID changed, reset the device address.
+    void setDeviceID(uint16_t deviceID);
 
     static BaseModulo* findByDeviceID(uint16_t deviceID);
 
@@ -23,7 +27,7 @@ class BaseModulo {
     BaseModulo(const char *deviceType);
     BaseModulo(const char *deviceType, uint16_t deviceID);
     
-    virtual ~BaseModulo();
+
 
     // Initialize the module. Return true if initialization took place, false if
     // it failed or if the module was already initialized.

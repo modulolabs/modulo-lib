@@ -16,11 +16,11 @@ public:
     
     bool processTransfer(
         uint8_t command, uint8_t *sendData, uint8_t sendLen,
-        uint8_t *receiveData, uint8_t receiveLen);
+        uint8_t *receiveData, uint8_t receiveLen, bool receiveString);
 
     bool processBroadcastTransfer(
         uint8_t command, uint8_t *sendData, uint8_t sendLen,
-        uint8_t *receiveData, uint8_t receiveLen);
+        uint8_t *receiveData, uint8_t receiveLen, bool receiveString);
 
 private:
     uint8_t _address;

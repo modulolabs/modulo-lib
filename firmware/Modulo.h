@@ -21,10 +21,10 @@ enum ModuloStatus {
 
 class _Modulo {
 public:
-    /// ModuloSetup should be called from the sketch setup function.
-    static void setup(bool highBitRate = true);
+    /// setup is called automatically
+    static void setup();
 
-    /// ModuloLoop should be called from the sketch loop function.
+    /// loop should be called from the sketch loop function.
     static void loop();
 
     /// Reset all devices on the bus to their power-up state
@@ -58,7 +58,7 @@ public:
     /// Perform a data transfer on the modulo bus
     static bool transfer(
         uint8_t address, uint8_t command, uint8_t *sendData, uint8_t sendLen,
-        uint8_t *receiveData, uint8_t receiveLen);
+        uint8_t *receiveData, uint8_t receiveLen, bool receiveString = false);
 };
 
 extern _Modulo Modulo;
