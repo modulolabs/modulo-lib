@@ -61,11 +61,12 @@ void DisplayModulo::_setCurrentOp(uint8_t opCode) {
 }
 
 void DisplayModulo::_appendToOp(uint8_t data) {
-    _opBuffer[_opBufferLen++] = data;
     if (_opBufferLen == OP_BUFFER_SIZE) {
-        _transfer(FUNCTION_APPEND_OP, _opBuffer, _opBufferLen, 0, 0);
-        _opBufferLen = 0;
+        _opBuffer[_opBufferLen++] = 0;
+        return;
     }
+
+    _opBuffer[_opBufferLen++] = data;
 }
 
 void DisplayModulo::_endPreviousOp() {
@@ -198,13 +199,10 @@ void DisplayModulo::drawCircle(int x, int y, int radius)
 
 void DisplayModulo::drawString(const char *s)
 {
-    _waitOnRefresh();
-
-    _setCurrentOp(OpDrawString);
 
     int l = strlen(s);
     for (int i=0; i < l; i++) {
-        _appendToOp(s[i]);
+        write(s[i]);
     }
 }
 
@@ -212,7 +210,13 @@ void DisplayModulo::drawString(const char *s)
 size_t DisplayModulo::write(uint8_t c) {
     _waitOnRefresh();
 
+
+    if (_opBufferLen == OP_BUFFER_SIZE-2) {
+        _endPreviousOp();
+    }
+
     _setCurrentOp(OpDrawString);
+
     _appendToOp(c);
 
     return 1;

@@ -101,16 +101,18 @@ public:
     /// Draw the Modulo logo
     void drawLogo(int x=0, int y=0, int width=49, int height=49);
 
+    void _setCurrentOp(uint8_t opCode);
+    void _appendToOp(uint8_t data);
+    void _endPreviousOp();
+
 private:
-    static const int OP_BUFFER_SIZE = 31;
+    static const int OP_BUFFER_SIZE = 30;
 
     uint8_t _currentOp;
     uint8_t _opBuffer[OP_BUFFER_SIZE];
     uint8_t _opBufferLen;
 
-    void _setCurrentOp(uint8_t opCode);
-    void _appendToOp(uint8_t data);
-    void _endPreviousOp();
+
 
     // Helper for drawString. Draws string s of length len (no null byte)
     void _drawString(const char *s, int len);
