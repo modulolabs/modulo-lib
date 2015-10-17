@@ -27,6 +27,8 @@ public:
     /// Set whether output drivers are enabled
     void setEnable(bool enable);
 
+    /// Set the driver curren limit (between 0 and 1).
+    void setCurrentLimit(float limit);
 };
 
 #endif

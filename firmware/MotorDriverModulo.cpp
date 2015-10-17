@@ -1,6 +1,6 @@
 #include "MotorDriverModulo.h"
 #include "Modulo.h"
-
+#include "Arduino.h"
 
 static float _constrain(float v, float min, float max) {
     if (v < min) {
@@ -16,6 +16,7 @@ static float _constrain(float v, float min, float max) {
 static const uint8_t _FunctionSetValue = 0;
 static const uint8_t _FunctionSetEnabled = 1;
 static const uint8_t _FunctionSetFrequency = 2;
+static const uint8_t _FunctionSetCurrentLimit = 3;
 
 MotorDriverModulo::MotorDriverModulo() : BaseModulo("co.modulo.motor") {
 }
@@ -55,4 +56,8 @@ void MotorDriverModulo::setEnable(bool enable) {
     _transfer(_FunctionSetEnabled, dataToSend, 1, 0, 0);
 }
 
-
+void MotorDriverModulo::setCurrentLimit(float limit) {
+    limit = constrain(limit, 0.0, 1.0);
+    uint8_t dataToSend[] = {limit*64};
+    _transfer(_FunctionSetCurrentLimit, dataToSend, 1, 0, 0);
+}
