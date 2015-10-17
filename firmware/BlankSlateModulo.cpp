@@ -60,6 +60,21 @@ float BlankSlateModulo::getAnalogInput(uint8_t pin, AnalogReference ref) {
     return ((receiveData[1] << 8 ) | receiveData[0]) / 1023.0;
 }
 
+
+void BlankSlateModulo::setDirection(uint8_t pin, bool output) {
+    uint8_t sendData[] = {pin, output};
+
+    if (!_transfer(FUNCTION_SET_DATA_DIRECTION, sendData, sizeof(sendData), 0, 0)) {
+        // Handle error?
+    }
+}
+
+
+void BlankSlateModulo::setDirections(uint8_t outputs) {
+    _transfer(FUNCTION_SET_DATA_DIRECTIONS, &outputs, 1, 0, 0);
+}
+
+
 void BlankSlateModulo::setDigitalOutput(uint8_t pin, bool value) {
     uint8_t sendData[] = {pin, value};
 
