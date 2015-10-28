@@ -15,11 +15,11 @@ public:
     virtual ~DisplayModulo();
 
     int width() const {
-        return 96;
+        return WIDTH;
     }
 
     int height() const {
-        return 64;
+        return HEIGHT;
     }
 
     enum TextAlignment {
@@ -80,11 +80,15 @@ public:
 
     void drawCircle(int x, int y, int r);
 
-    //void drawTriangle(int x0, int y0, int x1, int y1, int x2, int y2);
+    void drawTriangle(int x0, int y0, int x1, int y1, int x2, int y2);
 
     void drawString(const char *s);
 
     size_t write(uint8_t c);
+
+    /// Display the results of all previous drawing commands.
+    /// Note that after calling refresh, the next drawing operation will
+    /// block until the frame has been drawn.
     void refresh();
 
     bool isComplete();
@@ -98,25 +102,58 @@ public:
     /// Draw the Modulo logo and the word 'MODULO' on a purple background
     void drawSplashScreen();
 
+    /// Set the brightness (Between 0 and 1).
+    void setBrightness(float brightness);
+
     /// Draw the Modulo logo
     void drawLogo(int x=0, int y=0, int width=49, int height=49);
 
-    void _setCurrentOp(uint8_t opCode);
+    void _beginOp(uint8_t opCode);
     void _appendToOp(uint8_t data);
-    void _endPreviousOp();
+    void _endOp();
+
+
+    typedef void (EventCallback)(DisplayModulo &module, int button);
+
+    void setButtonPressCallback(EventCallback *handler);
+    void setButtonReleaseCallback(EventCallback *handler);
 
 private:
-    static const int OP_BUFFER_SIZE = 30;
+
+    EventCallback *_buttonPressCallback;
+    EventCallback *_buttonReleaseCallback;
+    uint8_t _buttonState;
+
+    static const int OP_BUFFER_SIZE = 28;
+    static const int WIDTH = 96;
+    static const int HEIGHT = 64;
 
     uint8_t _currentOp;
     uint8_t _opBuffer[OP_BUFFER_SIZE];
     uint8_t _opBufferLen;
 
+    virtual void _processEvent(uint8_t eventCode, uint16_t eventData);
+
+    // This sends raw data to the SSD1331 driver IC. Be very careful doing this,
+    // since incorrect usage can damage/destroy the OLED.
+    void _rawWrite(bool dataMode, uint8_t *data, size_t len);
+
+    // Clip a line to be within the viewport. Returns false if the line
+    // is entirely outside the viewport.
+    bool _clipLine(int *x0, int *y0, int *x1, int *y1);
+    
+    // Helper for _clipLine
+    int _computeOutCode(double x, double y);
 
 
     // Helper for drawString. Draws string s of length len (no null byte)
     void _drawString(const char *s, int len);
 
+    // This function is called at the beginning of every drawing operation.
+    // If the last drawing operation was a refresh, it busy waits until
+    // the modulo's drawing queue is empty. This provides a point of
+    // syncronoization so that we don't queue drawing commands for more than
+    // one frame at a time.
     void _waitOnRefresh();
 
     bool _isRefreshing;
