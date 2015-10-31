@@ -1,6 +1,6 @@
 #include "Modulo.h"
 #include "ControllerModuloBackend.h"
-#include "Arduino.h"
+#include "ModuloWiring.h"
 
 #define BroadcastAddress 9
 
@@ -65,9 +65,19 @@ void _Modulo::setup() {
         delay(100-t);
     }
 
+    int i2cSpeed = 600000;
+
+#ifdef SPARK
+    // The spark firmware requires that the speed be set before calling begin
+    Wire.setSpeed(i2cSpeed);
+#endif
+
     TWI_INIT();
 
-    Wire.setClock(400000);
+#ifdef ARDUINO
+    // The arduino firmware requires that the speed be set after calling begin
+    Wire.setClock(1000000);
+#endif
 
     globalReset();
 }
