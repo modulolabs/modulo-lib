@@ -6,6 +6,7 @@ bootloader/*.lst
 !bootloader/Caterina.h
 !bootloader/Caterina.c
 docs/html
+docs/xml
 
 
 
