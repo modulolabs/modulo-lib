@@ -1,5 +1,5 @@
-#ifdef SPARK_PLATFORM
+#if defined(SPARK)
 #include "spark_wiring.h"
-#else
+#elif defined(ARDUINO)
 #include "Arduino.h"
 #endif
