@@ -14,9 +14,20 @@ public:
     IRRemoteModulo(uint16_t deviceID);
 
 
-    bool receive(int8_t *protocol, uint32_t *code);
+    //uint8_t receive(uint8_t *buffer, uint8_t maxLen);
+
+    void update();
+
+    void send(uint8_t *data, uint8_t len);
+
+    void setBreakLength(uint16_t len);
 
 private:
+    long _lastEmptyTime;
+
+    static const uint8_t _receiveBufferSize = 128;
+    uint8_t _receiveBuffer[_receiveBufferSize];
+    uint16_t _receiveBufferLen;
 };
 
 #endif
