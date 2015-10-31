@@ -14,6 +14,8 @@
 #define FUNCTION_IS_COMPLETE 1
 #define FUNCTION_GET_BUTTONS 2
 #define FUNCTION_RAW_WRITE 3
+#define FUNCTION_IS_EMPTY 4
+#define FUNCTION_GET_AVAILABLE_SPACE 5
 
 #define EVENT_BUTTON_CHANGED 0
 
@@ -36,17 +38,39 @@ const DisplayModulo::Color DisplayModulo::Clear(0,0,0,0);
 
 
 DisplayModulo::DisplayModulo() :
-    BaseModulo("co.modulo.colordisplay"), _currentOp(-1), _opBufferLen(0), _buttonState(0)
+    BaseModulo("co.modulo.colordisplay"),
+        _currentOp(-1), _opBufferLen(0), _buttonState(0),
+        _isRefreshing(false), _availableSpace(0)
 {
 }
 
 DisplayModulo::DisplayModulo(uint16_t deviceID) :
-    BaseModulo("co.modulo.colordisplay", deviceID), _currentOp(-1), _opBufferLen(0), _buttonState(0)
+    BaseModulo("co.modulo.colordisplay", deviceID),
+        _currentOp(-1), _opBufferLen(0), _buttonState(0),
+        _isRefreshing(false), _availableSpace(0)
 {
 }
 
 DisplayModulo::~DisplayModulo() {
 
+}
+
+void DisplayModulo::_sendOp(uint8_t *data, uint8_t len) {
+    while (_availableSpace < len) {
+        uint8_t receiveData[2] = {0,0};
+        if (_transfer(FUNCTION_GET_AVAILABLE_SPACE, 0, 0, receiveData, 2)) {
+            _availableSpace = receiveData[0] | (receiveData[1] << 8);
+        }
+        
+
+        if (_availableSpace < len) {
+            delay(5);
+        }
+    }
+
+    _availableSpace -= len;
+
+    _transfer(FUNCTION_APPEND_OP, data, len, 0, 0);
 }
 
 void DisplayModulo::_beginOp(uint8_t opCode) {
@@ -70,7 +94,7 @@ void DisplayModulo::_appendToOp(uint8_t data) {
 void DisplayModulo::_endOp() {
     if (_currentOp == OpDrawString) {
         _opBuffer[_opBufferLen++] = 0;
-        _transfer(FUNCTION_APPEND_OP, _opBuffer, _opBufferLen, 0, 0);
+        _sendOp(_opBuffer, _opBufferLen);
         _opBufferLen = 0;
         _currentOp = -1;
     }
@@ -81,25 +105,14 @@ void DisplayModulo::clear() {
     fillScreen(Black);
     setCursor(0,0);
 }
-/*
-uint16_t DisplayModulo::Color(uint8_t r, uint8_t g, uint8_t b) {
-    uint16_t c;
-    c = r >> 3;
-    c <<= 6;
-    c |= g >> 2;
-    c <<= 5;
-    c |= b >> 3;
 
-    return c;
-}
-*/
 void DisplayModulo::setLineColor(const Color &color) {
     _endOp();
 
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpSetLineColor, color.r, color.g, color.b, color.a};
-    _transfer(FUNCTION_APPEND_OP, sendData, 5, 0, 0);
+    _sendOp(sendData, 5);
 }
 
 void DisplayModulo::setFillColor(const Color &color) {
@@ -108,7 +121,7 @@ void DisplayModulo::setFillColor(const Color &color) {
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpSetFillColor, color.r, color.g, color.b, color.a};
-    _transfer(FUNCTION_APPEND_OP, sendData, 5, 0, 0);
+    _sendOp(sendData, 5);
 }
 
 void DisplayModulo::setTextColor(const Color &color) {
@@ -117,7 +130,7 @@ void DisplayModulo::setTextColor(const Color &color) {
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpSetTextColor, color.r, color.g, color.b, color.a};
-    _transfer(FUNCTION_APPEND_OP, sendData, 5, 0, 0);
+    _sendOp(sendData, 5);
 }
 
 
@@ -127,7 +140,7 @@ void DisplayModulo::setTextSize(uint8_t size) {
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpSetTextSize, size};
-    _transfer(FUNCTION_APPEND_OP, sendData, 2, 0, 0);
+    _sendOp(sendData, 2);
 }
 
 void DisplayModulo::setCursor(int x, int y)
@@ -137,7 +150,7 @@ void DisplayModulo::setCursor(int x, int y)
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpSetCursor, x, y};
-    _transfer(FUNCTION_APPEND_OP, sendData, 3, 0, 0);
+    _sendOp(sendData, 3);
 }
 
 void DisplayModulo::refresh()
@@ -147,7 +160,7 @@ void DisplayModulo::refresh()
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpRefresh};
-    _transfer(FUNCTION_APPEND_OP, sendData, 1, 0, 0);
+    _sendOp(sendData, 1);
 
     _isRefreshing = true;
 }
@@ -160,7 +173,7 @@ void DisplayModulo::fillScreen(Color color)
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpFillScreen, color.r, color.g, color.b, color.a};
-    _transfer(FUNCTION_APPEND_OP, sendData, 5, 0, 0);
+    _sendOp(sendData, 5);
 }
 
 
@@ -173,7 +186,7 @@ void DisplayModulo::drawLine(int x0, int y0, int x1, int y1)
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpDrawLine, x0, y0, x1, y1};
-    _transfer(FUNCTION_APPEND_OP, sendData, 5, 0, 0);
+    _sendOp(sendData, 5);
 }
 
 void DisplayModulo::drawRect(int x, int y, int w, int h, int radius)
@@ -218,13 +231,13 @@ void DisplayModulo::drawRect(int x, int y, int w, int h, int radius)
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpDrawRect, x, y, w, h, radius};
-    _transfer(FUNCTION_APPEND_OP, sendData, 6, 0, 0);
+    _sendOp(sendData, 6);
 }
 
 void DisplayModulo::drawTriangle(int x0, int y0, int x1, int y1, int x2, int y2)
 {
     uint8_t sendData[] = {OpDrawTriangle, x0, y0, x1, y1, x2, y2};
-    _transfer(FUNCTION_APPEND_OP, sendData, 7, 0, 0);
+    _sendOp(sendData, 7);
 }
 
 void DisplayModulo::drawCircle(int x, int y, int radius)
@@ -234,7 +247,7 @@ void DisplayModulo::drawCircle(int x, int y, int radius)
     _waitOnRefresh();
 
     uint8_t sendData[] = {OpDrawCircle, x, y, radius};
-    _transfer(FUNCTION_APPEND_OP, sendData, 4, 0, 0);
+    _sendOp(sendData, 4);
 }
 
 void DisplayModulo::drawString(const char *s)
@@ -270,6 +283,13 @@ void DisplayModulo::_rawWrite(bool dataMode, uint8_t *data, size_t len) {
     if (len > 30) {
         return;
     }
+
+    // Before issuing a raw write we must wait until no drawing operations are
+    // still in progress.
+    while (!isComplete()) {
+        delay(5);
+    }
+
     uint8_t sendData[32] = {dataMode};
     for  (int i=0; i < len; i++) {
         sendData[i+1] = data[i];
@@ -285,11 +305,20 @@ bool DisplayModulo::isComplete() {
     return true;
 }
 
+bool DisplayModulo::isEmpty() {
+    uint8_t empty = 0;
+    if (_transfer(FUNCTION_IS_EMPTY, 0, 0, &empty, 1)) {
+        return empty;
+    }
+    return true;
+}
+
+
 void DisplayModulo::_waitOnRefresh()
 {
     if (_isRefreshing) {
         _isRefreshing = false;
-        while (!isComplete()) {
+        while (!isEmpty()) {
             delay(5);
         }
     }

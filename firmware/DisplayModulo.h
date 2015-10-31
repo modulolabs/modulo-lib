@@ -93,6 +93,8 @@ public:
 
     bool isComplete();
 
+    bool isEmpty();
+
     /// Return whether the specified button is currently pressed
     bool getButton(int button);
 
@@ -119,18 +121,20 @@ public:
     void setButtonReleaseCallback(EventCallback *handler);
 
 private:
+    static const int OP_BUFFER_SIZE = 28;
+    static const int WIDTH = 96;
+    static const int HEIGHT = 64;
 
     EventCallback *_buttonPressCallback;
     EventCallback *_buttonReleaseCallback;
     uint8_t _buttonState;
 
-    static const int OP_BUFFER_SIZE = 28;
-    static const int WIDTH = 96;
-    static const int HEIGHT = 64;
-
     uint8_t _currentOp;
     uint8_t _opBuffer[OP_BUFFER_SIZE];
     uint8_t _opBufferLen;
+    bool _isRefreshing;
+    uint16_t _availableSpace;
+
 
     virtual void _processEvent(uint8_t eventCode, uint16_t eventData);
 
@@ -145,9 +149,12 @@ private:
     // Helper for _clipLine
     int _computeOutCode(double x, double y);
 
-
     // Helper for drawString. Draws string s of length len (no null byte)
     void _drawString(const char *s, int len);
+
+    // Wait until sufficient space is available in the modulo's op stream and
+    // then append data to it.
+    void _sendOp(uint8_t *data, uint8_t len);
 
     // This function is called at the beginning of every drawing operation.
     // If the last drawing operation was a refresh, it busy waits until
@@ -156,7 +163,7 @@ private:
     // one frame at a time.
     void _waitOnRefresh();
 
-    bool _isRefreshing;
+
 
 };
 
