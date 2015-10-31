@@ -11,14 +11,14 @@ uint8_t BaseModulo::_lastAssignedAddress = 9;
 BaseModulo* BaseModulo::_firstBaseModulo = NULL;
 
 BaseModulo::BaseModulo(const char *deviceType) :
-    _deviceType(deviceType), _deviceID(0xFFFF), _address(0xFF), _disconnected(true) {
+    _deviceType(deviceType), _deviceID(0xFFFF), _address(0xFF), _disconnected(false) {
 
     _nextBaseModulo = _firstBaseModulo;
     _firstBaseModulo = this;
 }
 
 BaseModulo::BaseModulo(const char *deviceType, uint16_t deviceID) :
-    _deviceType(deviceType), _deviceID(deviceID), _address(0xFF), _disconnected(true) {
+    _deviceType(deviceType), _deviceID(deviceID), _address(0xFF), _disconnected(false) {
 
     _nextBaseModulo = _firstBaseModulo;
     _firstBaseModulo = this;
