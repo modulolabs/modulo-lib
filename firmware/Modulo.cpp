@@ -10,15 +10,9 @@
 #define BroadcastCommandGetAddress 3
 #define BroadcastCommandGetDeviceType 4
 #define BroadcastCommandGetDeviceVersion 5
-#define BroadcastCommandGetCompanyName 6
-#define BroadcastCommandGetProductName 7
-#define BroadcastCommandGetDocURL 8
-#define BroadcastCommandGetDocURLContinued 9
-#define BroadcastCommandGetEvent 10
-#define BroadcastCommandSetStatusLED 11
-#define BroadcastCommandClearEvent 12
-
-#define ControllerFunctionReadTemperatureProbe 0
+#define BroadcastCommandGetEvent 6
+#define BroadcastCommandClearEvent 7
+#define BroadcastCommandSetStatusLED 8
 
 #if MODULO_CUSTOM_WIRE
 #include "ModuloTWI.h"
@@ -249,24 +243,6 @@ uint8_t _Modulo::getAddress(uint16_t deviceID) {
 bool _Modulo::getDeviceType(uint16_t deviceID, char *deviceType, uint8_t maxLen) {
     uint8_t sendData[2] = {deviceID & 0xFF, deviceID >> 8};
     return transfer(BroadcastAddress, BroadcastCommandGetDeviceType,
-                          sendData, 2, (uint8_t*)deviceType, maxLen, true);
-}
-
-bool _Modulo::getManufacturer(uint16_t deviceID, char *deviceType, uint8_t maxLen) {
-    uint8_t sendData[2] = {deviceID & 0xFF, deviceID >> 8};
-    return transfer(BroadcastAddress, BroadcastCommandGetCompanyName,
-                          sendData, 2, (uint8_t*)deviceType, maxLen, true);
-}
-
-bool _Modulo::getProduct(uint16_t deviceID, char *deviceType, uint8_t maxLen) {
-    uint8_t sendData[2] = {deviceID & 0xFF, deviceID >> 8};
-    return transfer(BroadcastAddress, BroadcastCommandGetProductName,
-                          sendData, 2, (uint8_t*)deviceType, maxLen, true);
-}
-
-bool _Modulo::getDocURL(uint16_t deviceID, char *deviceType, uint8_t maxLen) {
-    uint8_t sendData[2] = {deviceID & 0xFF, deviceID >> 8};
-    return transfer(BroadcastAddress, BroadcastCommandGetDocURL,
                           sendData, 2, (uint8_t*)deviceType, maxLen, true);
 }
 

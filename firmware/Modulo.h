@@ -44,15 +44,6 @@ public:
     /// Get a device's deviceType. 
     static bool getDeviceType(uint16_t deviceID, char *deviceType, uint8_t maxLen);
 
-    /// Get a device's manufacturer
-    static bool getManufacturer(uint16_t deviceID, char *deviceType, uint8_t maxLen);
-
-    /// Get a device's product name
-    static bool getProduct(uint16_t deviceID, char *deviceType, uint8_t maxLen);
-
-    /// Get a device's documentation url
-    static bool getDocURL(uint16_t deviceID, char *deviceType, uint8_t maxLen);
-
     /// Set a device's status LED to Off, On, or Blinking.
     static bool setStatus(uint16_t deviceID, ModuloStatus status);
 
