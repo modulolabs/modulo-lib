@@ -5,7 +5,7 @@
 class _Modulo;
 
 /// The base class for all modulos. 
-/// Handles things like discovering devices and assigning an address.
+/// Handles common functionality like discovering devices and assigning an address.
 class BaseModulo {
  public:
     virtual ~BaseModulo();
@@ -19,16 +19,17 @@ class BaseModulo {
     /// Sets the device ID. If the ID changed, reset the device address.
     void setDeviceID(uint16_t deviceID);
 
+    // If a BaseModulo exists that has the specified deviceID, find and return
+    // it.
     static BaseModulo* findByDeviceID(uint16_t deviceID);
 
+    // Called by _Modulo.loop() on every iteration.
     static void loop();
 
  protected:
     BaseModulo(const char *deviceType);
     BaseModulo(const char *deviceType, uint16_t deviceID);
     
-
-
     // Initialize the module. Return true if initialization took place, false if
     // it failed or if the module was already initialized.
     virtual bool _init();

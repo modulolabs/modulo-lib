@@ -250,16 +250,6 @@ void DisplayModulo::drawCircle(int x, int y, int radius)
     _sendOp(sendData, 4);
 }
 
-void DisplayModulo::drawString(const char *s)
-{
-
-    int l = strlen(s);
-    for (int i=0; i < l; i++) {
-        write(s[i]);
-    }
-}
-
-
 size_t DisplayModulo::write(uint8_t c) {
 
     _waitOnRefresh();

@@ -4,6 +4,7 @@
 #include "BaseModulo.h"
 #include <inttypes.h>
 
+// A thumb joystick with push button
 class JoystickModulo : public BaseModulo {
  public:
  
@@ -18,10 +19,16 @@ class JoystickModulo : public BaseModulo {
     float getHPos();
     float getVPos();
 
+    /// A callback function
     typedef void (EventCallback)(JoystickModulo &module);
 
+    /// Set the function that should be called when the button is pressed
     void setButtonPressCallback(EventCallback *handler);
+
+    /// Set the function that should be called when the button is released
     void setButtonReleaseCallback(EventCallback *handler);
+
+    /// Set the function that should be called when the position changes
     void setPositionChangeCallback(EventCallback *handler);
 
 protected:

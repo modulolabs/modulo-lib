@@ -9,15 +9,17 @@
 #include "Print.h"
 #endif
 
-/// A tiny color OLED screen
+/// A full color OLED display.
 class DisplayModulo : public BaseModulo, public Print {
 public:
     virtual ~DisplayModulo();
 
+    /// Return the width of the display in pixels
     int width() const {
         return WIDTH;
     }
 
+    /// Return the height of the display in pixels
     int height() const {
         return HEIGHT;
     }
@@ -28,16 +30,35 @@ public:
         Right
     };
 
+    /// An RGBA color
     struct Color {
+        /// Construct a new color with all channels 0. (clear)
         Color() : r(0), g(0), b(0), a(0) {}
+
+        /// Construct a new color with the specified values
         Color(uint8_t r_, uint8_t g_, uint8_t b_, uint8_t a_ = 255) :
             r(r_), g(g_), b(b_), a(a_) {}
 
-        uint8_t r, g, b, a;
+        /// The red channel
+        uint8_t r;
+
+        /// The green channel
+        uint8_t g;
+
+        /// The blue channel
+        uint8_t b;
+
+        /// The alpha channel
+        uint8_t a;
     };
 
+    /// Black
     static const Color Black;
+
+    /// White
     static const Color White;
+
+    /// Clear
     static const Color Clear;
 
     /// Use the first DisplayModulo that's not already in use.
@@ -46,44 +67,67 @@ public:
     /// Use the DisplayModulo with the specified deviceID
     DisplayModulo(uint16_t deviceID);
 
+    /// Fill the screen with black and return the cursor to (0,0)
     void clear();
 
     //void setRotation(uint8_t r);
     //void setCursor(int x, int y);
+
+    /// Set the current line color
     void setLineColor(const Color &c);
+
+    /// Set the current line color
     void setLineColor(uint8_t r, uint8_t g, uint8_t b) {
         setLineColor(Color(r,g,b));
     }
 
+    /// Set the current fill color
     void setFillColor(const Color &c);
+
+    /// Set the current fill color
     void setFillColor(uint8_t r, uint8_t g, uint8_t b) {
         setFillColor(Color(r,g,b));
     }
 
+    /// Set the current text color
     void setTextColor(const Color &textColor);
+
+    /// Set the current text color
     void setTextColor(uint8_t r, uint8_t g, uint8_t b) {
         setTextColor(Color(r,g,b));
     }
 
+    /// Set the text size. This is a multiplier of the base text size,
+    /// which is 8px high.
     void setTextSize(uint8_t size);
 
+    /// Fill the screen.
     void fillScreen(Color color);
+
+    /// Fill the screen.
     void fillScreen(uint8_t r, uint8_t g, uint8_t b) {
         fillScreen(Color(r,g,b));
     }
 
+    /// Move the cursor
     void setCursor(int x, int y);
 
+    /// Draw a line segment from (x0,y0) to (x1,y1)
     void drawLine(int x0, int y0, int x1, int y1);
 
+    /// Draw a rectangle with the upper left corner at (x,y) and the
+    /// specified width, height, and corner radius.
     void drawRect(int x, int y, int w, int h, int radius=0);
 
+    /// Draw a circle centered at (x,y) with the specified radius
     void drawCircle(int x, int y, int r);
 
+    /// Draw a triangle
     void drawTriangle(int x0, int y0, int x1, int y1, int x2, int y2);
 
-    void drawString(const char *s);
-
+    /// Write a single charachter c.
+    /// Note that the Print methods (print(...), println(...), etc.) are also
+    /// available.
     size_t write(uint8_t c);
 
     /// Display the results of all previous drawing commands.
@@ -91,8 +135,11 @@ public:
     /// block until the frame has been drawn.
     void refresh();
 
+    /// Return whether all previous drawing operations have been completed.
     bool isComplete();
 
+    /// Return whether the queue of drawing operations is empty. If the display
+    /// is still refreshing, it may be empty but not complete.
     bool isEmpty();
 
     /// Return whether the specified button is currently pressed
@@ -114,10 +161,13 @@ public:
     void _appendToOp(uint8_t data);
     void _endOp();
 
-
+    /// A callback function
     typedef void (EventCallback)(DisplayModulo &module, int button);
 
+    /// Set the function that should be called when a button is pressed.
     void setButtonPressCallback(EventCallback *handler);
+
+    /// Set the function that should be called when a button is released.
     void setButtonReleaseCallback(EventCallback *handler);
 
 private:

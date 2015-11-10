@@ -3,7 +3,7 @@
 
 #include "BaseModulo.h"
 
-/// An illuminated knob and push button
+/// An RGB illuminated knob and push button
 class KnobModulo : public BaseModulo {
 
 public:
@@ -28,10 +28,16 @@ public:
     /// Return the position of the knob in clicks (24 per revolution).
     int16_t getPosition();
   
+    /// A callback function
     typedef void (EventCallback)(KnobModulo &module);
 
+    /// Set the function that should be called when the button is pressed
     void setButtonPressCallback(EventCallback *handler);
+
+    /// Set the function that should be called when the button is released
     void setButtonReleaseCallback(EventCallback *handler);
+    
+    /// Set the function that should be called when the position changes
     void setPositionChangeCallback(EventCallback *handler);
 private:
     virtual bool _init();
