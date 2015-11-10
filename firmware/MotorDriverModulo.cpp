@@ -42,11 +42,11 @@ void MotorDriverModulo::setMotorA(float value) {
 
 void MotorDriverModulo::setMotorB(float value) {
     if (value > 0) {
-        setChannel(2, value);
-        setChannel(3, 0);
+        setChannel(2, 1);
+        setChannel(3, 1-value);
     } else {
-        setChannel(2, 0);
-        setChannel(3, -value);
+        setChannel(2, 1+value);
+        setChannel(3, 1);
     }
 }
 
