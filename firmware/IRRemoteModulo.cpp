@@ -12,6 +12,8 @@
 #define FUNCTION_IS_IDLE 5
 #define FUNCTION_SET_BREAK_LENGTH 6
 
+#define EVENT_RECEIVE 0
+
 IRRemoteModulo::IRRemoteModulo(uint16_t deviceID) :
     BaseModulo("co.modulo.ir", deviceID), _lastEmptyTime(0)
 {
@@ -27,21 +29,12 @@ void IRRemoteModulo::setBreakLength(uint16_t len) {
     _transfer(FUNCTION_SET_BREAK_LENGTH, sendData, 2, 0, 0);
 }
 
-void IRRemoteModulo::update() {
-    uint8_t availableBytes = 0;
-    if (!_transfer(FUNCTION_GET_READ_SIZE, NULL, 0, &availableBytes, 1)) {
-        return;
-    }
-
-    if (availableBytes == 0) {
-        _lastEmptyTime = millis();
-        return;
-    }
-
+void IRRemoteModulo::_processEvent(uint8_t eventCode, uint16_t eventData) {
+    uint8_t availableBytes = eventData;
 
     uint8_t data[128] = {0};
 
-    for (int i=0; i < availableBytes ; i += 16) {
+    for (int i=0; i < availableBytes and i < 128; i += 16) {
         uint8_t dataToSend[] = {i, 16};
         if (!_transfer(FUNCTION_RECEIVE, dataToSend, 2, data+i, 16)) {
             return;
@@ -60,14 +53,27 @@ void IRRemoteModulo::update() {
         } else {
             value = data[i];
         }
+
+        // Due to sensor lag, each mark tends to be approx 1 tick long and
+        // each space tends to be 1 tick short. Adjust for that here.
+/*
+        if (expandedLen%2) {
+            value--;
+        } else {
+            value++;
+        }
+*/
+
         expandedData[expandedLen++] = value;
 
     }
 
-    int8_t protocol = 0;
+    int8_t protocol = -1;
     uint32_t value = 0;
-    if (IRDecode(expandedData, expandedLen, &protocol, &value)) {
-        // XXX: call callback
+    IRDecode(expandedData, expandedLen, &protocol, &value);
+
+    if (_receiveCallback) {
+        _receiveCallback(protocol, value, expandedData, expandedLen);
     }
 }
 
@@ -103,4 +109,8 @@ void IRRemoteModulo::send(uint8_t *data, uint8_t len)
     }
 
     _transfer(FUNCTION_SEND, &len, 1, 0, 0);    
+}
+
+void IRRemoteModulo::setReceiveCallback(IRRemoteModulo::ReceiveCallback callback) {
+    _receiveCallback = callback;
 }

@@ -45,7 +45,7 @@ struct PulseModulationEncoding {
 #define IR_PROTOCOL_PANASONIC 7
 #define IR_PROTOCOL_LG 8
 
-extern const PulseModulationEncoding irEncodings[NUM_IR_ENCODINGS];
+extern const PulseModulationEncoding IREncodings[NUM_IR_ENCODINGS];
 
 
 bool IRDecode(uint16_t *rawData, uint16_t rawLen,

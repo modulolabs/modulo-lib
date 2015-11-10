@@ -403,8 +403,8 @@ bool IRDecode(uint16_t *rawData, uint16_t rawLen, int8_t *protocol, uint32_t *va
 	}
 
 	for (int i=0; i < NUM_IR_ENCODINGS ; i++) {
-		if (decoder.decodePulseModulation(irEncodings[i], value)) {
-			*protocol = irEncodings[i].protocol;
+		if (decoder.decodePulseModulation(IREncodings[i], value)) {
+			*protocol = IREncodings[i].protocol;
 			return true;
 		}
 	}
