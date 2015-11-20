@@ -48,9 +48,8 @@ public:
     /// Sets whether a pullup is enabled on the specified pin.
     void setPullup(uint8_t pin, bool enable=true);
 
-    /// Sets whether debounce is enabled on the specified pin.
-    /// If enabled, digital input changes must be stable for 5ms before they are recognized.
-    void setDebounce(uint8_t pin, bool enable=true);
+    /// Set whether the pullup is enabled on all 8 pins.
+    void setPullups(uint8_t pullups);
 
     /// Set the frequency for PWM signals on the specified pin.
     void setPWMFrequency(uint8_t pin, uint16_t value);

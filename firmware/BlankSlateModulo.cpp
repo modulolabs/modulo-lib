@@ -13,8 +13,6 @@ namespace {
         FUNCTION_SET_PWM_OUTPUT,
         FUNCTION_SET_PULLUP,
         FUNCTION_SET_PULLUPS,
-        FUNCTION_SET_DEBOUNCE,
-        FUNCTION_SET_DEBOUNCES,
         FUNCTION_SET_PWM_FREQUENCY
     };
 };
@@ -70,6 +68,20 @@ void BlankSlateModulo::setDirection(uint8_t pin, bool output) {
 }
 
 
+void BlankSlateModulo::setPullups(uint8_t outputs) {
+    _transfer(FUNCTION_SET_PULLUPS, &outputs, 1, 0, 0);
+}
+
+
+void BlankSlateModulo::setPullup(uint8_t pin, bool output) {
+    uint8_t sendData[] = {pin, output};
+
+    if (!_transfer(FUNCTION_SET_PULLUP, sendData, sizeof(sendData), 0, 0)) {
+        // Handle error?
+    }
+}
+
+
 void BlankSlateModulo::setDirections(uint8_t outputs) {
     _transfer(FUNCTION_SET_DATA_DIRECTIONS, &outputs, 1, 0, 0);
 }
@@ -88,27 +100,19 @@ bool BlankSlateModulo::setDigitalOutputs(uint8_t values) {
 }
 
 void BlankSlateModulo::setPWMValue(uint8_t pin, float value) {
+    if (value >= 1.0) {
+        setDigitalOutput(pin, true);
+        return;
+    } else if (value <= 0.0) {
+        setDigitalOutput(pin, false);
+        return;
+    }
+
     uint16_t v = 65535.0 * fmax(0.0, fmin(1.0, value));
 
     uint8_t sendData[] = {pin, v & 0xFF, v >> 8};
 
     if (!_transfer(FUNCTION_SET_PWM_OUTPUT, sendData, sizeof(sendData), 0, 0)) {
-        // Handle error?
-    }
-}
-
-void BlankSlateModulo::setPullup(uint8_t pin, bool enable) {
-    uint8_t sendData[] = {pin, enable};
-
-    if (!_transfer(FUNCTION_SET_PULLUP, sendData, sizeof(sendData), 0, 0)) {
-        // Handle error?
-    }
-}
-
-void BlankSlateModulo::setDebounce(uint8_t pin, bool enable) {
-    uint8_t sendData[] = {pin, enable};
-
-    if (!_transfer(FUNCTION_SET_DEBOUNCE, sendData, sizeof(sendData), 0, 0)) {
         // Handle error?
     }
 }
