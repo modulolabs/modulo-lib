@@ -14,6 +14,8 @@
 #define BroadcastCommandClearEvent 7
 #define BroadcastCommandSetStatusLED 8
 
+#define BroadcastCommandExitBootloader 100
+
 #if MODULO_CUSTOM_WIRE
 #include "ModuloTWI.h"
 
@@ -74,6 +76,8 @@ void _Modulo::setup() {
 #endif
 
     globalReset();
+
+    delay(250);
 }
 
 uint8_t
@@ -204,6 +208,13 @@ void _Modulo::loop() {
 
 void _Modulo::globalReset() {
     transfer(BroadcastAddress, BroadcastCommandGlobalReset,
+                   0, 0, 0, 0);
+    BaseModulo::_globalReset();
+    _mainController.globalReset();
+}
+
+void _Modulo::exitBootloader() {
+    transfer(BroadcastAddress, BroadcastCommandExitBootloader,
                    0, 0, 0, 0);
     BaseModulo::_globalReset();
     _mainController.globalReset();

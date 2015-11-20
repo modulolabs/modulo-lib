@@ -30,6 +30,8 @@ public:
     /// Reset all devices on the bus to their power-up state
     static void globalReset();
 
+    static void exitBootloader();
+
     /// Search the bus for the device with the lowest deviceID that is
     /// greater than or equal to the one provided.
     static uint16_t getNextDeviceID(uint16_t lastDeviceID);
