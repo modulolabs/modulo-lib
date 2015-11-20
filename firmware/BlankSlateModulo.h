@@ -10,16 +10,6 @@ public:
     BlankSlateModulo();
     BlankSlateModulo(uint16_t deviceID);
 
-    enum AnalogReference {
-        AREF_VCC,          // Bus power supply voltage
-        AREF_1V1,  // 1.1V internal voltage reference
-        AREF_2V2,  // 2.2V internal voltage reference
-        AREF_4V,   // 4V internal voltage reference
-        AREF_EXTERNAL      // External voltage reference on pin 7
-    };
-
-    BlankSlateModulo(uint8_t address);
-
     /// Disables the output on the specified pin and returns the pin's value
     bool getDigitalInput(uint8_t pin);
 
@@ -27,7 +17,7 @@ public:
     uint8_t getDigitalInputs();
 
     /// Disables the output on the specified pin and performs an analog read.
-    float getAnalogInput(uint8_t pin, AnalogReference ref=AREF_VCC);
+    float getAnalogInput(uint8_t pin);
 
     /// Sets the pin direction to either output or input
     void setDirection(uint8_t pin, bool output);

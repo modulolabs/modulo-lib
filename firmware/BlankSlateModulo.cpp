@@ -47,8 +47,8 @@ uint8_t BlankSlateModulo::getDigitalInputs() {
 }
 
 
-float BlankSlateModulo::getAnalogInput(uint8_t pin, AnalogReference ref) {
-    uint8_t sendData[] = {pin, ref};
+float BlankSlateModulo::getAnalogInput(uint8_t pin) {
+    uint8_t sendData[] = {pin, 0};
     uint8_t receiveData[2];
 
     if (!_transfer(FUNCTION_GET_ANALOG_INPUT, sendData, sizeof(sendData),
