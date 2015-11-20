@@ -60,6 +60,8 @@ void DisplayModulo::_sendOp(uint8_t *data, uint8_t len) {
         uint8_t receiveData[2] = {0,0};
         if (_transfer(FUNCTION_GET_AVAILABLE_SPACE, 0, 0, receiveData, 2)) {
             _availableSpace = receiveData[0] | (receiveData[1] << 8);
+        } else {
+            return;
         }
         
 
