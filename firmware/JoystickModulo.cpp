@@ -8,12 +8,12 @@
 #define EVENT_BUTTON_CHANGED 0
 #define EVENT_POSITION_CHANGED 1
 
-JoystickModulo::JoystickModulo() : BaseModulo("co.modulo.joystick"), _buttonState(0), _hPos(0), _vPos(0),
+JoystickModulo::JoystickModulo() : BaseModulo("co.modulo.joystick"), _buttonState(0), _hPos(128), _vPos(128),
     _buttonPressCallback(NULL), _buttonReleaseCallback(NULL), _positionChangeCallback(NULL) {
 }
 
 JoystickModulo::JoystickModulo(uint16_t deviceID) :
-    BaseModulo("co.modulo.joystick", deviceID), _hPos(0), _vPos(0), _buttonState(0),
+    BaseModulo("co.modulo.joystick", deviceID), _hPos(128), _vPos(128), _buttonState(0),
     _buttonPressCallback(NULL), _buttonReleaseCallback(NULL), _positionChangeCallback(NULL) {
 }
 
@@ -27,13 +27,13 @@ bool JoystickModulo::getButton() {
 float JoystickModulo::getHPos() {
     _init();
 
-    return _hPos*2/255.0 - 1;
+    return 1-_hPos*2/255.0;
 }
 
 float JoystickModulo::getVPos() {
     _init();
 
-    return _vPos*2/255.0 - 1;
+    return 1-_vPos*2/255.0;
 }
 
 
@@ -52,14 +52,13 @@ void JoystickModulo::_refreshState() {
     _buttonState = buttonState;
 
     uint8_t posResult[2] = {0,0};
-    _transfer(FUNCTION_GET_POSITION, 0, 0, posResult, 2);
-
-    _hPos = posResult[0];
-    _vPos = posResult[1];
+    if (_transfer(FUNCTION_GET_POSITION, 0, 0, posResult, 2)) {
+        _hPos = posResult[0];
+        _vPos = posResult[1];
+    }
 }
 
 void JoystickModulo::_processEvent(uint8_t eventCode, uint16_t eventData) {
-
     if (eventCode == EVENT_BUTTON_CHANGED) {
         bool buttonPressed = eventData >> 8;
         bool buttonReleased = eventData & 0xFF;
