@@ -2,62 +2,136 @@
 #include "Wire.h"
 #include "Arduino.h"
 
-#define BUFFER_SIZE 32
-
 DisplayModulo display;
 
 int page = 255;
 bool serialConnected = false;
 bool buttonWasPressed = false;
 
-void processModuloTransfer() {
-    uint8_t buffer[BUFFER_SIZE];
+const uint8_t delimeter = 0x7E;
+const uint8_t escape = 0x7D;
 
-    if (Serial.readBytes(buffer, 3) != 3) {
+void sendPacket(uint8_t *data, uint8_t len) {
+    //digitalWrite(LED_BUILTIN, true);
+
+    Serial.write(delimeter);
+    for (int i=0; i < len; i++) {
+        if (data[i] == delimeter or data[i] == escape) {
+            Serial.write(escape);
+            Serial.write(data[i] ^ (1 << 5));
+        } else {
+            Serial.write(data[i]);
+        }
+    }
+    Serial.write(delimeter);
+    Serial.flush();
+}
+
+#define RECEIVE_PACKET_SIZE 64
+uint8_t receivePacket[RECEIVE_PACKET_SIZE];
+int receivePacketLen = 0;
+bool receiveEscape = false;
+
+void receiveData(int c) {
+    if (c == delimeter) {
+        if (receivePacketLen > 0) {
+            processPacket(receivePacket, receivePacketLen);
+            receivePacketLen = 0;
+        }
+
+        receiveEscape = false;
         return;
     }
+
+    if (c == escape) {
+        receiveEscape = true;
+        return;
+    }
+
+    if (receiveEscape) {
+        c ^= (1 << 5);
+        receiveEscape = false;
+    }
+
+    if (receivePacketLen < RECEIVE_PACKET_SIZE) {
+        receivePacket[receivePacketLen++] = c;
+    }
+}
+
+void processPacket(uint8_t *data, uint8_t len) {
+
+    if (len < 1) {
+        return;
+    }
+
+    if (data[0] == 'T') {
+        processModuloTransfer(data+1, len-1);
+        //digitalWrite(LED_BUILTIN, false);
+
+        return;
+
+    } else if (data[0] == 'E') {
+        serialConnected = false;
+        Modulo.globalReset();
+    } else if (data[0] == 'P') {
+        Serial.write("Hello\n");
+    } else if (data[0] == 'X') {
+        sendPacket(data, len);
+    }
+}
+
+void debug(const char *s) {
+    uint8_t packet[32];
+    packet[0] = 'D';
+    int len = 1;
+    while (*s) {
+        packet[len++] = *(s++);
+    }
+    sendPacket(packet, len);
+}
+
+void processModuloTransfer(uint8_t *buffer, int len) {
+    if (len < 4) {
+        return;
+    }
+
+    digitalWrite(LED_BUILTIN, true);
+
 
     uint8_t address = buffer[0];
     uint8_t command = buffer[1];
     uint8_t sendLen = buffer[2];
+    uint8_t receiveLen = buffer[3];
 
-    if (Serial.readBytes(buffer, sendLen) != sendLen) {
+    if (len != sendLen+4) {
+        debug("Length match error");
         return;
     }
 
-    uint8_t receiveLen = 0;
-    Serial.readBytes(&receiveLen, 1);
+    // Return packet contains:
+    //    Packet code ('R')
+    //    Return status (0 or 1)
+    //    Returned data
+    uint8_t returnPacket[64] = {0};
 
-    bool retval = Modulo.transfer(address, command, buffer,
-        sendLen, buffer, receiveLen);
+    bool retval = Modulo.transfer(address, command, buffer+4,
+        sendLen, returnPacket+2, receiveLen);
 
-    Serial.write(retval);
-    if (retval and receiveLen > 0) {
-        Serial.write(buffer, receiveLen);
-    }
-}
+    returnPacket[0] = 'R';
+    returnPacket[1] = retval;
 
-void drawFatLine(int x0, int y0, int x1, int y1, int thickness, int color=1) {
-
-    int width = x1-x0+thickness;
-    int height = y1-y0+thickness;
-
-    x0 -= thickness/2;
-    y0 -= thickness/2;
-
-    if (height < 0) {
-        y0 += height;
-        height = -height;
+    if (retval) {
+        sendPacket(returnPacket, receiveLen+2);
+    } else {
+        sendPacket(returnPacket, 2);
     }
 
-    display.drawRect(x0, y0, width, height, color);
 }
+
 
 KnobModulo knob;
 
 void drawKnobDisplay(uint16_t deviceID) {
-
-
     display.println(knob.getPosition());
     display.setLineColor(display.White);
     float angle = knob.getPosition()*M_PI/24.0;
@@ -87,10 +161,8 @@ void showWelcomeScreen() {
         display.clear();
         display.setCursor(0,0);
 
-        char product[32];
-        Modulo.getProduct(deviceID, product, 31);
 
-        display.print(product);
+
         display.setCursor(66, 0);
         display.println(deviceID);
 
@@ -124,27 +196,33 @@ void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
 }
 
+long lastKeepAlive = 0;
+
 void loop() {
-    Modulo.loop();
+
 
     if (serialConnected) {
-        uint8_t command = Serial.read();
-        if (command == 'T') {
-            digitalWrite(LED_BUILTIN, true);
-            processModuloTransfer();
-            digitalWrite(LED_BUILTIN, false);
-        } else if (command == 'E') {
-            serialConnected = false;
-            Modulo.globalReset();
+        if (millis() > lastKeepAlive+100) {
+            lastKeepAlive = millis();
+            uint8_t keepAlivePacket[] = {'X'};
+
+        }
+        if (Serial.available()) {
+            receiveData(Serial.read());
         }
     } else {
-        showWelcomeScreen();
+        Modulo.loop();
 
-        // Be careful with if (Serial)... it introduces a 10ms delay,
-        // we can't check it while connected before every packet.
-        if (Serial and Serial.available()) {
+         showWelcomeScreen();
+ 
+         // Be careful with if (Serial)... it introduces a 10ms delay,
+         // we can't check it while connected before every packet.
+         if (Serial and Serial.available()) {
             serialConnected = true;
-        }
-    }
+            display.clear();
+            display.refresh();
+            delay(100);
+         }
+     }
 }
 
