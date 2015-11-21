@@ -207,6 +207,20 @@ void loop() {
             uint8_t keepAlivePacket[] = {'X'};
 
         }
+        
+        static const uint8_t BroadcastAddress = 9;
+        static const uint8_t BroadcastCommandGetEvent = 6;
+        static const uint8_t BroadcastCommandClearEvent = 7;
+
+        uint8_t eventPacket[6] = {'V'};
+        if (Modulo.transfer(BroadcastAddress, BroadcastCommandGetEvent, 0, 0, eventPacket+1, 5)) {
+            Modulo.transfer(BroadcastAddress, BroadcastCommandClearEvent, eventPacket+1, 5, 0, 0);
+
+            sendPacket(eventPacket, 6);
+        }
+            
+
+
         if (Serial.available()) {
             receiveData(Serial.read());
         }
