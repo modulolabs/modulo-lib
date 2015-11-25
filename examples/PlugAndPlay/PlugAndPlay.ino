@@ -33,10 +33,10 @@ void onKnobChanged(KnobModulo &knob) {
     knobButton = knob.getButton();
 }
 
-DisplayModulo::Color activeButtonColor(255,255,255);
-DisplayModulo::Color inactiveButtonColor(64,64,64);
+DisplayModulo::Color activeButtonColor(255,0,0);
+DisplayModulo::Color inactiveButtonColor(0,0,255);
 int currentButton = 1;
-int prevCurrentButton = -1;
+
 
 void drawDisplayDisplay() {
 
@@ -49,10 +49,7 @@ void drawDisplayDisplay() {
         currentButton = 2;
     }
 
-    if (prevCurrentButton == currentButton) {
-        return;
-    }
-    prevCurrentButton = currentButton;
+
 
     display.setTextColor(currentButton == 0 ? activeButtonColor : inactiveButtonColor);
     display.setCursor(0, 56);
@@ -74,14 +71,15 @@ void drawJoystickDisplay() {
     display.drawRect(50, 5, 40, 40);
 
     if (joystick.getButton()) {
-        display.setFillColor(120, 0, 90);
+//        display.setFillColor(120, 0, 90);
+        display.setFillColor(0,0,255);
     } else {
         display.setFillColor(128,128,128);
     }
 
     display.drawRect(
-        60 + joystick.getHPos()*10,
-        15 - joystick.getVPos()*10,
+        60 - joystick.getHPos()*10,
+        15 + joystick.getVPos()*10,
         20, 20);
 }
 
@@ -99,10 +97,19 @@ void setup() {
     joystick.setButtonPressCallback(onJoystickChanged);
     joystick.setButtonReleaseCallback(onJoystickChanged);
     joystick.setPositionChangeCallback(onJoystickChanged);
+
+    pinMode(LED_BUILTIN, OUTPUT);
 }
 
+long lastDrawTime = 0;
 void loop() {
+    long newDrawTime = millis();
+
+    digitalWrite(LED_BUILTIN, (millis()/250) % 2);
     Modulo.loop();
+
+    display.clear();
+
 
     drawDisplayDisplay();
 
@@ -113,6 +120,12 @@ void loop() {
     if (updateJoystickDisplay) {
         drawJoystickDisplay();
     }
+
+    display.setCursor(0,0);
+    //display.drawRect(0,0,20,10);
+    display.println(1000.0/(newDrawTime-lastDrawTime));
+
+    lastDrawTime = newDrawTime;
 
     display.refresh();
 }
