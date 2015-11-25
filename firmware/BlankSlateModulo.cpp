@@ -108,7 +108,7 @@ void BlankSlateModulo::setPWMValue(uint8_t pin, float value) {
         return;
     }
 
-    uint16_t v = 65535.0 * fmax(0.0, fmin(1.0, value));
+    uint16_t v = 65535.0 * value;
 
     uint8_t sendData[] = {pin, v & 0xFF, v >> 8};
 
