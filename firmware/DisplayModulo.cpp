@@ -31,6 +31,7 @@ static const int OpDrawTriangle = 8;
 static const int OpDrawString = 9;
 static const int OpSetCursor = 10;
 static const int OpSetTextSize = 11;
+static const int OpClear = 12;
 
 const DisplayModulo::Color DisplayModulo::Black;
 const DisplayModulo::Color DisplayModulo::White(255,255,255);
@@ -104,8 +105,12 @@ void DisplayModulo::_endOp() {
 
 
 void DisplayModulo::clear() {
-    fillScreen(Black);
-    setCursor(0,0);
+    _endOp();
+
+    _waitOnRefresh();
+
+    uint8_t sendData[] = {OpClear};
+    _sendOp(sendData, 1);
 }
 
 void DisplayModulo::setLineColor(const Color &color) {
@@ -155,14 +160,14 @@ void DisplayModulo::setCursor(int x, int y)
     _sendOp(sendData, 3);
 }
 
-void DisplayModulo::refresh()
+void DisplayModulo::refresh(bool flip)
 {
     _endOp();
 
     _waitOnRefresh();
 
-    uint8_t sendData[] = {OpRefresh};
-    _sendOp(sendData, 1);
+    uint8_t sendData[] = {OpRefresh, flip};
+    _sendOp(sendData, 2);
 
     _isRefreshing = true;
 }
@@ -325,12 +330,13 @@ uint8_t DisplayModulo::getButtons() {
 }
 
 void DisplayModulo::drawSplashScreen() {
-    setFillColor(DisplayModulo::Color(80,0,60));
+    setFillColor(DisplayModulo::Color(50,0,40));
     setLineColor(DisplayModulo::Color(0,0,0,0));
     drawRect(0, 0, width(), height());
     setCursor(0, 40);
 
     setTextSize(1);
+    setTextColor(255,255,255);
     print("     MODULO");
 
     setFillColor(DisplayModulo::Color(255,255,255));
@@ -343,13 +349,13 @@ void DisplayModulo::drawLogo(int x, int y, int width, int height) {
 
     int lineWidth = width/7;
 
-    drawRect(x, y, width, lineWidth, 1);
-    drawRect(x, y, lineWidth, height, 1);
-    drawRect(x+width-lineWidth, y, lineWidth, height, 1);
+    drawRect(x, y, width, lineWidth);
+    drawRect(x, y, lineWidth, height);
+    drawRect(x+width-lineWidth, y, lineWidth, height);
 
-    drawRect(x+lineWidth*2, y+lineWidth*2, lineWidth, height-lineWidth*2, 1);
-    drawRect(x+lineWidth*4, y+lineWidth*2, lineWidth, height-lineWidth*2, 1);
-    drawRect(x+lineWidth*2, y+height-lineWidth, lineWidth*3, lineWidth, 1);
+    drawRect(x+lineWidth*2, y+lineWidth*2, lineWidth, height-lineWidth*2);
+    drawRect(x+lineWidth*4, y+lineWidth*2, lineWidth, height-lineWidth*2);
+    drawRect(x+lineWidth*2, y+height-lineWidth, lineWidth*3, lineWidth);
 }
 
 void DisplayModulo::setButtonPressCallback(EventCallback *handler) {

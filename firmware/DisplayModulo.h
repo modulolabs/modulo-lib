@@ -133,7 +133,7 @@ public:
     /// Display the results of all previous drawing commands.
     /// Note that after calling refresh, the next drawing operation will
     /// block until the frame has been drawn.
-    void refresh();
+    void refresh(bool flip=false);
 
     /// Return whether all previous drawing operations have been completed.
     bool isComplete();
