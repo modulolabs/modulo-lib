@@ -17,7 +17,24 @@ class TemperatureProbeModulo : public BaseModulo {
     /// If no thermocouple is connected, returns InvalidTemperature.
     float getTemperatureF();
 
-    static const float InvalidTemperature;
+    /// Return whether temperature probe is connected and has a valid value
+    bool isValid();
+
+    /// A callback function
+    typedef void (TemperatureChangeCallback)(TemperatureProbeModulo &module);
+
+    /// Set the function that should be called when the button is pressed
+    void setTemperatureChangeCallback(TemperatureChangeCallback *handler);
+
+private:
+    int16_t _temperature; // Temperature in tenths of degrees C
+    bool _isValid;
+    TemperatureChangeCallback *_temperatureChangeCallback;
+
+    void _refreshState();
+    virtual bool _init();
+    virtual void _processEvent(uint8_t eventCode, uint16_t eventData);
 };
+
 
 #endif
