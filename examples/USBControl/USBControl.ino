@@ -1,6 +1,11 @@
 #include "Modulo.h"
+#if ARDUINO
 #include "Wire.h"
-#include "Arduino.h"
+#endif
+#if SPARK
+#include "math.h"
+#define LED_BUILTIN 7
+#endif
 
 DisplayModulo display;
 
@@ -12,8 +17,6 @@ const uint8_t delimeter = 0x7E;
 const uint8_t escape = 0x7D;
 
 void sendPacket(uint8_t *data, uint8_t len) {
-    //digitalWrite(LED_BUILTIN, true);
-
     Serial.write(delimeter);
     for (int i=0; i < len; i++) {
         if (data[i] == delimeter or data[i] == escape) {
@@ -59,22 +62,15 @@ void receiveData(int c) {
 }
 
 void processPacket(uint8_t *data, uint8_t len) {
-
     if (len < 1) {
         return;
     }
 
     if (data[0] == 'T') {
         processModuloTransfer(data+1, len-1);
-        //digitalWrite(LED_BUILTIN, false);
-
-        return;
-
     } else if (data[0] == 'E') {
         serialConnected = false;
         Modulo.globalReset();
-    } else if (data[0] == 'P') {
-        Serial.write("Hello\n");
     } else if (data[0] == 'X') {
         sendPacket(data, len);
     }
@@ -125,56 +121,59 @@ void processModuloTransfer(uint8_t *buffer, int len) {
     } else {
         sendPacket(returnPacket, 2);
     }
-
 }
 
-
-KnobModulo knob;
-
-void drawKnobDisplay(uint16_t deviceID) {
-    display.println(knob.getPosition());
-    display.setLineColor(display.White);
-    float angle = knob.getPosition()*M_PI/24.0;
-    display.drawLine(display.width()/2, display.height()/2,
-        display.width()/2 + 10*cos(angle), display.height()/2+10*sin(angle));
-}
-
-
-void showWelcomeScreen() {
+uint16_t getDeviceIDByIndex(int index) {
     uint16_t deviceID = Modulo.getNextDeviceID(0);
-    for (int i=0; i < page && deviceID != 0xFFFF; i++) {
+    for (int i=0; i < index && deviceID != 0xFFFF; i++) {
         deviceID = Modulo.getNextDeviceID(deviceID+1);
     }
 
-    if (deviceID == 0xFFFF) {            
+    return deviceID;
+}
+
+void showWelcomeScreen() {
+    uint16_t deviceID = getDeviceIDByIndex(page);
+
+    if (deviceID == 0xFFFF) {
         display.clear();
-     
+
         display.drawSplashScreen();
 
 
         display.setCursor(0, display.height()-8);
         display.println("       Devices >");
-        display.refresh();           
+        display.refresh();
     } else {
         Modulo.setStatus(deviceID, ModuloStatusBlinking);
 
         display.clear();
         display.setCursor(0,0);
 
+        char deviceType[32] = {0};
+        Modulo.getDeviceType(deviceID, deviceType, 31);
+        if (strcmp(deviceType,"co.modulo.knob") == 0) {
+            display.print("Knob");
+        } else if (strcmp(deviceType,"co.modulo.io") == 0) {
+            display.print("Blank Slate");
+        } else if (strcmp(deviceType,"co.modulo.joystick") == 0) {
+            display.print("Joystick");
+        } else if (strcmp(deviceType,"co.modulo.tempprobe") == 0) {
+            display.print("Temp Probe");
+        } else if (strcmp(deviceType,"co.modulo.colordisplay") == 0) {
+            display.print("Display");
+        } else if (strcmp(deviceType,"co.modulo.motor") == 0) {
+            display.print("Motor Driver");
+        } else if (strcmp(deviceType,"co.modulo.ir") == 0) {
+            display.print("IR Transeceiver");
+        }
 
-
-        display.setCursor(66, 0);
+        display.println();
+        display.print("ID: ");
         display.println(deviceID);
 
-        char deviceType[32];
-        Modulo.getDeviceType(deviceID, deviceType, 31);
-        //if (strcmp(deviceType,"co.modulo.knob") == 0) {
-            drawKnobDisplay(deviceID);
-        //}
-
-        
         display.setCursor(0, display.height()-8);
-        display.println("               Next >");
+        display.println("          Next >");
 
         display.refresh();
     }
@@ -191,6 +190,19 @@ void showWelcomeScreen() {
     buttonWasPressed = buttonIsPressed;
 }
 
+void processEvent() {
+    static const uint8_t BroadcastAddress = 9;
+    static const uint8_t BroadcastCommandGetEvent = 6;
+    static const uint8_t BroadcastCommandClearEvent = 7;
+
+    uint8_t eventPacket[6] = {'V'};
+    if (Modulo.transfer(BroadcastAddress, BroadcastCommandGetEvent, 0, 0, eventPacket+1, 5)) {
+        Modulo.transfer(BroadcastAddress, BroadcastCommandClearEvent, eventPacket+1, 5, 0, 0);
+
+        sendPacket(eventPacket, 6);
+    }
+}
+
 void setup() {
     Serial.begin(9600);
     pinMode(LED_BUILTIN, OUTPUT);
@@ -199,44 +211,31 @@ void setup() {
 long lastKeepAlive = 0;
 
 void loop() {
-
-
     if (serialConnected) {
         if (millis() > lastKeepAlive+100) {
             lastKeepAlive = millis();
             uint8_t keepAlivePacket[] = {'X'};
 
         }
-        
-        static const uint8_t BroadcastAddress = 9;
-        static const uint8_t BroadcastCommandGetEvent = 6;
-        static const uint8_t BroadcastCommandClearEvent = 7;
 
-        uint8_t eventPacket[6] = {'V'};
-        if (Modulo.transfer(BroadcastAddress, BroadcastCommandGetEvent, 0, 0, eventPacket+1, 5)) {
-            Modulo.transfer(BroadcastAddress, BroadcastCommandClearEvent, eventPacket+1, 5, 0, 0);
-
-            sendPacket(eventPacket, 6);
-        }
-            
-
+        processEvent();
 
         if (Serial.available()) {
             receiveData(Serial.read());
         }
     } else {
         Modulo.loop();
+        Modulo.exitBootloader();
 
-         showWelcomeScreen();
- 
-         // Be careful with if (Serial)... it introduces a 10ms delay,
-         // we can't check it while connected before every packet.
-         if (Serial and Serial.available()) {
+        showWelcomeScreen();
+
+        // Be careful with if (Serial)... it introduces a 10ms delay,
+        // we can't check it while connected before every packet.
+        if (Serial and Serial.available()) {
             serialConnected = true;
             display.clear();
             display.refresh();
             delay(100);
-         }
-     }
+        }
+    }
 }
-
