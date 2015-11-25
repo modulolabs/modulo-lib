@@ -1,6 +1,5 @@
 #include "MotorDriverModulo.h"
 #include "Modulo.h"
-#include "Arduino.h"
 
 static float _constrain(float v, float min, float max) {
     if (v < min) {
@@ -71,7 +70,7 @@ void MotorDriverModulo::setMode(Mode mode) {
 
 void MotorDriverModulo::setCurrentLimit(float limit) {
     limit = _constrain(limit, 0.0, 1.0);
-    uint8_t dataToSend[] = {limit*64};
+    uint8_t dataToSend[] = {limit*63};
     _transfer(_FunctionSetCurrentLimit, dataToSend, 1, 0, 0);
 }
 
@@ -164,7 +163,7 @@ void MotorDriverModulo::setPWMFrequency(uint16_t frequency) {
         static_cast<uint8_t>(frequency),
         static_cast<uint8_t>(frequency >> 8)};
 
-    _transfer(_FunctionSetStepperTarget, sendData, 2, 0, 0);
+    _transfer(_FunctionSetFrequency, sendData, 2, 0, 0);
 }
 
 void MotorDriverModulo::_processEvent(uint8_t eventCode, uint16_t eventData) {
