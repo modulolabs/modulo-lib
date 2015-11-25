@@ -1,8 +1,8 @@
 #include "Modulo.h"
 #include "Wire.h"
 
-MiniDisplayModule display;
-KnobModule knob;
+DisplayModulo display;
+KnobModulo knob;
 
 int32_t oldKnobPosition = 0;
 float sliderValue = 0;
@@ -23,8 +23,7 @@ void loop() {
 
     float angle = knob.getAngle();
 
-    display.setCursor(0,0);
-    display.fillScreen(0);
+    display.clear();
 
     if (knob.getButton()) {
         knob.setColor(1,1,1);
@@ -37,12 +36,13 @@ void loop() {
     int lineLength = 30;
     float x = display.width()/3;
     float y = display.height()/2;
+    display.setLineColor(DisplayModulo::White);
     display.drawLine(x, y,
         x+lineLength*cos(angle*M_PI/180),
-        y-lineLength*sin(angle*M_PI/180), WHITE);
+        y-lineLength*sin(angle*M_PI/180));
+
     
-    display.fillCircle(x, y, 10, knob.getButton());
-    display.drawCircle(x, y, 10, WHITE);
+    display.drawCircle(x, y, 10);
 
     display.setCursor(0, 0);
     display.print(knob.getAngle());
@@ -51,9 +51,9 @@ void loop() {
 
     display.setCursor(display.width()-20, 0);
     display.print(int(sliderValue));
-    display.drawRect(display.width()-20, 10, 20, display.height()-10, WHITE);
-    display.fillRect(display.width()-20, 10+(display.height()-10)*(1-sliderValue/100.0), 20, display.height()-10, WHITE);
+    display.setFillColor(DisplayModulo::White);
+    display.drawRect(display.width()-20, 10, 20, display.height()-10);
+    display.drawRect(display.width()-20, 10+(display.height()-10)*(1-sliderValue/100.0), 20, display.height()-10);
     display.refresh();
 
 }
-

@@ -1,8 +1,8 @@
 #include "Modulo.h"
 #include "Wire.h"
 
-MiniDisplayModule display;
-IOModule io;
+DisplayModulo display;
+BlankSlateModulo io;
   
 void setup() {
     // put your setup code here, to run once:
@@ -13,21 +13,30 @@ void setup() {
 }
 
 void loop() {
+    Modulo.loop();
+
     // put your main code here, to run repeatedly:
   
-    display.setCursor(0,0);
-    display.fillScreen(0);
+    //io.setPWMFrequency(5, 100);
+    io.setPWMValue(4, .75);
+
+    display.clear();
+
+
     for (int i=0; i < 8; i++) {
-        Serial.println(i);
+        if (i == 4) {
+            continue;
+        }
         display.print(i);
         display.print(" ");
-        io.setPullup(i, true);
         display.print(io.getDigitalInput(i));
         display.print(" ");
-        io.setPullup(i, false);
         display.print(io.getAnalogInput(i));
         display.println();        
     }
 
+
     display.refresh();
+
+    delay(500);
 }
