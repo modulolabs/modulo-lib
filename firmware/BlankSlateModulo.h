@@ -45,7 +45,7 @@ public:
     void setPWMFrequency(uint8_t pin, uint16_t value);
 
 private:
-    uint64_t currentMessageTimestamp;
+
 };
 
 #endif
