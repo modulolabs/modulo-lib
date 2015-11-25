@@ -68,7 +68,7 @@ void onJoystickPositionChanged(JoystickModulo &j) {
     float hPos = j.getHPos();
     float vPos = j.getVPos();
     
-    float maxSpeed = .5;
+    float maxSpeed = .45;
 
     float motorA = vPos + hPos;
     float motorB = vPos - hPos;
@@ -169,8 +169,8 @@ void loop() {
     servo.write(armPos*armUpValue + (1-armPos)*armDownValue);
 
 
-    armKnob.setColor(0,0,.1);
-    timeKnob.setColor(.1,0,.1);
+    armKnob.setColor(0,0,1);
+    timeKnob.setColor(1,0,1);
 
     int newTemperature = tempProbe.getTemperatureF();
     if (timeDisplay != previousTimeDisplay or
@@ -203,6 +203,7 @@ void loop() {
         display.setTextSize(2);
 
         display.println(armPos);
+
         display.refresh();
     }
 
