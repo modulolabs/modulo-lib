@@ -6,6 +6,7 @@
 
 #define BroadcastCommandGlobalReset 0
 #define BroadcastCommandGetNextDeviceID 1
+#define BroadcastCommandGetNextUnassignedDeviceID 9
 #define BroadcastCommandSetAddress 2
 #define BroadcastCommandGetAddress 3
 #define BroadcastCommandGetDeviceType 4
@@ -78,6 +79,9 @@ void _Modulo::setup() {
     globalReset();
 
     delay(250);
+
+    // Run the loop function once here to assign addresses
+    loop();
 }
 
 uint8_t
@@ -147,11 +151,11 @@ bool _moduloTransfer(
     for (int i=0; i < receiveLen; i++) {
         receiveData[i] = TWI_READ();
 
-        // XXX: Hack to detect the end of variable length strings.
-        if (i > 0 and receiveLen == 31 and
-            receiveData[i-1] == 0 and receiveData[i] == crc) {
-            return true;
+        // If we're receiving a string, then stop when we find a 0 byte.
+        if (receiveString and i > 0 and receiveData[i-1] == 0) {
+            return (receiveData[i] == crc);
         }
+
         crc = _crc8_ccitt_update(crc, receiveData[i]);
     }
 
@@ -186,12 +190,14 @@ bool _Modulo::transfer(
 
 void _Modulo::loop() {
 
+    exitBootloader();
+
     _mainController.loop();
 
     BaseModulo::loop();
 
     uint8_t event[5];
-    if (transfer(BroadcastAddress, BroadcastCommandGetEvent, 0, 0, event, 5)) {
+    while (transfer(BroadcastAddress, BroadcastCommandGetEvent, 0, 0, event, 5)) {
 
         transfer(BroadcastAddress, BroadcastCommandClearEvent, event, 5, 0, 0);
 
@@ -216,8 +222,6 @@ void _Modulo::globalReset() {
 void _Modulo::exitBootloader() {
     transfer(BroadcastAddress, BroadcastCommandExitBootloader,
                    0, 0, 0, 0);
-    BaseModulo::_globalReset();
-    _mainController.globalReset();
 }
 
 uint16_t _Modulo::getNextDeviceID(uint16_t lastDeviceID) {
@@ -229,6 +233,21 @@ uint16_t _Modulo::getNextDeviceID(uint16_t lastDeviceID) {
     uint8_t sendData[2] = {nextDeviceID & 0xFF, nextDeviceID >> 8 };
     uint8_t receiveData[2] = {0xFF,0xFF};
     if (!transfer(BroadcastAddress, BroadcastCommandGetNextDeviceID,
+                        sendData, 2, receiveData, 2)) {
+        return 0xFFFF;
+    }
+    return receiveData[1] | (receiveData[0] << 8);
+}
+
+uint16_t _Modulo::getNextUnassignedDeviceID(uint16_t lastDeviceID) {
+    if (lastDeviceID == 0xFFFF) {
+        return 0xFFFF;
+    }
+    uint16_t nextDeviceID = lastDeviceID +1;
+
+    uint8_t sendData[2] = {nextDeviceID & 0xFF, nextDeviceID >> 8 };
+    uint8_t receiveData[2] = {0xFF,0xFF};
+    if (!transfer(BroadcastAddress, BroadcastCommandGetNextUnassignedDeviceID,
                         sendData, 2, receiveData, 2)) {
         return 0xFFFF;
     }

@@ -30,11 +30,16 @@ public:
     /// Reset all devices on the bus to their power-up state
     static void globalReset();
 
+    /// Tell devices that are running their bootloaders to begin normal operation
     static void exitBootloader();
 
     /// Search the bus for the device with the lowest deviceID that is
     /// greater than or equal to the one provided.
     static uint16_t getNextDeviceID(uint16_t lastDeviceID);
+
+    /// Search the bus for the device with the lowest deviceID that is
+    /// greater than or equal to the one provided.
+    static uint16_t getNextUnassignedDeviceID(uint16_t lastDeviceID);
 
     /// Set a device's I2C address. The address is not persistant. It will be
     /// cleared when the modulo is reset or powered off.
@@ -54,6 +59,7 @@ public:
     static bool transfer(
         uint8_t address, uint8_t command, uint8_t *sendData, uint8_t sendLen,
         uint8_t *receiveData, uint8_t receiveLen, bool receiveString = false);
+
 };
 
 extern _Modulo Modulo;
