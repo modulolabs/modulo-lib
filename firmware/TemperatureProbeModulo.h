@@ -31,7 +31,6 @@ private:
     bool _isValid;
     TemperatureChangeCallback *_temperatureChangeCallback;
 
-    void _refreshState();
     virtual bool _init();
     virtual void _processEvent(uint8_t eventCode, uint16_t eventData);
 };

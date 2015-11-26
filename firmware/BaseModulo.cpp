@@ -25,7 +25,6 @@ BaseModulo::BaseModulo(const char *deviceType, uint16_t deviceID) :
 }
 
 BaseModulo::~BaseModulo() {
-
     // Remove this module from the linked list
     BaseModulo *prev = NULL;
     for (BaseModulo *m = _firstBaseModulo; m ; m = m->_nextBaseModulo) {
@@ -48,13 +47,9 @@ BaseModulo *BaseModulo::findByDeviceID(uint16_t deviceID) {
     return NULL;
 }
 
-void BaseModulo::_reset() {
-    _address = 0xFF;
-}
-
 void BaseModulo::_globalReset() {
     for (BaseModulo *m = _firstBaseModulo; m ; m = m->_nextBaseModulo) {
-        m->_reset();
+        m->_address = 0xFF;
     }
 }
 
@@ -62,12 +57,12 @@ void BaseModulo::_processEvent(uint8_t eventCode, uint16_t eventData) {
 }
 
 uint16_t BaseModulo::getDeviceID() {
-    _init();
     return _deviceID;
 }
 
 void BaseModulo::setDeviceID(uint16_t deviceID) {
     if (deviceID != _deviceID) {
+        _disconnected = true;
         _deviceID = deviceID;
         _address = 0xFF;
     }
@@ -75,91 +70,84 @@ void BaseModulo::setDeviceID(uint16_t deviceID) {
 
 
 uint8_t BaseModulo::getAddress() {
-    _init();
     return _address;
 }
 
 void BaseModulo::loop() {
-    for (BaseModulo *m = _firstBaseModulo; m ; m = m->_nextBaseModulo) {
-        m->_loop();
-    }
-}
 
-void BaseModulo::_loop() {
-    if (_disconnected) {
-        if (getAddress() != 0xFF) {
-            _disconnected = false;
+    // If a device has a valid ID but is disconnected, reset its address
+    // so it will be picked up again. This is necessary when devices get
+    // disconnected but don't actually lose power.
+    for (BaseModulo *m = _firstBaseModulo; m ; m = m->_nextBaseModulo) {
+        if (m->_disconnected and m->_deviceID != 0xFFFF) {
+            Modulo.setAddress(m->_deviceID, 0);
         }
+    }
+
+    // Handle any newly connected devices
+    uint16_t deviceID = Modulo.getNextUnassignedDeviceID(0);
+    while (deviceID != 0xFFFF) {
+
+        // First look for a BaseModulo that already has this deviceID
+        BaseModulo *m = _firstBaseModulo;
+        for (; m && m->_deviceID != deviceID; m = m->_nextBaseModulo) {
+        }
+
+        // If we couldn't find a base with the device ID, look for one with no
+        // device ID but the correct device type
+        if (m == NULL) {
+            char deviceType[32] = {0};
+            Modulo.getDeviceType(deviceID, deviceType, 31);
+
+            for (m = _firstBaseModulo; m ; m = m->_nextBaseModulo) {
+                if (m->_deviceID == 0xFFFF and (strcmp(deviceType,m->_deviceType) == 0)) {
+                    break;
+                }
+            }
+        }
+    
+
+        if (m) {
+            // Found a BaseModulo. Assign it.
+            m->_deviceID = deviceID;
+            m->_disconnected = false;
+
+            // Allocate a new address if necessary
+            if (m->_address == 0xFF) {
+                m->_address = ++_lastAssignedAddress;;
+            }
+            Modulo.setAddress(deviceID, m->_address );
+
+            m->_init();
+        } else {
+            // Give it an unused but valid address
+            Modulo.setAddress(deviceID, 127);
+        }
+
+        deviceID = Modulo.getNextUnassignedDeviceID(deviceID);
     }
 }
 
 bool BaseModulo::_init() {
-    if (_address != 0xFF) {
-        return false;
-    }
-
-    if (_deviceID == 0xFFFF) {
-        // Find the first device with the specified type and no assigned address
-        uint16_t deviceID = Modulo.getNextDeviceID(0);
-        while (deviceID != 0xFFFF) {
-
-            // First look for a BaseModulo that already has this deviceID
-            BaseModulo *m = _firstBaseModulo;
-            for (; m && m->_deviceID != deviceID; m = m->_nextBaseModulo) {
-            }
-
-            if (m == NULL) {
-                char deviceType[32] = {0};
-                Modulo.getDeviceType(deviceID, deviceType, 31);
-                if (strcmp(deviceType,_deviceType) == 0) {
-                    _deviceID = deviceID;
-                    break;
-                }
-            }
-
-            deviceID = Modulo.getNextDeviceID(deviceID);
-        }
-    }
-
-    if (_deviceID == 0xFFFF) {
-        // Couldn't find a device
-        return false;
-    }
-
-    _address = Modulo.getAddress(_deviceID);
-    if (_address == 0) {
-        _address = ++_lastAssignedAddress;
-        Modulo.setAddress(_deviceID, _address);
-    }
     return true;
 }
 
 bool BaseModulo::_transfer(uint8_t command, uint8_t *sendData, uint8_t sendLen,
         uint8_t *receiveData, uint8_t receiveLen, uint8_t retries)
 {
-    if (_disconnected) {
+    if (_disconnected or _address == 0xFF) {
         return false;
     }
 
+    // Try the transfer several times in case noise causes a failure.
     for (int i=0; i < retries; i++) {
-        // Unable to assign an address. Return false.
-        uint8_t address = getAddress();
-        if (address == 0xFF) {
-            continue;
-        }
-
-        // We have a valid address, attempt the transfer.
-        if (Modulo.transfer(address, command, sendData, sendLen,
+        if (Modulo.transfer(_address, command, sendData, sendLen,
             receiveData, receiveLen)) {
             return true;
         }
-
-        // If the transfer failed, try to re-assign an address. The device may
-        // have been removed and re-connected
-        Modulo.setAddress(_deviceID, _address);
     }
 
-
+    // If the transfer failed after several retries, then it's disconnected.
     _disconnected = true;
     return false;
 }

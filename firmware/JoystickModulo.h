@@ -35,8 +35,6 @@ protected:
     virtual bool _init();
     virtual void _processEvent(uint8_t eventCode, uint16_t eventData);
 
-    void _refreshState();
-
 private:
     bool _buttonState;
     uint8_t _hPos, _vPos;

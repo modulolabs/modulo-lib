@@ -32,14 +32,6 @@ bool TemperatureProbeModulo::isValid() {
 
 bool TemperatureProbeModulo::_init()
 {
-    if (BaseModulo::_init()) {
-        _refreshState();
-        return true;
-    }
-    return false;
-}
-
-void TemperatureProbeModulo::_refreshState() {
     uint8_t receiveData[2] = {0,0};
 
     if (_transfer(FUNCTION_GET_TEMPERATURE, 0, 0, receiveData, 2)) {

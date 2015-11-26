@@ -43,8 +43,6 @@ private:
     virtual bool _init();
     virtual void _processEvent(uint8_t eventCode, uint16_t eventData);
 
-    void _refreshState();
-
     EventCallback *_buttonPressCallback;
     EventCallback *_buttonReleaseCallback;
     EventCallback *_positionChangeCallback;

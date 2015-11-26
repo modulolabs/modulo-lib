@@ -33,8 +33,6 @@ class BaseModulo {
     // Initialize the module. Return true if initialization took place, false if
     // it failed or if the module was already initialized.
     virtual bool _init();
-    virtual void _reset();
-    virtual void _loop();
 
     friend _Modulo;
 

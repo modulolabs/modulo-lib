@@ -17,11 +17,11 @@ namespace {
     };
 };
 
-BlankSlateModulo::BlankSlateModulo() : BaseModulo("co.modulo.io")
+BlankSlateModulo::BlankSlateModulo() : BaseModulo("co.modulo.blankslate")
 {
 }
 
-BlankSlateModulo::BlankSlateModulo(uint16_t deviceID) : BaseModulo("co.modulo.io", deviceID)
+BlankSlateModulo::BlankSlateModulo(uint16_t deviceID) : BaseModulo("co.modulo.blankslate", deviceID)
 {
 }
 

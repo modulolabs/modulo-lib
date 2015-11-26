@@ -19,34 +19,20 @@ JoystickModulo::JoystickModulo(uint16_t deviceID) :
 
 
 bool JoystickModulo::getButton() {
-    _init();
-
     return _buttonState;
 }
 
 float JoystickModulo::getHPos() {
-    _init();
-
     return 1-_hPos*2/255.0;
 }
 
 float JoystickModulo::getVPos() {
-    _init();
-
     return 1-_vPos*2/255.0;
 }
 
 
 bool JoystickModulo::_init()
 {
-    if (BaseModulo::_init()) {
-        _refreshState();
-        return true;
-    }
-    return false;
-}
-
-void JoystickModulo::_refreshState() {
     uint8_t buttonState = 0;
     _transfer(FUNCTION_GET_BUTTON, 0, 0, &buttonState, 1);
     _buttonState = buttonState;

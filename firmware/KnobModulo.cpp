@@ -93,14 +93,6 @@ int16_t KnobModulo::getAngle() {
 
 bool KnobModulo::_init()
 {
-    if (BaseModulo::_init()) {
-        _refreshState();
-        return true;
-    }
-    return false;
-}
-
-void KnobModulo::_refreshState() {
     uint8_t positionData[2];
     if (_transfer(FUNCTION_KNOB_GET_POSITION, 0, 0, positionData, 2)) {
         _position = positionData[0] | (positionData[1] << 8);
@@ -109,6 +101,10 @@ void KnobModulo::_refreshState() {
     uint8_t buttonData[1];
     if (_transfer(FUNCTION_KNOB_GET_BUTTON, 0, 0, buttonData, 1)) {
         _buttonState = buttonData[0];
+    }
+
+    if (_positionChangeCallback) {
+        _positionChangeCallback(*this);
     }
 }
 
