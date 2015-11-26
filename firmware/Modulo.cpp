@@ -6,14 +6,14 @@
 
 #define BroadcastCommandGlobalReset 0
 #define BroadcastCommandGetNextDeviceID 1
-#define BroadcastCommandGetNextUnassignedDeviceID 9
-#define BroadcastCommandSetAddress 2
-#define BroadcastCommandGetAddress 3
-#define BroadcastCommandGetDeviceType 4
-#define BroadcastCommandGetDeviceVersion 5
-#define BroadcastCommandGetEvent 6
-#define BroadcastCommandClearEvent 7
-#define BroadcastCommandSetStatusLED 8
+#define BroadcastCommandGetNextUnassignedDeviceID 2
+#define BroadcastCommandSetAddress 3
+#define BroadcastCommandGetAddress 4
+#define BroadcastCommandGetDeviceType 5
+#define BroadcastCommandGetDeviceVersion 6
+#define BroadcastCommandGetEvent 7
+#define BroadcastCommandClearEvent 8
+#define BroadcastCommandSetStatusLED 9
 
 #define BroadcastCommandExitBootloader 100
 
