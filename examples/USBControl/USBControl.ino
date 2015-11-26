@@ -154,13 +154,13 @@ void showWelcomeScreen() {
         Modulo.getDeviceType(deviceID, deviceType, 31);
         if (strcmp(deviceType,"co.modulo.knob") == 0) {
             display.print("Knob");
-        } else if (strcmp(deviceType,"co.modulo.io") == 0) {
+        } else if (strcmp(deviceType,"co.modulo.blankslate") == 0) {
             display.print("Blank Slate");
         } else if (strcmp(deviceType,"co.modulo.joystick") == 0) {
             display.print("Joystick");
         } else if (strcmp(deviceType,"co.modulo.tempprobe") == 0) {
             display.print("Temp Probe");
-        } else if (strcmp(deviceType,"co.modulo.colordisplay") == 0) {
+        } else if (strcmp(deviceType,"co.modulo.display") == 0) {
             display.print("Display");
         } else if (strcmp(deviceType,"co.modulo.motor") == 0) {
             display.print("Motor Driver");
