@@ -283,7 +283,7 @@ bool _Modulo::getDeviceType(uint16_t deviceID, char *deviceType, uint8_t maxLen)
 
 bool _Modulo::setStatus(uint16_t deviceID, ModuloStatus status) {
     uint8_t sendData[3] = {static_cast<uint8_t>(deviceID),
-        static_cast<uint8_t>(deviceID >> 8)};
+        static_cast<uint8_t>(deviceID >> 8), status};
     return transfer(BroadcastAddress, BroadcastCommandSetStatusLED,
                           sendData, 3, 0, 0);
 }
