@@ -30,37 +30,6 @@ public:
         Right
     };
 
-    /// An RGBA color
-    struct Color {
-        /// Construct a new color with all channels 0. (clear)
-        Color() : r(0), g(0), b(0), a(0) {}
-
-        /// Construct a new color with the specified values
-        Color(uint8_t r_, uint8_t g_, uint8_t b_, uint8_t a_ = 255) :
-            r(r_), g(g_), b(b_), a(a_) {}
-
-        /// The red channel
-        uint8_t r;
-
-        /// The green channel
-        uint8_t g;
-
-        /// The blue channel
-        uint8_t b;
-
-        /// The alpha channel
-        uint8_t a;
-    };
-
-    /// Black
-    static const Color Black;
-
-    /// White
-    static const Color White;
-
-    /// Clear
-    static const Color Clear;
-
     /// Use the first DisplayModulo that's not already in use.
     DisplayModulo();
 
@@ -80,39 +49,20 @@ public:
     void setContrast(float r, float g, float b);
 
     /// Set the current line color
-    void setLineColor(const Color &c);
-
-    /// Set the current line color
-    void setLineColor(uint8_t r, uint8_t g, uint8_t b) {
-        setLineColor(Color(r,g,b));
-    }
-    /// Set the current fill color
-    void setFillColor(const Color &c);
+    void setLineColor(float r, float g, float b, float a=1.0);
 
     /// Set the current fill color
-    void setFillColor(uint8_t r, uint8_t g, uint8_t b) {
-        setFillColor(Color(r,g,b));
-    }
+    void setFillColor(float r, float g, float b, float a=1.0);
 
     /// Set the current text color
-    void setTextColor(const Color &textColor);
-
-    /// Set the current text color
-    void setTextColor(uint8_t r, uint8_t g, uint8_t b) {
-        setTextColor(Color(r,g,b));
-    }
+    void setTextColor(float r, float g, float b, float a=1.0);
 
     /// Set the text size. This is a multiplier of the base text size,
     /// which is 8px high.
     void setTextSize(uint8_t size);
 
     /// Fill the screen.
-    void fillScreen(Color color);
-
-    /// Fill the screen.
-    void fillScreen(uint8_t r, uint8_t g, uint8_t b) {
-        fillScreen(Color(r,g,b));
-    }
+    void fillScreen(float r, float g, float b);
 
     /// Move the cursor
     void setCursor(int x, int y);

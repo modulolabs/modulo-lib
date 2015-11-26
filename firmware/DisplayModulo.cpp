@@ -35,11 +35,6 @@ static const int OpSetCursor = 10;
 static const int OpSetTextSize = 11;
 static const int OpClear = 12;
 
-const DisplayModulo::Color DisplayModulo::Black;
-const DisplayModulo::Color DisplayModulo::White(255,255,255);
-const DisplayModulo::Color DisplayModulo::Clear(0,0,0,0);
-
-
 DisplayModulo::DisplayModulo() :
     BaseModulo("co.modulo.display"),
         _currentOp(-1), _opBufferLen(0), _buttonState(0),
@@ -115,30 +110,43 @@ void DisplayModulo::clear() {
     _sendOp(sendData, 1);
 }
 
-void DisplayModulo::setLineColor(const Color &color) {
+void DisplayModulo::setLineColor(float r, float g, float b, float a) {
     _endOp();
 
     _waitOnRefresh();
 
-    uint8_t sendData[] = {OpSetLineColor, color.r, color.g, color.b, color.a};
+    uint8_t sendData[] = {OpSetLineColor, 
+        static_cast<uint8_t>(255*r),
+        static_cast<uint8_t>(255*g),
+        static_cast<uint8_t>(255*b),
+        static_cast<uint8_t>(255*a)};
+
     _sendOp(sendData, 5);
 }
 
-void DisplayModulo::setFillColor(const Color &color) {
+void DisplayModulo::setFillColor(float r, float g, float b, float a) {
     _endOp();
 
     _waitOnRefresh();
 
-    uint8_t sendData[] = {OpSetFillColor, color.r, color.g, color.b, color.a};
+    uint8_t sendData[] = {OpSetFillColor, 
+        static_cast<uint8_t>(255*r),
+        static_cast<uint8_t>(255*g),
+        static_cast<uint8_t>(255*b),
+        static_cast<uint8_t>(255*a)};
     _sendOp(sendData, 5);
 }
 
-void DisplayModulo::setTextColor(const Color &color) {
+void DisplayModulo::setTextColor(float r, float g, float b, float a) {
     _endOp();
 
     _waitOnRefresh();
 
-    uint8_t sendData[] = {OpSetTextColor, color.r, color.g, color.b, color.a};
+    uint8_t sendData[] = {OpSetTextColor, 
+        static_cast<uint8_t>(255*r),
+        static_cast<uint8_t>(255*g),
+        static_cast<uint8_t>(255*b),
+        static_cast<uint8_t>(255*a)};
     _sendOp(sendData, 5);
 }
 
@@ -176,13 +184,17 @@ void DisplayModulo::refresh(bool flip)
 }
 
 
-void DisplayModulo::fillScreen(Color color)
+void DisplayModulo::fillScreen(float r, float g, float b)
 {
     _endOp();
 
     _waitOnRefresh();
 
-    uint8_t sendData[] = {OpFillScreen, color.r, color.g, color.b, color.a};
+    uint8_t sendData[] = {OpFillScreen,
+        static_cast<uint8_t>(255*r),
+        static_cast<uint8_t>(255*g),
+        static_cast<uint8_t>(255*b),
+        1};
     _sendOp(sendData, 5);
 }
 
@@ -371,16 +383,17 @@ uint8_t DisplayModulo::getButtons() {
 }
 
 void DisplayModulo::drawSplashScreen() {
-    setFillColor(DisplayModulo::Color(70,0,60));
-    setLineColor(DisplayModulo::Color(0,0,0,0));
+    setFillColor(.27,0,.24);
+    setLineColor(0,0,0);
     drawRect(0, 0, width(), height());
     setCursor(0, 40);
 
     setTextSize(1);
-    setTextColor(255,255,255);
+    setTextColor(1,1,1);
     print("     MODULO");
 
-    setFillColor(DisplayModulo::Color(255,255,255));
+    setLineColor(0,0,0,0);
+    setFillColor(1,1,1);
 
     drawLogo(width()/2-18, 10, 35, 26);
 
