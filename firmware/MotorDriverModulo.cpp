@@ -70,7 +70,7 @@ void MotorDriverModulo::setMode(Mode mode) {
 
 void MotorDriverModulo::setCurrentLimit(float limit) {
     limit = _constrain(limit, 0.0, 1.0);
-    uint8_t dataToSend[] = {limit*63};
+    uint8_t dataToSend[] = {static_cast<uint8_t>(limit*63)};
     _transfer(_FunctionSetCurrentLimit, dataToSend, 1, 0, 0);
 }
 

@@ -73,7 +73,9 @@ bool KnobModulo::setHSV(float h, float s, float v) {
 }
 
 bool KnobModulo::setColor(float r, float g, float b) {
-    uint8_t sendData[3] = {r*255, g*255, b*255};
+    uint8_t sendData[3] = {static_cast<uint8_t>(r*255),
+        static_cast<uint8_t>(g*255),
+        static_cast<uint8_t>(b*255)};
     return _transfer(FUNCTION_KNOB_SET_COLOR, sendData, 3, 0, 0);
 }
 

@@ -158,7 +158,8 @@ void DisplayModulo::setCursor(int x, int y)
 
     _waitOnRefresh();
 
-    uint8_t sendData[] = {OpSetCursor, x, y};
+    uint8_t sendData[] = {OpSetCursor, static_cast<uint8_t>(x),
+        static_cast<uint8_t>(y)};
     _sendOp(sendData, 3);
 }
 
@@ -194,7 +195,9 @@ void DisplayModulo::drawLine(int x0, int y0, int x1, int y1)
 
     _waitOnRefresh();
 
-    uint8_t sendData[] = {OpDrawLine, x0, y0, x1, y1};
+    uint8_t sendData[] = {OpDrawLine, static_cast<uint8_t>(x0),
+        static_cast<uint8_t>(y0), static_cast<uint8_t>(x1),
+        static_cast<uint8_t>(y1)};
     _sendOp(sendData, 5);
 }
 
@@ -239,13 +242,18 @@ void DisplayModulo::drawRect(int x, int y, int w, int h, int radius)
 
     _waitOnRefresh();
 
-    uint8_t sendData[] = {OpDrawRect, x, y, w, h, radius};
+    uint8_t sendData[] = {OpDrawRect, static_cast<uint8_t>(x),
+        static_cast<uint8_t>(y), static_cast<uint8_t>(w),
+        static_cast<uint8_t>(h), static_cast<uint8_t>(radius)};
     _sendOp(sendData, 6);
 }
 
 void DisplayModulo::drawTriangle(int x0, int y0, int x1, int y1, int x2, int y2)
 {
-    uint8_t sendData[] = {OpDrawTriangle, x0, y0, x1, y1, x2, y2};
+    uint8_t sendData[] = {OpDrawTriangle, 
+        static_cast<uint8_t>(x0), static_cast<uint8_t>(y0),
+        static_cast<uint8_t>(x1), static_cast<uint8_t>(y1),
+        static_cast<uint8_t>(x2), static_cast<uint8_t>(y2)};
     _sendOp(sendData, 7);
 }
 
@@ -255,7 +263,10 @@ void DisplayModulo::drawCircle(int x, int y, int radius)
 
     _waitOnRefresh();
 
-    uint8_t sendData[] = {OpDrawCircle, x, y, radius};
+    uint8_t sendData[] = {OpDrawCircle, 
+        static_cast<uint8_t>(x),
+        static_cast<uint8_t>(y),
+        static_cast<uint8_t>(radius)};
     _sendOp(sendData, 4);
 }
 
@@ -274,7 +285,7 @@ size_t DisplayModulo::write(uint8_t c) {
 }
 
 void DisplayModulo::setBrightness(float brightness) {
-    uint8_t data[] = {0x87, brightness*16};
+    uint8_t data[] = {0x87, static_cast<uint8_t>(brightness*16)};
     _rawWrite(false, data, 2);
 }
 

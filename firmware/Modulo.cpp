@@ -230,7 +230,8 @@ uint16_t _Modulo::getNextDeviceID(uint16_t lastDeviceID) {
     }
     uint16_t nextDeviceID = lastDeviceID +1;
 
-    uint8_t sendData[2] = {nextDeviceID & 0xFF, nextDeviceID >> 8 };
+    uint8_t sendData[2] = {static_cast<uint8_t>(nextDeviceID),
+        static_cast<uint8_t>(nextDeviceID >> 8) };
     uint8_t receiveData[2] = {0xFF,0xFF};
     if (!transfer(BroadcastAddress, BroadcastCommandGetNextDeviceID,
                         sendData, 2, receiveData, 2)) {
@@ -245,7 +246,8 @@ uint16_t _Modulo::getNextUnassignedDeviceID(uint16_t lastDeviceID) {
     }
     uint16_t nextDeviceID = lastDeviceID +1;
 
-    uint8_t sendData[2] = {nextDeviceID & 0xFF, nextDeviceID >> 8 };
+    uint8_t sendData[2] = {static_cast<uint8_t>(nextDeviceID),
+        static_cast<uint8_t>(nextDeviceID >> 8) };
     uint8_t receiveData[2] = {0xFF,0xFF};
     if (!transfer(BroadcastAddress, BroadcastCommandGetNextUnassignedDeviceID,
                         sendData, 2, receiveData, 2)) {
@@ -255,13 +257,15 @@ uint16_t _Modulo::getNextUnassignedDeviceID(uint16_t lastDeviceID) {
 }
 
 bool _Modulo::setAddress(uint16_t deviceID, uint8_t address) {
-    uint8_t sendData[3] = {deviceID & 0xFF, deviceID >> 8, address};
+    uint8_t sendData[3] = {static_cast<uint8_t>(deviceID),
+        static_cast<uint8_t>(deviceID >> 8), address};
     return transfer(BroadcastAddress, BroadcastCommandSetAddress,
                           sendData, 3, 0, 0);
 }
 
 uint8_t _Modulo::getAddress(uint16_t deviceID) {
-    uint8_t sendData[2] = {deviceID & 0xFF, deviceID >> 8};
+    uint8_t sendData[2] = {static_cast<uint8_t>(deviceID),
+        static_cast<uint8_t>(deviceID >> 8)};
     uint8_t address = 0;
     if (transfer(BroadcastAddress, BroadcastCommandGetAddress,
                        sendData, 2, &address, 1)){
@@ -271,13 +275,15 @@ uint8_t _Modulo::getAddress(uint16_t deviceID) {
 }
 
 bool _Modulo::getDeviceType(uint16_t deviceID, char *deviceType, uint8_t maxLen) {
-    uint8_t sendData[2] = {deviceID & 0xFF, deviceID >> 8};
+    uint8_t sendData[2] = {static_cast<uint8_t>(deviceID),
+        static_cast<uint8_t>(deviceID >> 8)};
     return transfer(BroadcastAddress, BroadcastCommandGetDeviceType,
                           sendData, 2, (uint8_t*)deviceType, maxLen, true);
 }
 
 bool _Modulo::setStatus(uint16_t deviceID, ModuloStatus status) {
-    uint8_t sendData[3] = {deviceID & 0xFF, deviceID >> 8, status};
+    uint8_t sendData[3] = {static_cast<uint8_t>(deviceID),
+        static_cast<uint8_t>(deviceID >> 8)};
     return transfer(BroadcastAddress, BroadcastCommandSetStatusLED,
                           sendData, 3, 0, 0);
 }

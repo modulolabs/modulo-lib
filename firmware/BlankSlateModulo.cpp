@@ -110,7 +110,7 @@ void BlankSlateModulo::setPWMValue(uint8_t pin, float value) {
 
     uint16_t v = 65535.0 * value;
 
-    uint8_t sendData[] = {pin, v & 0xFF, v >> 8};
+    uint8_t sendData[] = {pin, static_cast<uint8_t>(v), static_cast<uint8_t>(v >> 8)};
 
     if (!_transfer(FUNCTION_SET_PWM_OUTPUT, sendData, sizeof(sendData), 0, 0)) {
         // Handle error?
@@ -118,7 +118,7 @@ void BlankSlateModulo::setPWMValue(uint8_t pin, float value) {
 }
 
 void BlankSlateModulo::setPWMFrequency(uint8_t pin, uint16_t value) {
-    uint8_t sendData[] = {pin, value & 0xFF, value >> 8};
+    uint8_t sendData[] = {pin, static_cast<uint8_t>(value), static_cast<uint8_t>(value >> 8)};
 
     if (!_transfer(FUNCTION_SET_PWM_FREQUENCY, sendData, sizeof(sendData), 0, 0)) {
         // Handle error?

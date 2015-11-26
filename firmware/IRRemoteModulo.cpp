@@ -25,7 +25,7 @@ IRRemoteModulo::IRRemoteModulo() :
 }
 
 void IRRemoteModulo::setBreakLength(uint16_t len) {
-    uint8_t sendData[] = {len & 0xFF, len >> 8};
+    uint8_t sendData[] = {static_cast<uint8_t>(len), static_cast<uint8_t>(len >> 8)};
     _transfer(FUNCTION_SET_BREAK_LENGTH, sendData, 2, 0, 0);
 }
 
@@ -34,7 +34,7 @@ void IRRemoteModulo::_processEvent(uint8_t eventCode, uint16_t eventData) {
 
     uint8_t data[128] = {0};
 
-    for (int i=0; i < availableBytes and i < 128; i += 16) {
+    for (uint8_t i=0; i < availableBytes and i < 128; i += 16) {
         uint8_t dataToSend[] = {i, 16};
         if (!_transfer(FUNCTION_RECEIVE, dataToSend, 2, data+i, 16)) {
             return;
