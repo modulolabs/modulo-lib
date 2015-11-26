@@ -16,6 +16,8 @@
 #define FUNCTION_RAW_WRITE 3
 #define FUNCTION_IS_EMPTY 4
 #define FUNCTION_GET_AVAILABLE_SPACE 5
+#define FUNCTION_SET_CURRENT 6
+#define FUNCTION_SET_CONTRAST 7
 
 #define EVENT_BUTTON_CHANGED 0
 
@@ -39,14 +41,14 @@ const DisplayModulo::Color DisplayModulo::Clear(0,0,0,0);
 
 
 DisplayModulo::DisplayModulo() :
-    BaseModulo("co.modulo.colordisplay"),
+    BaseModulo("co.modulo.display"),
         _currentOp(-1), _opBufferLen(0), _buttonState(0),
         _isRefreshing(false), _availableSpace(0)
 {
 }
 
 DisplayModulo::DisplayModulo(uint16_t deviceID) :
-    BaseModulo("co.modulo.colordisplay", deviceID),
+    BaseModulo("co.modulo.display", deviceID),
         _currentOp(-1), _opBufferLen(0), _buttonState(0),
         _isRefreshing(false), _availableSpace(0)
 {
@@ -294,6 +296,34 @@ void DisplayModulo::_rawWrite(bool dataMode, uint8_t *data, size_t len) {
     _transfer(FUNCTION_RAW_WRITE, sendData, len+1, 0, 0);
 }
 
+void DisplayModulo::setCurrent(float current) {
+    // Before changing contrast we must wait until no drawing operations are
+    // still in progress.
+    while (!isComplete()) {
+        delay(5);
+    }
+
+    uint8_t sendData[] = {static_cast<uint8_t>(15*current)};
+    _transfer(FUNCTION_SET_CURRENT, sendData, 1, 0, 0);
+}
+
+void DisplayModulo::setContrast(float r, float g, float b) {
+    // Before changing contrast we must wait until no drawing operations are
+    // still in progress.
+    while (!isComplete()) {
+        delay(5);
+    }
+
+    uint8_t sendData[] = {static_cast<uint8_t>(255*r),
+                          static_cast<uint8_t>(255*g),
+                          static_cast<uint8_t>(255*b)};
+    _transfer(FUNCTION_SET_CONTRAST, sendData, 3, 0, 0);
+}
+
+
+
+
+
 bool DisplayModulo::isComplete() {
     uint8_t complete = 0;
     if (_transfer(FUNCTION_IS_COMPLETE, 0, 0, &complete, 1)) {
@@ -330,7 +360,7 @@ uint8_t DisplayModulo::getButtons() {
 }
 
 void DisplayModulo::drawSplashScreen() {
-    setFillColor(DisplayModulo::Color(50,0,40));
+    setFillColor(DisplayModulo::Color(70,0,60));
     setLineColor(DisplayModulo::Color(0,0,0,0));
     drawRect(0, 0, width(), height());
     setCursor(0, 40);

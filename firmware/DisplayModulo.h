@@ -70,8 +70,14 @@ public:
     /// Fill the screen with black and return the cursor to (0,0)
     void clear();
 
-    //void setRotation(uint8_t r);
-    //void setCursor(int x, int y);
+    /// Set the display's master current. Higher current values produce a
+    /// brighter, more vivid image but may increase image burn-in and audible
+    /// noise from the OLED driver. The default is .75.
+    void setCurrent(float current);
+
+    /// Set the per channel contrast values, which affect image brightness and
+    /// color balance. The default is (.93, 0.555, 1.0).
+    void setContrast(float r, float g, float b);
 
     /// Set the current line color
     void setLineColor(const Color &c);
@@ -80,7 +86,6 @@ public:
     void setLineColor(uint8_t r, uint8_t g, uint8_t b) {
         setLineColor(Color(r,g,b));
     }
-
     /// Set the current fill color
     void setFillColor(const Color &c);
 
