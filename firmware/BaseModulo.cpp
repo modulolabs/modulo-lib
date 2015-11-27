@@ -80,7 +80,10 @@ void BaseModulo::loop() {
     // disconnected but don't actually lose power.
     for (BaseModulo *m = _firstBaseModulo; m ; m = m->_nextBaseModulo) {
         if (m->_disconnected and m->_deviceID != 0xFFFF) {
-            Modulo.setAddress(m->_deviceID, 0);
+            m->_disconnected = false;
+            // XXX: This doesn't seem to causing devices to get picked up
+            // in the newly connected loop below.
+            //Modulo.setAddress(m->_deviceID, 0);
         }
     }
 
