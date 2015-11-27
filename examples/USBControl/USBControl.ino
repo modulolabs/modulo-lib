@@ -13,20 +13,27 @@ int page = 255;
 bool serialConnected = false;
 bool buttonWasPressed = false;
 
-const uint8_t delimeter = 0x7E;
-const uint8_t escape = 0x7D;
+const uint8_t DELIMETER = 0x7E;
+const uint8_t ESCAPE = 0x7D;
+
+const uint8_t CODE_TRANSFER = 'T';
+const uint8_t CODE_RETURN = 'R';
+const uint8_t CODE_EXIT = 'Q';
+const uint8_t CODE_ECHO = 'X';
+const uint8_t CODE_DEBUG = 'D';
+const uint8_t CODE_EVENT = 'V';
 
 void sendPacket(uint8_t *data, uint8_t len) {
-    Serial.write(delimeter);
+    Serial.write(DELIMETER);
     for (int i=0; i < len; i++) {
-        if (data[i] == delimeter or data[i] == escape) {
-            Serial.write(escape);
+        if (data[i] == DELIMETER or data[i] == ESCAPE) {
+            Serial.write(ESCAPE);
             Serial.write(data[i] ^ (1 << 5));
         } else {
             Serial.write(data[i]);
         }
     }
-    Serial.write(delimeter);
+    Serial.write(DELIMETER);
     Serial.flush();
 }
 
@@ -36,7 +43,7 @@ int receivePacketLen = 0;
 bool receiveEscape = false;
 
 void receiveData(int c) {
-    if (c == delimeter) {
+    if (c == DELIMETER) {
         if (receivePacketLen > 0) {
             processPacket(receivePacket, receivePacketLen);
             receivePacketLen = 0;
@@ -46,7 +53,7 @@ void receiveData(int c) {
         return;
     }
 
-    if (c == escape) {
+    if (c == ESCAPE) {
         receiveEscape = true;
         return;
     }
@@ -66,19 +73,19 @@ void processPacket(uint8_t *data, uint8_t len) {
         return;
     }
 
-    if (data[0] == 'T') {
+    if (data[0] == CODE_TRANSFER) {
         processModuloTransfer(data+1, len-1);
-    } else if (data[0] == 'E') {
+    } else if (data[0] == CODE_EXIT) {
         serialConnected = false;
         Modulo.globalReset();
-    } else if (data[0] == 'X') {
+    } else if (data[0] == CODE_ECHO) {
         sendPacket(data, len);
     }
 }
 
 void debug(const char *s) {
     uint8_t packet[32];
-    packet[0] = 'D';
+    packet[0] = CODE_DEBUG;
     int len = 1;
     while (*s) {
         packet[len++] = *(s++);
@@ -90,8 +97,6 @@ void processModuloTransfer(uint8_t *buffer, int len) {
     if (len < 4) {
         return;
     }
-
-    digitalWrite(LED_BUILTIN, true);
 
 
     uint8_t address = buffer[0];
@@ -110,10 +115,12 @@ void processModuloTransfer(uint8_t *buffer, int len) {
     //    Returned data
     uint8_t returnPacket[64] = {0};
 
-    bool retval = Modulo.transfer(address, command, buffer+4,
-        sendLen, returnPacket+2, receiveLen);
+    bool isString = (receiveLen == 31);
 
-    returnPacket[0] = 'R';
+    bool retval = Modulo.transfer(address, command, buffer+4,
+        sendLen, returnPacket+2, receiveLen, isString);
+
+    returnPacket[0] = CODE_RETURN;
     returnPacket[1] = retval;
 
     if (retval) {
@@ -139,7 +146,6 @@ void showWelcomeScreen() {
         display.clear();
 
         display.drawSplashScreen();
-
 
         display.setCursor(0, display.height()-8);
         display.println("       Devices >");
@@ -192,10 +198,10 @@ void showWelcomeScreen() {
 
 void processEvent() {
     static const uint8_t BroadcastAddress = 9;
-    static const uint8_t BroadcastCommandGetEvent = 6;
-    static const uint8_t BroadcastCommandClearEvent = 7;
+    static const uint8_t BroadcastCommandGetEvent = 7;
+    static const uint8_t BroadcastCommandClearEvent = 8;
 
-    uint8_t eventPacket[6] = {'V'};
+    uint8_t eventPacket[6] = {CODE_EVENT};
     if (Modulo.transfer(BroadcastAddress, BroadcastCommandGetEvent, 0, 0, eventPacket+1, 5)) {
         Modulo.transfer(BroadcastAddress, BroadcastCommandClearEvent, eventPacket+1, 5, 0, 0);
 
@@ -214,8 +220,7 @@ void loop() {
     if (serialConnected) {
         if (millis() > lastKeepAlive+100) {
             lastKeepAlive = millis();
-            uint8_t keepAlivePacket[] = {'X'};
-
+            uint8_t keepAlivePacket[] = {CODE_ECHO};
         }
 
         processEvent();
@@ -235,7 +240,6 @@ void loop() {
             serialConnected = true;
             display.clear();
             display.refresh();
-            delay(100);
         }
     }
 }
