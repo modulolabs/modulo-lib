@@ -14,6 +14,7 @@
 #define BroadcastCommandGetEvent 7
 #define BroadcastCommandClearEvent 8
 #define BroadcastCommandSetStatusLED 9
+#define BroadcastCommandSetDeviceID 10
 
 #define BroadcastCommandExitBootloader 100
 
@@ -288,3 +289,10 @@ bool _Modulo::setStatus(uint16_t deviceID, ModuloStatus status) {
                           sendData, 3, 0, 0);
 }
 
+bool _Modulo::setDeviceID(uint16_t deviceID, uint16_t newID) {
+    uint8_t sendData[4] = {static_cast<uint8_t>(deviceID),
+        static_cast<uint8_t>(deviceID >> 8), static_cast<uint8_t>(newID),
+            static_cast<uint8_t>(newID >> 8)};
+    return transfer(BroadcastAddress, BroadcastCommandSetDeviceID,
+                          sendData, 4, 0, 0);
+}

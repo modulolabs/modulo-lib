@@ -53,6 +53,9 @@ public:
     /// Set a device's status LED to Off, On, or Blinking.
     static bool setStatus(uint16_t deviceID, ModuloStatus status);
 
+    /// Permanently change a device's deviceID.
+    static bool setDeviceID(uint16_t deviceID, uint16_t newID);
+
     /// Perform a data transfer on the modulo bus. This is normally only used
     /// internally within the various Modulo classes.
     static bool transfer(
