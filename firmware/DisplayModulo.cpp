@@ -262,6 +262,10 @@ void DisplayModulo::drawRect(int x, int y, int w, int h, int radius)
 
 void DisplayModulo::drawTriangle(int x0, int y0, int x1, int y1, int x2, int y2)
 {
+    _endOp();
+
+    _waitOnRefresh();
+
     uint8_t sendData[] = {OpDrawTriangle, 
         static_cast<uint8_t>(x0), static_cast<uint8_t>(y0),
         static_cast<uint8_t>(x1), static_cast<uint8_t>(y1),
