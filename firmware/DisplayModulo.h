@@ -24,12 +24,6 @@ public:
         return HEIGHT;
     }
 
-    enum TextAlignment {
-        Left,
-        Center,
-        Right
-    };
-
     /// Use the first DisplayModulo that's not already in use.
     DisplayModulo();
 
