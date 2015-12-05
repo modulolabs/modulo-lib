@@ -177,7 +177,8 @@ const PulseModulationEncoding IREncodings[NUM_IR_ENCODINGS] = {
 
 class IRDecoder {
 public:
-	IRDecoder(uint16_t *rawData, uint16_t rawLen) : _rawData(rawData), _rawLen(rawLen) {}
+	IRDecoder(uint16_t *rawData, uint16_t rawLen) :
+		_rawData(rawData), _rawLen(rawLen) {}
 	
 	bool decodePulseModulation(const PulseModulationEncoding &encoding, uint32_t *value)
 	{
@@ -225,11 +226,9 @@ public:
 		return true;
 	}
 	
-
-
 	// Specialized decoding of the RC5 protocol.
 	// In the future it would be nice to have a general manchester decoder.
-	bool  decodeRC5 (uint32_t *value)
+	bool decodeRC5(uint32_t *value)
 	{
 		long  data   = 0;
 		int   used   = 0;
@@ -265,7 +264,7 @@ public:
 
 	// Specialized decoding of the RC6 protocol.
 	// In the future it would be nice to have a general manchester decoder.
-	bool  decodeRC6 (uint32_t *value)
+	bool decodeRC6(uint32_t *value)
 	{
 		long  data   = 0;
 		int   used   = 0;
@@ -355,7 +354,7 @@ private:
 	// t1 is the time interval for a single bit in microseconds.
 	// Returns -1 for error (measured time interval is not a multiple of t1).
 	//
-	int getRClevel (int *used,  int t1)
+	int getRClevel(int *used, int t1)
 	{
 		if (_currentIndex >= _rawLen)
 			return false ;  // After end of recorded buffer, assume SPACE.
@@ -411,6 +410,94 @@ bool IRDecode(uint16_t *rawData, uint16_t rawLen, int8_t *protocol, uint32_t *va
 
 	return false;
 }
+
+static int encodePulseModulation(PulseModulationEncoding &encoding,
+	uint32_t data, uint8_t *rawData, uint8_t maxLen) {
+
+	// Index 0 is a space. Set it to 0 length.
+	rawData[0] = 0;
+	int length = 1;
+	
+	if (encoding.headerMark and length+2 < maxLen) {
+		rawData[length++] = encoding.headerMark/USECPERTICK;
+		rawData[length++] = encoding.headerSpace/USECPERTICK;
+	}
+
+	for (int i=0; i < encoding.numBits and length+2 < maxLen; i++) {
+		if (data & (1 << i)) {
+			rawData[length++] = encoding.oneMark/USECPERTICK;
+			rawData[length++] = encoding.oneSpace/USECPERTICK;
+		} else {
+			rawData[length++] = encoding.zeroMark/USECPERTICK;
+			rawData[length++] = encoding.zeroSpace/USECPERTICK;
+		}
+	}
+	
+	if (encoding.stopMark and length+2 < maxLen) {
+		rawData[length++] = encoding.stopMark/USECPERTICK;
+		rawData[length++] = 0;
+	}
+	
+	return length;
+}
+
+class RCEncoder {
+
+	RCEncoder(uint8_t *rawData, uint8_t maxLen) :
+		_rawData(rawData), _maxLen(maxLen), _length(0) {}
+
+	void encodeRC5(uint32_t data, uint8_t numBits) {
+		_appendBit(1);
+		_appendBit(1);
+		
+		for (int i=0; i < numBits; i++) {
+			_appendBit(data & (1 << i));
+		}
+	}
+
+	void encodeRC6(uint32_t data, uint8_t numBits) {
+		// Leader symbol
+		_appendInterval(true, RC6_HDR_MARK/USECPERTICK);
+		_appendInterval(false, RC6_HDR_SPACE/USECPERTICK);
+		
+		// Start bit
+		_appendBit(true);
+		
+		for (int i=0; i < numBits; i++) {
+			// Bit 4 (the trailer/toggle bit) is twice as long.
+			_appendBit(data & (1 << i), i == 4);
+		}
+	}
+
+
+private:
+	
+	void _appendBit(bool bit, bool doubleLength = false) {
+		_appendInterval(!bit, (doubleLength+1)*RC5_T1/USECPERTICK);
+		_appendInterval(bit,  (doubleLength+1)*RC5_T1/USECPERTICK);
+	}
+
+	void _appendInterval(bool mark, uint8_t ticks) {
+		bool lastIsMark = (_length % 2);
+
+		if (mark == lastIsMark) {
+			// If this interval and the previous one have the same state (both mark
+			// or both space) then just add the length
+			_rawData[_length-1] += ticks;
+		} else {
+			// If this interval and the previous have different states, then create
+			// a new state.
+			_rawData[_length++] = ticks;
+		}
+	}
+
+	uint8_t *_rawData;
+	uint8_t _maxLen;
+	uint8_t _length;
+
+};
+
+
 
 #if 0
 static void sendPulseModulation(PulseModulationEncoding &encoding, uint32_t data) {
