@@ -32,7 +32,8 @@ public:
     bool setDigitalOutputs(uint8_t values);
 
     /// Enable the output and set the PWM duty cycle on the specified pin.
-    /// If the pin does not support PWM, this is equivalent to setDigitalOutput.
+    /// Pins 0-4 have hardware PWM support. Pins 5-7 only have software PWM
+    /// which has more jitter, especially at high frequencies.
     void setPWMValue(uint8_t pin, float value);
 
     /// Sets whether a pullup is enabled on the specified pin.

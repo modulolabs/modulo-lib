@@ -15,8 +15,12 @@ public:
 
     void update();
 
+    /// Send raw data. Each byte is the number of 50us ticks that the output
+    /// should be on or off. The first byte is an off period.
     void send(uint8_t *data, uint8_t len);
 
+    /// Set the no signal time that's required before the receiver considers
+    /// a transmission complete.
     void setBreakLength(uint16_t len);
 
     /// A callback function
@@ -27,8 +31,6 @@ public:
 private:
 
     virtual void _processEvent(uint8_t eventCode, uint16_t eventData);
-
-    long _lastEmptyTime;
 
     static const uint8_t _receiveBufferSize = 128;
     uint8_t _receiveBuffer[_receiveBufferSize];

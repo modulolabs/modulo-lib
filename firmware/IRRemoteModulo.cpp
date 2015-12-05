@@ -15,12 +15,12 @@
 #define EVENT_RECEIVE 0
 
 IRRemoteModulo::IRRemoteModulo(uint16_t deviceID) :
-    BaseModulo("co.modulo.ir", deviceID), _lastEmptyTime(0)
+    BaseModulo("co.modulo.ir", deviceID)
 {
 }
 
 IRRemoteModulo::IRRemoteModulo() :
-    BaseModulo("co.modulo.ir"), _lastEmptyTime(0)
+    BaseModulo("co.modulo.ir")
 {
 }
 

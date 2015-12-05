@@ -30,7 +30,8 @@ public:
     /// Use the DisplayModulo with the specified deviceID
     DisplayModulo(uint16_t deviceID);
 
-    /// Fill the screen with black and return the cursor to (0,0)
+    /// Fill the screen with black, set the line, fill, and text colors to white,
+    /// and return the cursor to (0,0)
     void clear();
 
     /// Set the display's master current. Higher current values produce a
@@ -58,7 +59,7 @@ public:
     /// Fill the screen.
     void fillScreen(float r, float g, float b);
 
-    /// Move the cursor
+    /// Set the cursor position, which is where the next text will be drawn.
     void setCursor(int x, int y);
 
     /// Draw a line segment from (x0,y0) to (x1,y1)
@@ -99,9 +100,6 @@ public:
 
     /// Draw the Modulo logo and the word 'MODULO' on a purple background
     void drawSplashScreen();
-
-    /// Set the brightness (Between 0 and 1).
-    void setBrightness(float brightness);
 
     /// Draw the Modulo logo
     void drawLogo(int x=0, int y=0, int width=49, int height=49);
@@ -161,9 +159,6 @@ private:
     // syncronoization so that we don't queue drawing commands for more than
     // one frame at a time.
     void _waitOnRefresh();
-
-
-
 };
 
 #endif

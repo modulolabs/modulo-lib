@@ -300,11 +300,6 @@ size_t DisplayModulo::write(uint8_t c) {
     return 1;
 }
 
-void DisplayModulo::setBrightness(float brightness) {
-    uint8_t data[] = {0x87, static_cast<uint8_t>(brightness*16)};
-    _rawWrite(false, data, 2);
-}
-
 void DisplayModulo::_rawWrite(bool dataMode, uint8_t *data, size_t len) {
     if (len > 30) {
         return;

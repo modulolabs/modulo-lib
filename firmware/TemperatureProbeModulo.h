@@ -9,12 +9,10 @@ class TemperatureProbeModulo : public BaseModulo {
     explicit TemperatureProbeModulo(uint16_t deviceID);
     TemperatureProbeModulo();
 
-    /// Return the temperature of the thermocouple in celsius
-    /// If no thermocouple is connected, returns InvalidTemperature.
+    /// Return the temperature of the probe in celsius
     float getTemperatureC();
 
-    /// Return the temperature of the thermocouple in fahrenheit
-    /// If no thermocouple is connected, returns InvalidTemperature.
+    /// Return the temperature of the probe in fahrenheit
     float getTemperatureF();
 
     /// Return whether temperature probe is connected and has a valid value

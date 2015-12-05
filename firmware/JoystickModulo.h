@@ -14,9 +14,13 @@ class JoystickModulo : public BaseModulo {
     /// Use the JoystickModulo with the provided deviceID
     JoystickModulo(uint16_t deviceID);
 
-    /// Return true if the button is currently pressed
+    /// Return whether the button is currently pressed
     bool getButton();
+
+    /// Return the horizontal position of the joystick. (between -1 and 1)
     float getHPos();
+
+    /// Return the vertical position of the joystick. (between -1 and 1)
     float getVPos();
 
     /// A callback function

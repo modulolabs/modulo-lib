@@ -67,10 +67,8 @@ public:
     /// of wholes steps.
     int32_t getStepperPosition();
 
-    /// Return whether the stepper driver is currently stepping and has not
-    /// yet reached its target position.
-    bool isStepping();
-
+    /// Return whether a fault condition (such as a short between motor terminals,
+    /// over current shutdown, or over temperature shutdown) is currently present.
     bool hasFault();
 
     /// A callback function

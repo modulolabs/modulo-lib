@@ -16,7 +16,7 @@ class BaseModulo {
     /// Return the device ID, or 0xFFFF if no device could be found
     uint16_t getDeviceID();
     
-    /// Sets the device ID. If the ID changed, reset the device address.
+    /// Set the ID of the modulo that this object should connect to.
     void setDeviceID(uint16_t deviceID);
 
     // If a BaseModulo exists that has the specified deviceID, find and return
