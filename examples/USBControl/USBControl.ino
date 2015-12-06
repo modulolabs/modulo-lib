@@ -139,6 +139,7 @@ uint16_t getDeviceIDByIndex(int index) {
     return deviceID;
 }
 
+
 void showWelcomeScreen() {
     uint16_t deviceID = getDeviceIDByIndex(page);
 
@@ -159,19 +160,19 @@ void showWelcomeScreen() {
         char deviceType[32] = {0};
         Modulo.getDeviceType(deviceID, deviceType, 31);
         if (strcmp(deviceType,"co.modulo.knob") == 0) {
-            display.print("Knob");
+            display.println("Knob");
         } else if (strcmp(deviceType,"co.modulo.blankslate") == 0) {
-            display.print("Blank Slate");
+            display.println("Blank Slate");
         } else if (strcmp(deviceType,"co.modulo.joystick") == 0) {
-            display.print("Joystick");
+            display.println("Joystick");
         } else if (strcmp(deviceType,"co.modulo.tempprobe") == 0) {
-            display.print("Temp Probe");
+            display.println("Temp Probe");
         } else if (strcmp(deviceType,"co.modulo.display") == 0) {
-            display.print("Display");
+            display.println("Display");
         } else if (strcmp(deviceType,"co.modulo.motor") == 0) {
-            display.print("Motor Driver");
+            display.println("Motor Driver");
         } else if (strcmp(deviceType,"co.modulo.ir") == 0) {
-            display.print("IR Transeceiver");
+            display.println("IR Remote");
         }
 
         display.println();
