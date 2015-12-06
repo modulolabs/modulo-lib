@@ -111,6 +111,11 @@ void DisplayModulo::clear() {
 }
 
 void DisplayModulo::setLineColor(float r, float g, float b, float a) {
+    r = constrain(r, 0.0, 1.0);
+    g = constrain(g, 0.0, 1.0);
+    b = constrain(b, 0.0, 1.0);
+    a = constrain(a, 0.0, 1.0);
+
     _endOp();
 
     _waitOnRefresh();
@@ -125,6 +130,11 @@ void DisplayModulo::setLineColor(float r, float g, float b, float a) {
 }
 
 void DisplayModulo::setFillColor(float r, float g, float b, float a) {
+    r = constrain(r, 0.0, 1.0);
+    g = constrain(g, 0.0, 1.0);
+    b = constrain(b, 0.0, 1.0);
+    a = constrain(a, 0.0, 1.0);
+
     _endOp();
 
     _waitOnRefresh();
@@ -138,6 +148,10 @@ void DisplayModulo::setFillColor(float r, float g, float b, float a) {
 }
 
 void DisplayModulo::setTextColor(float r, float g, float b, float a) {
+    r = constrain(r, 0.0, 1.0);
+    g = constrain(g, 0.0, 1.0);
+    b = constrain(b, 0.0, 1.0);
+    a = constrain(a, 0.0, 1.0);
     _endOp();
 
     _waitOnRefresh();
@@ -186,6 +200,10 @@ void DisplayModulo::refresh(bool flip)
 
 void DisplayModulo::fillScreen(float r, float g, float b)
 {
+    r = constrain(r, 0.0, 1.0);
+    g = constrain(g, 0.0, 1.0);
+    b = constrain(b, 0.0, 1.0);
+
     _endOp();
 
     _waitOnRefresh();
