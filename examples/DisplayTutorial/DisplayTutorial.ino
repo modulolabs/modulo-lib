@@ -20,16 +20,16 @@ void loop() {
 
     // Draw different text, in a different color, based on which button is pressed.
     if (display.getButton(0)) {
-        display.setTextColor(255,0,0);
+        display.setTextColor(1,0,0);
         display.println("Button 0");
     } else if (display.getButton(1)) {
-        display.setTextColor(0,255,0);
+        display.setTextColor(0,1,0);
         display.println("Button 1");
     } else if (display.getButton(2)) {
-        display.setTextColor(0,0,255);
+        display.setTextColor(0,0,1);
         display.println("Button 2");
     } else {
-        display.setTextColor(255,255,255);
+        display.setTextColor(1,1,1);
         display.println("None pressed");        
     }
 
