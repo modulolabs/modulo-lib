@@ -98,7 +98,6 @@ void processModuloTransfer(uint8_t *buffer, int len) {
         return;
     }
 
-
     uint8_t address = buffer[0];
     uint8_t command = buffer[1];
     uint8_t sendLen = buffer[2];
@@ -215,15 +214,8 @@ void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
 }
 
-long lastKeepAlive = 0;
-
 void loop() {
     if (serialConnected) {
-        if (millis() > lastKeepAlive+100) {
-            lastKeepAlive = millis();
-            uint8_t keepAlivePacket[] = {CODE_ECHO};
-        }
-
         processEvent();
 
         if (Serial.available()) {
