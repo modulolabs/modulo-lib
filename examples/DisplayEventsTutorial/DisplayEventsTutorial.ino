@@ -13,6 +13,11 @@ void onButtonRelease(DisplayModulo &d, int button);
 
 // The setup function is run once, when the program starts
 void setup() {
+    // Call Modulo.setup() before using Modulo devices in the setup function,
+    // as we're doing by calling onButtonRelease() below.
+    Modulo.setup();
+
+    // Register our callback functions
     display.setButtonPressCallback(onButtonPress);
     display.setButtonReleaseCallback(onButtonRelease);
 
@@ -62,6 +67,7 @@ void onButtonRelease(DisplayModulo &d, int button) {
     display.setTextColor(1,1,1);
     display.println("None pressed");        
 
+    // Update the display with the new text
     display.refresh();
 }
 
