@@ -68,6 +68,11 @@ void IRRemoteModulo::_processEvent(uint8_t eventCode, uint16_t eventData) {
 
     }
 
+    // If the length is less than 2, it's a surpious signal that should be ignored.
+    if (expandedLen <= 2) {
+        return;
+    }
+
     int8_t protocol = -1;
     uint32_t value = 0;
     IRDecode(expandedData, expandedLen, &protocol, &value);
@@ -77,7 +82,19 @@ void IRRemoteModulo::_processEvent(uint8_t eventCode, uint16_t eventData) {
     }
 }
 
-void IRRemoteModulo::send(uint8_t *data, uint8_t len)
+void IRRemoteModulo::send(int8_t protocol, uint32_t data) {
+
+    uint8_t rawData[128];
+
+    int rawLen = IREncode(protocol, data, rawData, 128);
+
+    if (rawLen > 0) {
+        sendRaw(rawData, rawLen);
+    }
+}
+
+
+void IRRemoteModulo::sendRaw(uint8_t *data, uint8_t len)
 {
     uint8_t isIdle = false;
     while (!isIdle) {

@@ -411,7 +411,7 @@ bool IRDecode(uint16_t *rawData, uint16_t rawLen, int8_t *protocol, uint32_t *va
 	return false;
 }
 
-static int encodePulseModulation(PulseModulationEncoding &encoding,
+static int encodePulseModulation(const PulseModulationEncoding &encoding,
 	uint32_t data, uint8_t *rawData, uint8_t maxLen) {
 
 	// Index 0 is a space. Set it to 0 length.
@@ -423,7 +423,7 @@ static int encodePulseModulation(PulseModulationEncoding &encoding,
 		rawData[length++] = encoding.headerSpace/USECPERTICK;
 	}
 
-	for (int i=0; i < encoding.numBits and length+2 < maxLen; i++) {
+	for (int i=encoding.numBits-1; i >= 0 and length+2 < maxLen; i--) {
 		if (data & (1 << i)) {
 			rawData[length++] = encoding.oneMark/USECPERTICK;
 			rawData[length++] = encoding.oneSpace/USECPERTICK;
@@ -433,9 +433,8 @@ static int encodePulseModulation(PulseModulationEncoding &encoding,
 		}
 	}
 	
-	if (encoding.stopMark and length+2 < maxLen) {
+	if (encoding.stopMark and length < maxLen) {
 		rawData[length++] = encoding.stopMark/USECPERTICK;
-		rawData[length++] = 0;
 	}
 	
 	return length;
@@ -494,38 +493,20 @@ private:
 	uint8_t *_rawData;
 	uint8_t _maxLen;
 	uint8_t _length;
-
 };
 
-
-
-#if 0
-static void sendPulseModulation(PulseModulationEncoding &encoding, uint32_t data) {
-	// Send the header
-	if (encoding.headerMark) {
-		sendMark(encoding.headerMark);
-		sendSpace(encoding.headerSpace);
-	}
-
-	// Send the data
-	for (int i = 0; i < (int)encoding.numBits; i++) {
-		if (data & _BV(i)) {
-			sendMark(encoding.oneMark);
-			sendSpace(encoding.oneSpace);
-			} else {
-			sendMark(encoding.zeroMark);
-			sendSpace(encoding.zeroSpace);
+int IREncode(int8_t protocol, uint32_t value,
+    uint8_t *data, uint8_t maxLen)
+{
+	for (int i=0; i < NUM_IR_ENCODINGS; i++) {
+		if (IREncodings[i].protocol == protocol) {
+			return encodePulseModulation(IREncodings[i], value,
+				data, maxLen);
+		
 		}
 	}
 
-	// Send stop mark
-	if (encoding.stopMark) {
-		sendMark(encoding.stopMark);
-	}
-		
-	// Return to idle
-	sendSpace(0);
+	return 0;
 }
-#endif
 
 

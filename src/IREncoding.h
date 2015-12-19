@@ -51,5 +51,8 @@ extern const PulseModulationEncoding IREncodings[NUM_IR_ENCODINGS];
 bool IRDecode(uint16_t *rawData, uint16_t rawLen,
     int8_t *protocol, uint32_t *value);
 
+int IREncode(int8_t protocol, uint32_t value,
+    uint8_t *data, uint8_t maxLen);
+
 
 #endif /* IRENCODING_H_ */
