@@ -5,11 +5,14 @@
 
 /// Infrared remote control transmitter and receiver
 ///
-/// Note: this class can send and receive raw IR data as a sequence of pulse
-/// lengths, but support for encoding and decoding those pulse lengths into
-/// useful codes is not quite complete. Full encoding/decoding will be implemented
-/// soon. Please check community.modulo.co for more information on the status
-/// of this feature.
+/// This class supports encoding and decoding many of the most popular IR
+/// remote control protocols, including NEC, Sony, JVC, Panasonic, and LG.
+///
+/// If a particular remote is not supported you can still receive raw IR data
+/// (a sequence of pulse lengths). If you share the raw data for a particular
+/// unsupported remote on the forum ( community.modulo.co ) we may be able to
+/// add support for it. You can capture the raw data using the IRTutorial
+/// example sketch.
 class IRRemoteModulo : public BaseModulo {
 
 public:
@@ -30,11 +33,13 @@ public:
     /// a transmission complete.
     void setBreakLength(uint16_t len);
 
-    /// A callback function.
+    /// The callback function type
     typedef void(*ReceiveCallback)(int8_t protocol, uint32_t data,
         uint16_t *rawData, uint8_t rawLen);
  
     /// Set the function that should be called when data is received.
+    /// The callback will receive the decoded protocol and data, along with
+    /// an array containing the raw pulse widths.
     void setReceiveCallback(ReceiveCallback callback);
 private:
 
