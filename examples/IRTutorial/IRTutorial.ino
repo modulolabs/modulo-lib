@@ -1,6 +1,10 @@
 #include "Modulo.h"
 #include "Wire.h"
 
+#ifdef PARTICLE
+#define LED_BUILTIN 7
+#endif
+
 IRRemoteModulo ir;
 
 // The following codes are for the SparkFun Remote Control,
