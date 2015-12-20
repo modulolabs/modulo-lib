@@ -11,6 +11,7 @@
 #include "MotorDriverModulo.h"
 #include "TemperatureProbeModulo.h"
 #include "IRRemoteModulo.h"
+#include "IREncoding.h"
 
 enum ModuloStatus {
     ModuloStatusOff,
