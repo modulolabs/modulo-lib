@@ -196,13 +196,23 @@ void showWelcomeScreen() {
     buttonWasPressed = buttonIsPressed;
 }
 
+
 void processEvent() {
+    // Don't check for events more than once every couple ms
+    // Doing so constantly can bog down modulos that may be busy doing other
+    // stuff (ie, if the Display is busy drawing and refreshing)
+    static long lastEventCheck = 0;    
+    if (millis() < lastEventCheck+2) {
+        return;
+    }
+    lastEventCheck = millis();
+
     static const uint8_t BroadcastAddress = 9;
     static const uint8_t BroadcastCommandGetEvent = 7;
     static const uint8_t BroadcastCommandClearEvent = 8;
 
     uint8_t eventPacket[6] = {CODE_EVENT};
-    if (Modulo.transfer(BroadcastAddress, BroadcastCommandGetEvent, 0, 0, eventPacket+1, 5)) {
+    while (Modulo.transfer(BroadcastAddress, BroadcastCommandGetEvent, 0, 0, eventPacket+1, 5)) {
         Modulo.transfer(BroadcastAddress, BroadcastCommandClearEvent, eventPacket+1, 5, 0, 0);
 
         sendPacket(eventPacket, 6);
@@ -218,7 +228,7 @@ void loop() {
     if (serialConnected) {
         processEvent();
 
-        if (Serial.available()) {
+        while (Serial.available()) {
             receiveData(Serial.read());
         }
     } else {
