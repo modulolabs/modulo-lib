@@ -18,10 +18,6 @@ public:
 
     /// Use the Motor with the provided deviceID.
     MotorDriverModulo(uint16_t deviceID);
-
-    /// Set a single channel (0-3) to the specified amount, between 0 and 1.
-    /// Changes the mode to ModeDC if it's not already.
-    void setChannel(uint8_t channel, float amount);
     
     /// Set the motor output A to the specified amount, between -1 and 1.
     /// Changes the mode to ModeDC if it's not already.
@@ -31,6 +27,23 @@ public:
     /// Changes the mode to ModeDC if it's not already.
     void setMotorB(float amount);
     
+    // Sets an individual output, making it possible to drive up to four loads
+    // with a single motor driver. Sets the mode to DC if it's not already.
+    //
+    // The motor driver cannot drive more than one output in a pair to the power
+    // supply voltage at the same time. Because of this you should connect the
+    // load between the motor driver output and the power supply, not between
+    // the motor driver output and ground.
+    //
+    // value must be between 0 and 1, and is the percentage of time that the
+    // output will NOT be driven to ground. (that is, it's either driven to the
+    // power supply voltage or it's disconnected based on the state of the other
+    // output in the pair)
+    //
+    // channel number must be between 0 and 3, corresponding to terminals A1,
+    // A2, B1, or B2 respectively.
+    void setOutput(uint8_t channel, float amount);
+
     /// Set the driver mode.
     void setMode(Mode mode);
 
@@ -80,6 +93,13 @@ public:
 
     /// Set the function that should be called when a fault occurs or is cleared
     void setFaultChangedCallback(EventCallback *callback);
+
+    /// Set the an input to te DRV8848 driver IC to a particular PWM value,
+    /// between 0 and 1. Changes the mode to ModeDC if it's not already. 
+    ///
+    /// This is a low level function and may not do what you expect. If you are
+    /// trying to drive single-ended loads, use setOutput instead.
+    void setChannel(uint8_t channel, float amount);
 
 private:
     void _updateStepperSpeed();

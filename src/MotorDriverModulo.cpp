@@ -38,6 +38,13 @@ MotorDriverModulo::MotorDriverModulo(uint16_t deviceID) :
 }
 
 void MotorDriverModulo::setChannel(uint8_t channel, float amount) {
+    // Channel 2 and 3 are swapped in hardware. Swap them back here.
+    if (channel == 2) {
+        channel = 3;
+    } else if (channel == 3) {
+        channel = 2;
+    }
+
     uint16_t intValue = _constrain(amount, 0, 1)*0xFFFF;
     uint8_t data[] = {channel, static_cast<uint8_t>(intValue), static_cast<uint8_t>(intValue >> 8)};
     _transfer(_FunctionSetValue, data, 3, 0, 0);
@@ -60,6 +67,26 @@ void MotorDriverModulo::setMotorB(float value) {
     } else {
         setChannel(2, 1+value);
         setChannel(3, 1);
+    }
+}
+
+void MotorDriverModulo::setOutput(uint8_t channel, float amount) {
+    // The motor driver IC has the following truth table:
+    //
+    // IN1 IN2 OUT1 OUT2
+    // 0   0   Z    Z
+    // 0   1   L    H
+    // 1   0   H    L
+    // 1   1   L    L
+    //
+    // So to drive IN1 low, we need to set IN2 to 1.
+    // To drive IN2 low, we need to drive IN1 to 1.
+    //
+    // This means that we need to swap the channels and invert the value.
+
+    static const uint8_t remappedChannels[] = {1, 0, 3, 2};
+    if (channel <= 3) {
+        setChannel(remappedChannels[channel], 1-amount);
     }
 }
 
